@@ -21,6 +21,8 @@ function setupCheckboxRoot(def: DefHandle<CheckboxRootProps, CheckboxRootExposes
 
   asToggle();
 
+  def.expose.event('indeterminateChange', { payload: 'json' });
+
   const indeterminate = def.state.bool('indeterminate', false);
   def.expose.state('indeterminate', indeterminate);
 

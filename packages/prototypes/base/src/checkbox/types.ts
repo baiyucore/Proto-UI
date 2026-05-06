@@ -1,4 +1,4 @@
-import { ExposeMethod, ExposeState, State } from '@proto.ui/core';
+import { ExposeEvent, ExposeMethod, ExposeState, State } from '@proto.ui/core';
 import type {
   ToggleAsHookContract,
   ToggleExposes,
@@ -13,6 +13,7 @@ export interface CheckboxRootProps extends ToggleProps {
 
 export type CheckboxRootExposes = ToggleExposes & {
   indeterminate: ExposeState<boolean>;
+  indeterminateChange: ExposeEvent<{ indeterminate: boolean }>;
 };
 
 export type CheckboxRootStateHandles = ToggleStateHandles & {
@@ -21,6 +22,7 @@ export type CheckboxRootStateHandles = ToggleStateHandles & {
 
 export type CheckboxRootAsHookContract = ToggleAsHookContract & {
   state: { indeterminate: State<boolean> };
+  event: { indeterminateChange: { indeterminate: boolean } };
 };
 
 export interface CheckboxIndicatorProps {}
