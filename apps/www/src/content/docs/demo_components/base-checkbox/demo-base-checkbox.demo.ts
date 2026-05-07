@@ -73,37 +73,75 @@ export default {
   },
   setup({ refs, api }: any) {
     const roots = ['unchecked', 'checked', 'indeterminate', 'disabled'];
+    const cleanups: Array<() => void> = [];
+    const subscribed = new Set<string>();
+    const timers: ReturnType<typeof setTimeout>[] = [];
 
     const update = (ref: string) => {
       const exposes = api.getExposes(ref) as any;
       const status = refs[`${ref}-status`];
-      if (!exposes || !status) return;
+      if (!exposes || !status) return false;
       const checked = !!exposes.checked?.get?.();
       const indeterminate = !!exposes.indeterminate?.get?.();
       status.textContent = `checked: ${checked}, indeterminate: ${indeterminate}`;
+      return true;
     };
 
     const updateSoon = (ref: string) => {
       requestAnimationFrame(() => requestAnimationFrame(() => update(ref)));
     };
 
-    roots.forEach(update);
+    const bindState = (ref: string) => {
+      if (subscribed.has(ref)) return true;
+      const exposes = api.getExposes(ref) as any;
+      if (!exposes) return false;
 
-    const cleanups = roots.flatMap((ref) => {
+      const listener = () => updateSoon(ref);
+      for (const key of ['checked', 'indeterminate']) {
+        const handle = exposes[key];
+        if (!handle || typeof handle.subscribe !== 'function') continue;
+        const off = handle.subscribe(listener);
+        cleanups.push(() => {
+          if (typeof handle.unsubscribe === 'function') handle.unsubscribe(off);
+          else if (typeof off === 'function') off();
+        });
+      }
+
+      subscribed.add(ref);
+      update(ref);
+      return true;
+    };
+
+    const syncAll = (attempt = 0) => {
+      roots.forEach((ref) => {
+        bindState(ref);
+        update(ref);
+      });
+
+      if (subscribed.size === roots.length || attempt >= 6) return;
+
+      const timer = setTimeout(() => syncAll(attempt + 1), 50 * (attempt + 1));
+      timers.push(timer);
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(() => syncAll()));
+
+    roots.forEach((ref) => {
       const root = refs[ref];
-      if (!root) return [];
+      if (!root) return;
       const listener = () => updateSoon(ref);
       root.addEventListener('click', listener);
       root.addEventListener('checkedChange', listener);
       root.addEventListener('indeterminateChange', listener);
-      return [
+      cleanups.push(
         () => root.removeEventListener('click', listener),
         () => root.removeEventListener('checkedChange', listener),
-        () => root.removeEventListener('indeterminateChange', listener),
-      ];
+        () => root.removeEventListener('indeterminateChange', listener)
+      );
     });
 
     return () => {
+      timers.forEach((timer) => clearTimeout(timer));
       cleanups.forEach((cleanup) => cleanup());
     };
   },
