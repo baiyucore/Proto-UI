@@ -124,10 +124,36 @@ describe('prototypes/base: checkbox', () => {
 
     expect(indicatorExposes.isChecked()).toBe(false);
     expect(indicatorExposes.isIndeterminate()).toBe(true);
+    expect(indicatorExposes.checked.get()).toBe(false);
+    expect(indicatorExposes.indeterminate.get()).toBe(true);
 
     root.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(indicatorExposes.isChecked()).toBe(true);
     expect(indicatorExposes.isIndeterminate()).toBe(false);
+    expect(indicatorExposes.checked.get()).toBe(true);
+    expect(indicatorExposes.indeterminate.get()).toBe(false);
+
+    root.remove();
+    await Promise.resolve();
+  });
+
+  it('checkbox-indicator syncs controlled indeterminate prop changes from root', async () => {
+    const root = document.createElement('wc-base-checkbox-root') as any;
+    const indicator = document.createElement('wc-base-checkbox-indicator') as any;
+    setElementProps(root, { indeterminate: true });
+    root.appendChild(indicator);
+    document.body.appendChild(root);
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const indicatorExposes = indicator.getExposes();
+    expect(indicatorExposes.indeterminate.get()).toBe(true);
+
+    setElementProps(root, { indeterminate: false });
+    await Promise.resolve();
+
+    expect(indicatorExposes.indeterminate.get()).toBe(false);
 
     root.remove();
     await Promise.resolve();

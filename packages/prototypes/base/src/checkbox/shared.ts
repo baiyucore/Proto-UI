@@ -1,4 +1,11 @@
 import { createAnatomyFamily } from '@proto.ui/core';
+import type { ContextKey } from '@proto.ui/types';
+
+export type CheckboxContextValue = {
+  checked: boolean;
+  indeterminate: boolean;
+  disabled: boolean;
+};
 
 export const CHECKBOX_FAMILY = createAnatomyFamily('base-checkbox', {
   roles: {
@@ -7,3 +14,8 @@ export const CHECKBOX_FAMILY = createAnatomyFamily('base-checkbox', {
   },
   relations: [{ kind: 'contains', parent: 'root', child: 'indicator' }],
 });
+
+export const CHECKBOX_CONTEXT = {
+  __brand: 'ContextKey',
+  debugName: 'base-checkbox',
+} as ContextKey<CheckboxContextValue>;
