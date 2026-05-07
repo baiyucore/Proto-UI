@@ -1,5 +1,5 @@
 const indicatorClass =
-  'group relative grid h-5 w-5 place-items-center rounded border border-slate-400 text-white ' +
+  'group relative grid h-5 w-5 place-items-center rounded-[4px] border border-slate-400 text-white ' +
   'data-[checked]:border-blue-600 data-[checked]:bg-blue-600 ' +
   'data-[indeterminate]:border-blue-600 data-[indeterminate]:bg-blue-600';
 
