@@ -39,13 +39,6 @@ on:
         description: 'comma-separated package names (required for publish-single)'
         required: false
         type: string
-      bump:
-        description: 'patch bump type for publish-single'
-        required: true
-        type: choice
-        options:
-          - patch
-        default: patch
       publish_delay_ms:
         description: 'delay between package publish requests'
         required: true
@@ -178,9 +171,10 @@ jobs:
           fi
           # Convert "a,b" -> "a b" then call the standalone bump script.
           # The script writes release-bump.json describing the rewrite,
-          # which the commit+tag step downstream consumes.
+          # which the commit+tag step downstream consumes. publish-single
+          # is patch-only by contract; the script bumps patch unconditionally.
           TARGETS=$(echo "${{ inputs.only }}" | tr ',' ' ')
-          node scripts/release/bump-version.mjs --bump "${{ inputs.bump }}" -- $TARGETS
+          node scripts/release/bump-version.mjs -- $TARGETS
           node scripts/release/check-lockstep.mjs
 
       - name: Run Release Command

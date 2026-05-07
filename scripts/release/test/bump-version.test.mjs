@@ -61,24 +61,10 @@ test('bumps multiple packages by patch', () => {
     ],
   });
   try {
-    const result = runBump(root, ['--bump', 'patch', '@proto.ui/cli', '@proto.ui/core']);
+    const result = runBump(root, ['@proto.ui/cli', '@proto.ui/core']);
     assert.equal(result.status, 0, result.stderr || result.stdout);
     assert.equal(readManifestVersion(root, 'cli'), '0.1.6');
     assert.equal(readManifestVersion(root, 'core'), '0.1.1');
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
-});
-
-test('bumps a package by minor (resets patch to 0)', () => {
-  const root = makeFixture({
-    version: '0.1.0',
-    packages: [{ relPath: 'cli', name: '@proto.ui/cli', version: '0.1.5' }],
-  });
-  try {
-    const result = runBump(root, ['--bump', 'minor', '@proto.ui/cli']);
-    assert.equal(result.status, 0, result.stderr || result.stdout);
-    assert.equal(readManifestVersion(root, 'cli'), '0.2.0');
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -117,20 +103,6 @@ test('fails on unknown package', () => {
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, /unknown/i);
     assert.ok(!existsSync(join(root, 'release-bump.json')), 'should not write summary on failure');
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
-});
-
-test('fails on bad --bump value', () => {
-  const root = makeFixture({
-    version: '0.1.0',
-    packages: [{ relPath: 'cli', name: '@proto.ui/cli', version: '0.1.0' }],
-  });
-  try {
-    const result = runBump(root, ['--bump', 'major', '@proto.ui/cli']);
-    assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /patch.*minor|minor.*patch/i);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

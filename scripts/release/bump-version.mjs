@@ -3,25 +3,19 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { findProtoPackages, getRoot } from './version-utils.mjs';
 
+// publish-single is patch-only by contract — cross-minor releases must go
+// through publish-all + VERSION + stamp-version.mjs so all @proto.ui/* packages
+// move in lockstep. Keeping a --bump flag here would imply minor is reachable
+// from this script, which it intentionally is not.
 const args = process.argv.slice(2);
-let bump = 'patch';
 const targets = [];
-for (let i = 0; i < args.length; i += 1) {
-  if (args[i] === '--bump') {
-    bump = args[++i];
-  } else if (args[i] === '--') {
-    continue;
-  } else {
-    targets.push(args[i]);
-  }
+for (const arg of args) {
+  if (arg === '--') continue;
+  targets.push(arg);
 }
 
 if (targets.length === 0) {
   console.error('bump-version: at least one package name is required');
-  process.exit(1);
-}
-if (!['patch', 'minor'].includes(bump)) {
-  console.error(`bump-version: --bump must be patch or minor (got: ${bump})`);
   process.exit(1);
 }
 
@@ -45,8 +39,7 @@ for (const name of targets) {
     process.exit(1);
   }
   const [, major, minor, patch] = match;
-  const next =
-    bump === 'minor' ? `${major}.${Number(minor) + 1}.0` : `${major}.${minor}.${Number(patch) + 1}`;
+  const next = `${major}.${minor}.${Number(patch) + 1}`;
   plan.push({ pkg, name, current, next });
 }
 
