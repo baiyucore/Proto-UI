@@ -236,7 +236,11 @@ jobs:
         run: |
           set -euo pipefail
           VERSION_VALUE=$(cat VERSION)
-          git add -A
+          # Narrow to the files this mode actually rewrites (VERSION + every
+          # @proto.ui/* manifest stamped by stamp-version.mjs). Anything else
+          # in the worktree is an unintended side effect and should not ride
+          # along on the release commit.
+          git add VERSION packages/*/package.json
           git commit -m "chore(release): publish ${VERSION_VALUE}"
           git tag "release/${VERSION_VALUE}"
           git push origin HEAD
@@ -264,7 +268,11 @@ jobs:
             [[ -z "$line" ]] && continue
             name="${line%%$'\t'*}"
             version="${line##*$'\t'}"
-            git add -A
+            # Narrow to the files this mode rewrites: bumped manifests and the
+            # bump summary. VERSION is intentionally excluded — publish-single
+            # is patch-only and must not touch it; if it did, leaving it out
+            # surfaces the surprise as a dirty-worktree push failure.
+            git add packages/*/package.json release-bump.json
             git commit -m "chore(release): publish ${name}@${version}"
             git tag "${name}@${version}"
           done
