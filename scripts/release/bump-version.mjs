@@ -28,7 +28,10 @@ if (!['patch', 'minor'].includes(bump)) {
 const all = findProtoPackages();
 const byName = new Map(all.map((pkg) => [pkg.manifest.name, pkg]));
 
-const bumped = [];
+// Validate every target before touching disk. If anything is wrong, exit before
+// any package.json is rewritten — a half-applied bump would leave the workspace
+// in a state that check-lockstep cannot interpret cleanly.
+const plan = [];
 for (const name of targets) {
   const pkg = byName.get(name);
   if (!pkg) {
@@ -44,10 +47,16 @@ for (const name of targets) {
   const [, major, minor, patch] = match;
   const next =
     bump === 'minor' ? `${major}.${Number(minor) + 1}.0` : `${major}.${minor}.${Number(patch) + 1}`;
-  pkg.manifest.version = next;
-  writeFileSync(pkg.manifestPath, `${JSON.stringify(pkg.manifest, null, 2)}\n`);
-  console.log(`bumped ${name}: ${current} -> ${next}`);
-  bumped.push({ name, from: current, to: next });
+  plan.push({ pkg, name, current, next });
+}
+
+// All targets validated; apply writes.
+const bumped = [];
+for (const entry of plan) {
+  entry.pkg.manifest.version = entry.next;
+  writeFileSync(entry.pkg.manifestPath, `${JSON.stringify(entry.pkg.manifest, null, 2)}\n`);
+  console.log(`bumped ${entry.name}: ${entry.current} -> ${entry.next}`);
+  bumped.push({ name: entry.name, from: entry.current, to: entry.next });
 }
 
 const summaryPath = join(getRoot(), 'release-bump.json');
