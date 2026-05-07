@@ -45,7 +45,6 @@ on:
         type: choice
         options:
           - patch
-          - minor
         default: patch
       publish_delay_ms:
         description: 'delay between package publish requests'
