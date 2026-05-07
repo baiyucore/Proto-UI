@@ -48,11 +48,12 @@ function setupCheckboxRoot(def: DefHandle<CheckboxRootProps, CheckboxRootExposes
   });
 
   def.event.on('press.commit', (run) => {
+    if (run.props.get().disabled) return;
     if (indeterminate.get()) {
-      indeterminate.set(false, 'reason: press.commit => clear indeterminate');
-      run.event.emit('checkedChange', { checked: true });
+      if (!controlledIndeterminate) {
+        indeterminate.set(false, 'reason: press.commit => clear indeterminate');
+      }
       run.event.emit('indeterminateChange', { indeterminate: false });
-      return;
     }
   });
 }

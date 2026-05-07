@@ -39,9 +39,13 @@ describe('prototypes/base: checkbox', () => {
     await Promise.resolve();
   });
 
-  it('checkbox-root clears indeterminate on press.commit', async () => {
+  it('checkbox-root clears uncontrolled indeterminate on press.commit', async () => {
     const root = document.createElement('wc-base-checkbox-root') as any;
     setElementProps(root, { defaultIndeterminate: true });
+    const events: Array<{ indeterminate: boolean }> = [];
+    root.addEventListener('indeterminateChange', (event: Event) => {
+      events.push((event as CustomEvent).detail);
+    });
     document.body.appendChild(root);
 
     await Promise.resolve();
@@ -52,6 +56,55 @@ describe('prototypes/base: checkbox', () => {
 
     root.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 
+    expect(exposes.indeterminate.get()).toBe(false);
+    expect(events).toEqual([{ indeterminate: false }]);
+    root.remove();
+    await Promise.resolve();
+  });
+
+  it('checkbox-root keeps controlled indeterminate stable and emits indeterminateChange', async () => {
+    const root = document.createElement('wc-base-checkbox-root') as any;
+    setElementProps(root, { indeterminate: true });
+    const events: Array<{ indeterminate: boolean }> = [];
+    root.addEventListener('indeterminateChange', (event: Event) => {
+      events.push((event as CustomEvent).detail);
+    });
+    document.body.appendChild(root);
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const exposes = root.getExposes() as any;
+    expect(exposes.indeterminate.get()).toBe(true);
+
+    root.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(exposes.indeterminate.get()).toBe(true);
+    expect(events).toEqual([{ indeterminate: false }]);
+
+    setElementProps(root, { indeterminate: false });
+    await Promise.resolve();
+
+    expect(exposes.indeterminate.get()).toBe(false);
+    root.remove();
+    await Promise.resolve();
+  });
+
+  it('checkbox-root reuses toggle checked semantics when clearing indeterminate', async () => {
+    const root = document.createElement('wc-base-checkbox-root') as any;
+    setElementProps(root, { defaultChecked: true, defaultIndeterminate: true });
+    document.body.appendChild(root);
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const exposes = root.getExposes() as any;
+    expect(exposes.checked.get()).toBe(true);
+    expect(exposes.indeterminate.get()).toBe(true);
+
+    root.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(exposes.checked.get()).toBe(false);
     expect(exposes.indeterminate.get()).toBe(false);
     root.remove();
     await Promise.resolve();
@@ -92,6 +145,27 @@ describe('prototypes/base: checkbox', () => {
     root.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 
     expect(exposes.checked.get()).toBe(false);
+    root.remove();
+    await Promise.resolve();
+  });
+
+  it('disabled checkbox-root suppresses indeterminate clearing', async () => {
+    const root = document.createElement('wc-base-checkbox-root') as any;
+    setElementProps(root, { disabled: true, defaultIndeterminate: true });
+    const events: Array<{ indeterminate: boolean }> = [];
+    root.addEventListener('indeterminateChange', (event: Event) => {
+      events.push((event as CustomEvent).detail);
+    });
+    document.body.appendChild(root);
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const exposes = root.getExposes() as any;
+    root.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(exposes.indeterminate.get()).toBe(true);
+    expect(events).toEqual([]);
     root.remove();
     await Promise.resolve();
   });
