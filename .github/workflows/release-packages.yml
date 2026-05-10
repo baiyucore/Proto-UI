@@ -132,8 +132,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          npm install -g npm@11
-          NPM_VERSION=$(npm --version)
+          NPM_VERSION=$(corepack pnpm@"${PROTO_PNPM_VERSION}" exec npm --version)
           echo "npm=${NPM_VERSION}"
 
           node --input-type=module - "$NPM_VERSION" <<'NODE'
@@ -228,19 +227,19 @@ jobs:
               node scripts/release/scan.mjs "${ARGS[@]}" --json | tee release-scan.json
               ;;
             stage)
-              node scripts/release/publish.mjs --dry-run "${ARGS[@]}"
+              corepack pnpm@"${PROTO_PNPM_VERSION}" exec node scripts/release/publish.mjs --dry-run "${ARGS[@]}"
               ;;
             publish-all)
               # OIDC: npm CLI auto-detects ACTIONS_ID_TOKEN_REQUEST_URL/_TOKEN
               # and exchanges them for short-lived publish credentials.
-              node scripts/release/publish.mjs --publish "${ARGS[@]}"
+              corepack pnpm@"${PROTO_PNPM_VERSION}" exec node scripts/release/publish.mjs --publish "${ARGS[@]}"
               ;;
             publish-single)
               if [[ -z "${{ inputs.only }}" ]]; then
                 echo "publish-single requires inputs.only"
                 exit 1
               fi
-              node scripts/release/publish.mjs --publish "${ARGS[@]}"
+              corepack pnpm@"${PROTO_PNPM_VERSION}" exec node scripts/release/publish.mjs --publish "${ARGS[@]}"
               ;;
             *)
               echo "unsupported mode: ${{ inputs.mode }}"
