@@ -2,10 +2,10 @@ import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { ROOT_DIR, getAllPackages } from './lib.mjs';
 
-const REPO_URL = 'https://github.com/guangliang2019/Prototype-UI';
-const REPO_GIT_URL = 'git+https://github.com/guangliang2019/Prototype-UI.git';
-const BUGS_URL = 'https://github.com/guangliang2019/Prototype-UI/issues';
-const RELEASE_VERSION = '0.0.1';
+const REPO_URL = 'https://github.com/Proto-UI/Proto-UI';
+const REPO_GIT_URL = 'git+https://github.com/Proto-UI/Proto-UI.git';
+const BUGS_URL = 'https://github.com/Proto-UI/Proto-UI/issues';
+const RELEASE_VERSION = readFileSync(join(ROOT_DIR, 'VERSION'), 'utf8').trim();
 
 const PACKAGE_RULES = {
   '@proto.ui/core': {
@@ -66,6 +66,14 @@ const PACKAGE_RULES = {
   '@proto.ui/adapter-react': adapterRule('React'),
   '@proto.ui/adapter-vue': adapterRule('Vue'),
   '@proto.ui/adapter-web-component': adapterRule('Web Components'),
+  '@proto.ui/cli': {
+    description:
+      'Proto UI command line tooling for initialization, component facade generation, and style presets.',
+    kind: 'cli',
+    purpose:
+      'Provides command line tooling for initializing Proto UI workspaces and generating framework integration assets.',
+    role: 'CLI package used by applications and maintainers to scaffold Proto UI configuration and generated files.',
+  },
   '@proto.ui/prototypes-base': {
     description: 'Base Proto UI prototype library for reusable interaction prototypes.',
     kind: 'prototype-lib',
@@ -152,6 +160,7 @@ function buildKeywords(pkg, rule) {
   }
   if (rule.kind === 'module' || rule.kind === 'module-base') keywords.add('module');
   if (rule.kind === 'adapter' || rule.kind === 'adapter-base') keywords.add('adapter');
+  if (rule.kind === 'cli') keywords.add('cli');
   if (rule.kind === 'prototype-lib') keywords.add('prototype-library');
   if (rule.target) keywords.add(String(rule.target).toLowerCase().replace(/\s+/g, '-'));
   if (rule.style) keywords.add(String(rule.style).toLowerCase().replace(/\s+/g, '-'));

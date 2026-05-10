@@ -16,14 +16,14 @@
   },
   "description": "Proto UI module that provides state interaction capability for adapters.",
   "license": "MIT",
-  "homepage": "https://github.com/guangliang2019/Prototype-UI/tree/main/packages/modules/state-interaction",
+  "homepage": "https://github.com/Proto-UI/Proto-UI/tree/main/packages/modules/state-interaction",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/guangliang2019/Prototype-UI.git",
+    "url": "git+https://github.com/Proto-UI/Proto-UI.git",
     "directory": "packages/modules/state-interaction"
   },
   "bugs": {
-    "url": "https://github.com/guangliang2019/Prototype-UI/issues"
+    "url": "https://github.com/Proto-UI/Proto-UI/issues"
   },
   "publishConfig": {
     "access": "public"
