@@ -1,31 +1,29 @@
 id: C-PROPS-0006
 type: contract
-title: Prop declaration merge preserves evolution safety
+title: Prop declaration descriptors have constrained shape
 status: active
 since: 0.1.0
-summary: Prop declaration merging must reject breaking narrowing and keep widening changes traceable.
+summary: Incoming prop declarations must satisfy the minimal v0 descriptor shape for type, empty behavior, and range.
 sources:
   - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
     sections:
-      - '4.2 合并规则（同 key）'
+      - '4.1 形状约束'
   - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
     sections:
-      - '3. 合并规则（同 key）'
-      - '4. 合并结果与原子性'
+      - '2. 基本形状校验（v0 最小校验）'
 relates:
   modules:
     - M-PROPS-0001
   contracts:
-    - C-PROPS-0004
     - C-PROPS-0005
 verifies:
   tests:
-    - T-PROPS-0004
+    - T-PROPS-0003
 revisions:
   - version: 0.1.0
     change: introduced
-    summary: Captured the v0 evolution-safety merge policy for prop declarations.
+    summary: Captured minimal shape validation for prop declarations.
 tags:
   - props
   - define
-  - merge
+  - validation

@@ -6,7 +6,7 @@ since: 0.1.0
 summary: Placeholder mapping for tests that verify missing, empty, non-empty, and invalid states per prop key.
 verifies:
   contracts:
-    - C-PROPS-0003
+    - C-PROPS-0004
 relates:
   modules:
     - M-PROPS-0001

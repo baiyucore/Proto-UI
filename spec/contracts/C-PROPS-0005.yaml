@@ -1,29 +1,24 @@
 id: C-PROPS-0005
 type: contract
-title: Prop declaration descriptors have constrained shape
+title: Setup-time prop declarations are mergeable plans
 status: active
 since: 0.1.0
-summary: Incoming prop declarations must satisfy the minimal v0 descriptor shape for type, empty behavior, and range.
+summary: Setup-time props define calls contribute to a planned configurable prop surface and can be merged before runtime execution.
 sources:
-  - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
-    sections:
-      - '4.1 形状约束'
   - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
     sections:
-      - '2. 基本形状校验（v0 最小校验）'
+      - '1. 范围与术语'
 relates:
   modules:
     - M-PROPS-0001
   contracts:
-    - C-PROPS-0004
-verifies:
-  tests:
-    - T-PROPS-0003
+    - C-PROPS-0001
+    - C-LIFECYCLE-0001
 revisions:
   - version: 0.1.0
     change: introduced
-    summary: Captured minimal shape validation for prop declarations.
+    summary: Captured setup-time props declarations as mergeable plans.
 tags:
   - props
+  - setup
   - define
-  - validation

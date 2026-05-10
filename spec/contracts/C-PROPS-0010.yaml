@@ -1,29 +1,26 @@
 id: C-PROPS-0010
 type: contract
-title: Resolved props watchers observe resolved snapshot changes
+title: Failed declaration merge must not partially apply
 status: draft
 since: 0.1.0
-summary: Resolved props watchers should fire from resolved snapshot diffs, skip hydration, and preserve watchAll/watch(keys) ordering.
+summary: Blocking diagnostics during setup-time prop declaration merge should reject the merge transaction without partially applying changes.
 sources:
-  - path: internal/contracts/props/base-text/03.watch-resolved.v0.zh-CN.md
+  - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
     sections:
-      - '1. 定义'
-      - '2. Hydration 规则'
-      - '3. watchAll(cb)'
-      - '4. watch(keys, cb)'
-      - '5. 调用顺序'
+      - '4. 合并结果与原子性'
 relates:
   modules:
     - M-PROPS-0001
   contracts:
+    - C-PROPS-0005
     - C-PROPS-0007
 revisions:
   - version: 0.1.0
     change: introduced
-    summary: Drafted a placeholder for resolved watcher semantics pending test mapping.
+    summary: Drafted a placeholder for declaration merge atomicity pending implementation and test review.
 tags:
   - props
-  - watch
-  - resolved
+  - define
+  - merge
   - draft
   - deferred

@@ -1,0 +1,25 @@
+id: C-CORE-SYNTAX-0002
+type: contract
+title: Runtime capabilities are exposed through the run handle
+status: draft
+since: 0.1.0
+summary: Core syntax exposes runtime execution capabilities through a run handle bound to the current execution.
+sources:
+  - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
+    sections:
+      - '2. 公共运行时 API'
+  - path: internal/contracts/props/base-text/05.runtime-integration.v0.zh-CN.md
+    sections:
+      - '3. Watcher 回调的 RunHandle 绑定（PROP-V0-2110）'
+relates:
+  contracts:
+    - C-LIFECYCLE-0001
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Drafted the core syntax contract for runtime run handles.
+tags:
+  - core
+  - syntax
+  - runtime
+  - run-handle

@@ -1,23 +1,26 @@
 id: C-PROPS-0013
 type: contract
-title: applyRawProps updates the props channel without implicit render commit
+title: Props watcher callbacks receive run handle bound to current props state
 status: draft
 since: 0.1.0
-summary: Applying raw props through the controller may update props state and trigger watchers, but should not itself imply render commit.
+summary: Props watcher callbacks should receive a run handle whose props APIs observe the current watcher invocation state.
 sources:
   - path: internal/contracts/props/base-text/05.runtime-integration.v0.zh-CN.md
     sections:
-      - '5. applyRawProps 不触发渲染'
+      - '3. Watcher 回调的 RunHandle 绑定（PROP-V0-2110）'
 relates:
   modules:
     - M-PROPS-0001
+  contracts:
+    - C-PROPS-0011
+    - C-PROPS-0012
 revisions:
   - version: 0.1.0
     change: introduced
-    summary: Drafted a placeholder for applyRawProps scheduling semantics pending runtime and host-cap analysis.
+    summary: Drafted a placeholder for runtime run-handle binding pending runtime boundary review.
 tags:
   - props
   - runtime
-  - scheduling
+  - watch
   - draft
   - deferred

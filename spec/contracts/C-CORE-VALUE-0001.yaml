@@ -1,4 +1,4 @@
-id: C-VALUE-0001
+id: C-CORE-VALUE-0001
 type: contract
 title: Prototype-level semantics use null as the only canonical empty value
 status: draft

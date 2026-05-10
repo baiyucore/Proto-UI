@@ -6,7 +6,7 @@ since: 0.1.0
 summary: Placeholder mapping for tests that verify the serializable static-data boundary for props values.
 verifies:
   contracts:
-    - C-PROPS-0002
+    - C-PROPS-0003
 relates:
   modules:
     - M-PROPS-0001

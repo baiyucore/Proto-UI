@@ -6,7 +6,7 @@ since: 0.1.0
 summary: Placeholder mapping for tests that verify empty behavior, fallback chain, and prevValid behavior.
 verifies:
   contracts:
-    - C-PROPS-0008
+    - C-PROPS-0009
 relates:
   modules:
     - M-PROPS-0001

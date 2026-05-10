@@ -1,26 +1,31 @@
 id: C-PROPS-0012
 type: contract
-title: Props watcher callbacks receive run handle bound to current props state
+title: Raw props APIs expose raw input as an escape hatch
 status: draft
 since: 0.1.0
-summary: Props watcher callbacks should receive a run handle whose props APIs observe the current watcher invocation state.
+summary: Raw props APIs may observe undeclared keys and non-normalized values, but remain an escape hatch rather than the preferred props surface.
 sources:
-  - path: internal/contracts/props/base-text/05.runtime-integration.v0.zh-CN.md
+  - path: internal/contracts/props/base-text/04.watch-raw.v0.zh-CN.md
     sections:
-      - '3. Watcher 回调的 RunHandle 绑定（PROP-V0-2110）'
+      - '1. 定义'
+      - '3. watchRawAll(cb)'
+      - '4. watchRaw(keys, cb)'
+      - '6. Warning 约束（escape hatch）'
+  - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
+    sections:
+      - '2. 公共运行时 API'
 relates:
   modules:
     - M-PROPS-0001
   contracts:
-    - C-PROPS-0010
-    - C-PROPS-0011
+    - C-PROPS-0008
 revisions:
   - version: 0.1.0
     change: introduced
-    summary: Drafted a placeholder for runtime run-handle binding pending runtime boundary review.
+    summary: Drafted a placeholder for raw props escape-hatch semantics.
 tags:
   - props
-  - runtime
-  - watch
+  - raw
+  - escape-hatch
   - draft
   - deferred

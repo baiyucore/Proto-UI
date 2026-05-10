@@ -1,9 +1,9 @@
 id: C-LIFECYCLE-0001
 type: contract
-title: Prototype syntax separates setup-time planning from runtime execution
+title: Prototype execution separates setup-time planning from runtime execution
 status: draft
 since: 0.1.0
-summary: Setup-time declarations and runtime execution observe different semantics and expose different capabilities.
+summary: Setup-time planning and runtime execution are distinct phases with different semantic responsibilities.
 sources:
   - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
     sections:
@@ -14,7 +14,7 @@ sources:
 revisions:
   - version: 0.1.0
     change: introduced
-    summary: Drafted the upstream lifecycle contract used by setup-time props declarations.
+    summary: Drafted the upstream lifecycle model used by setup-time props declarations.
 tags:
   - lifecycle
   - setup

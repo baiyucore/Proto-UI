@@ -1,29 +1,28 @@
 id: C-PROPS-0003
 type: contract
-title: Prop semantic state is classified per key
+title: Props values must be serializable JSON-like static data
 status: active
 since: 0.1.0
-summary: Missing, empty, non-empty, and invalid states are evaluated for each individual prop key.
+summary: Props values must be serializable, portable, static data and must not contain function values.
 sources:
   - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
     sections:
-      - '3.1 输入状态分类（每个 key）'
-  - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
-    sections:
-      - '1. 输入分类'
+      - '2. 类型与可序列化要求（JSON-like）'
 relates:
   modules:
     - M-PROPS-0001
+  decisions:
+    - D-NO-FUNCTION-PROPS-0001
   contracts:
     - C-PROPS-0001
 verifies:
   tests:
-    - T-PROPS-0002
+    - T-PROPS-0001
 revisions:
   - version: 0.1.0
     change: introduced
-    summary: Captured per-key prop state classification as a fallback and watch prerequisite.
+    summary: Captured the serializable static-data boundary for props.
 tags:
   - props
-  - state
-  - per-key
+  - values
+  - serialization

@@ -1,31 +1,29 @@
 id: C-PROPS-0011
 type: contract
-title: Raw props APIs expose raw input as an escape hatch
+title: Resolved props watchers observe resolved snapshot changes
 status: draft
 since: 0.1.0
-summary: Raw props APIs may observe undeclared keys and non-normalized values, but remain an escape hatch rather than the preferred props surface.
+summary: Resolved props watchers should fire from resolved snapshot diffs, skip hydration, and preserve watchAll/watch(keys) ordering.
 sources:
-  - path: internal/contracts/props/base-text/04.watch-raw.v0.zh-CN.md
+  - path: internal/contracts/props/base-text/03.watch-resolved.v0.zh-CN.md
     sections:
       - '1. 定义'
-      - '3. watchRawAll(cb)'
-      - '4. watchRaw(keys, cb)'
-      - '6. Warning 约束（escape hatch）'
-  - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
-    sections:
-      - '2. 公共运行时 API'
+      - '2. Hydration 规则'
+      - '3. watchAll(cb)'
+      - '4. watch(keys, cb)'
+      - '5. 调用顺序'
 relates:
   modules:
     - M-PROPS-0001
   contracts:
-    - C-PROPS-0007
+    - C-PROPS-0008
 revisions:
   - version: 0.1.0
     change: introduced
-    summary: Drafted a placeholder for raw props escape-hatch semantics.
+    summary: Drafted a placeholder for resolved watcher semantics pending test mapping.
 tags:
   - props
-  - raw
-  - escape-hatch
+  - watch
+  - resolved
   - draft
   - deferred

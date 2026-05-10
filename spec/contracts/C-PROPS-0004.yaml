@@ -1,24 +1,29 @@
 id: C-PROPS-0004
 type: contract
-title: Setup-time prop declarations are mergeable plans
+title: Prop semantic state is classified per key
 status: active
 since: 0.1.0
-summary: Setup-time props define calls contribute to a planned configurable prop surface and can be merged before runtime execution.
+summary: Missing, empty, non-empty, and invalid states are evaluated for each individual prop key.
 sources:
-  - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
+  - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
     sections:
-      - '1. 范围与术语'
+      - '3.1 输入状态分类（每个 key）'
+  - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
+    sections:
+      - '1. 输入分类'
 relates:
   modules:
     - M-PROPS-0001
   contracts:
     - C-PROPS-0001
-    - C-LIFECYCLE-0001
+verifies:
+  tests:
+    - T-PROPS-0002
 revisions:
   - version: 0.1.0
     change: introduced
-    summary: Captured setup-time props declarations as mergeable plans.
+    summary: Captured per-key prop state classification as a fallback and watch prerequisite.
 tags:
   - props
-  - setup
-  - define
+  - state
+  - per-key

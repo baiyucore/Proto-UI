@@ -1,34 +1,32 @@
 id: C-PROPS-0008
 type: contract
-title: Empty and invalid prop values resolve through deterministic fallback
+title: Runtime props resolution produces a declared-key resolved snapshot
 status: active
 since: 0.1.0
-summary: Missing, empty, and invalid prop values resolve through the configured empty behavior and fallback chain.
+summary: Resolved props contain all and only declared keys, never expose undefined, and use null as the canonical empty value.
 sources:
   - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
     sections:
-      - '5.2 EmptyBehavior'
-      - '5.3 Fallback 链（顺序）'
-      - '5.4 prevValid 规则'
+      - '5.1 输出约束'
   - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
     sections:
-      - '4. EmptyBehavior 语义'
-      - '5. Fallback 链（顺序）'
-      - '6. prevValid 规则'
+      - '2. 公共运行时 API'
+      - '3. resolved 输出不变量'
 relates:
   modules:
     - M-PROPS-0001
   contracts:
-    - C-PROPS-0003
-    - C-PROPS-0007
+    - C-PROPS-0001
+    - C-PROPS-0004
+    - C-CORE-VALUE-0001
 verifies:
   tests:
-    - T-PROPS-0006
+    - T-PROPS-0005
 revisions:
   - version: 0.1.0
     change: introduced
-    summary: Captured deterministic empty, invalid, fallback, and prevValid behavior.
+    summary: Captured resolved snapshot shape and empty-value invariants.
 tags:
   - props
-  - fallback
-  - resolution
+  - runtime
+  - resolved

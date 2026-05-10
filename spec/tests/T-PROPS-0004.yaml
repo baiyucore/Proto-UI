@@ -6,7 +6,7 @@ since: 0.1.0
 summary: Placeholder mapping for tests that verify evolution-safety merge behavior for setup-time prop declarations.
 verifies:
   contracts:
-    - C-PROPS-0006
+    - C-PROPS-0007
 relates:
   modules:
     - M-PROPS-0001

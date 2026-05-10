@@ -1,28 +1,38 @@
 id: C-PROPS-0002
 type: contract
-title: Props values must be serializable JSON-like static data
-status: active
+title: Props defines setup-time declaration and runtime access surfaces
+status: draft
 since: 0.1.0
-summary: Props values must be serializable, portable, static data and must not contain function values.
+summary: Props provides setup-time declaration and watcher-registration surfaces, plus runtime access surfaces.
 sources:
-  - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
+  - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
     sections:
-      - '2. 类型与可序列化要求（JSON-like）'
+      - '1. 范围与术语'
+  - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
+    sections:
+      - '2. 公共运行时 API'
+  - path: internal/contracts/props/base-text/03.watch-resolved.v0.zh-CN.md
+    sections:
+      - '3. watchAll(cb)'
+      - '4. watch(keys, cb)'
 relates:
   modules:
     - M-PROPS-0001
-  decisions:
-    - D-NO-FUNCTION-PROPS-0001
   contracts:
-    - C-PROPS-0001
-verifies:
-  tests:
-    - T-PROPS-0001
+    - C-LIFECYCLE-0001
+    - C-CORE-SYNTAX-0001
+    - C-CORE-SYNTAX-0002
+    - C-PROPS-0005
+    - C-PROPS-0008
 revisions:
   - version: 0.1.0
     change: introduced
-    summary: Captured the serializable static-data boundary for props.
+    summary: Drafted a placeholder for setup/runtime props surface semantics.
 tags:
   - props
-  - values
-  - serialization
+  - api
+  - surface
+  - setup
+  - runtime
+  - draft
+  - deferred

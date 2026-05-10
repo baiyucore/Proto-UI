@@ -1,35 +1,23 @@
 id: C-PROPS-0014
 type: contract
-title: Props exposes distinct setup-time declaration APIs and runtime access APIs
+title: applyRawProps updates the props channel without implicit render commit
 status: draft
 since: 0.1.0
-summary: Props API availability is split between setup-time declaration and watcher registration APIs and runtime access APIs.
+summary: Applying raw props through the controller may update props state and trigger watchers, but should not itself imply render commit.
 sources:
-  - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
+  - path: internal/contracts/props/base-text/05.runtime-integration.v0.zh-CN.md
     sections:
-      - '1. 范围与术语'
-  - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
-    sections:
-      - '2. 公共运行时 API'
-  - path: internal/contracts/props/base-text/03.watch-resolved.v0.zh-CN.md
-    sections:
-      - '3. watchAll(cb)'
-      - '4. watch(keys, cb)'
+      - '5. applyRawProps 不触发渲染'
 relates:
   modules:
     - M-PROPS-0001
-  contracts:
-    - C-PROPS-0004
-    - C-PROPS-0007
-    - C-LIFECYCLE-0001
 revisions:
   - version: 0.1.0
     change: introduced
-    summary: Drafted a placeholder for setup/runtime props API surface semantics.
+    summary: Drafted a placeholder for applyRawProps scheduling semantics pending runtime and host-cap analysis.
 tags:
   - props
-  - api
-  - setup
   - runtime
+  - scheduling
   - draft
   - deferred
