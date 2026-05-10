@@ -1,0 +1,17 @@
+{
+  "name": "@proto.ui/spec-graph",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@proto.ui/spec-engine": "workspace:*",
+    "@proto.ui/spec-schema": "workspace:*"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "description": "Graph projection utilities for Proto UI semantic spec records."
+}

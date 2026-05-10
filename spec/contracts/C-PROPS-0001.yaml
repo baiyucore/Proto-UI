@@ -1,0 +1,22 @@
+id: C-PROPS-0001
+type: contract
+title: Props records must remain serializable
+status: active
+since: 0.1.0
+summary: Host adapter props should be representable as stable structured data.
+notes: ./C-PROPS-0001.md
+relates:
+  modules:
+    - M-PROPS-0001
+  decisions:
+    - D-NO-FUNCTION-PROPS-0001
+verifies:
+  tests:
+    - T-PROPS-0001
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Initial props serialization contract.
+tags:
+  - props
+  - adapter

@@ -1,0 +1,19 @@
+id: T-PROPS-0001
+type: test
+title: Props serialization contract test
+status: active
+since: 0.1.0
+summary: Verifies that props records are emitted as serializable data.
+verifies:
+  contracts:
+    - C-PROPS-0001
+relates:
+  modules:
+    - M-PROPS-0001
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Initial test mapping for props serialization.
+tags:
+  - props
+  - contract-test
