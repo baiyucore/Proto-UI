@@ -38,14 +38,14 @@
   },
   "description": "Proto UI runtime that executes prototypes under the Proto UI contracts.",
   "license": "MIT",
-  "homepage": "https://github.com/guangliang2019/Prototype-UI/tree/main/packages/runtime",
+  "homepage": "https://github.com/Proto-UI/Proto-UI/tree/main/packages/runtime",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/guangliang2019/Prototype-UI.git",
+    "url": "git+https://github.com/Proto-UI/Proto-UI.git",
     "directory": "packages/runtime"
   },
   "bugs": {
-    "url": "https://github.com/guangliang2019/Prototype-UI/issues"
+    "url": "https://github.com/Proto-UI/Proto-UI/issues"
   },
   "publishConfig": {
     "access": "public"

@@ -35,14 +35,14 @@
   },
   "description": "Translates Proto UI prototypes into Web Components component functions for use with Proto UI adapters.",
   "license": "MIT",
-  "homepage": "https://github.com/guangliang2019/Prototype-UI/tree/main/packages/adapters/web-component",
+  "homepage": "https://github.com/Proto-UI/Proto-UI/tree/main/packages/adapters/web-component",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/guangliang2019/Prototype-UI.git",
+    "url": "git+https://github.com/Proto-UI/Proto-UI.git",
     "directory": "packages/adapters/web-component"
   },
   "bugs": {
-    "url": "https://github.com/guangliang2019/Prototype-UI/issues"
+    "url": "https://github.com/Proto-UI/Proto-UI/issues"
   },
   "publishConfig": {
     "access": "public"

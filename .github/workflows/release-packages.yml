@@ -91,7 +91,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
 
       - name: Setup pnpm (corepack)
         run: |
@@ -127,6 +126,32 @@ jobs:
 
       - name: Install
         run: corepack pnpm@"${PROTO_PNPM_VERSION}" install --frozen-lockfile
+
+      - name: Verify npm trusted publishing runtime
+        if: ${{ inputs.mode == 'publish-all' || inputs.mode == 'publish-single' }}
+        run: |
+          set -euo pipefail
+
+          npm install -g npm@11
+          NPM_VERSION=$(npm --version)
+          echo "npm=${NPM_VERSION}"
+
+          node --input-type=module - "$NPM_VERSION" <<'NODE'
+          const version = process.argv[2];
+          const [major, minor, patch] = version.split('.').map((part) => Number(part));
+          if (
+            !Number.isInteger(major) ||
+            major < 11 ||
+            (major === 11 && (minor < 5 || (minor === 5 && patch < 1)))
+          ) {
+            throw new Error(`npm trusted publishing requires npm >= 11.5.1; got ${version}`);
+          }
+          NODE
+
+          if [[ -n "${NODE_AUTH_TOKEN:-}" || -n "${NPM_TOKEN:-}" ]]; then
+            echo "OIDC publish must not use NODE_AUTH_TOKEN or NPM_TOKEN."
+            exit 1
+          fi
 
       - name: Validate Publish Branch
         if: ${{ inputs.mode == 'publish-all' || inputs.mode == 'publish-single' }}
@@ -206,9 +231,8 @@ jobs:
               node scripts/release/publish.mjs --dry-run "${ARGS[@]}"
               ;;
             publish-all)
-              # OIDC: no NODE_AUTH_TOKEN, no NPM_TOKEN. npm CLI auto-detects
-              # ACTIONS_ID_TOKEN_REQUEST_URL/_TOKEN and exchanges for a
-              # short-lived publish credential (with provenance).
+              # OIDC: npm CLI auto-detects ACTIONS_ID_TOKEN_REQUEST_URL/_TOKEN
+              # and exchanges them for short-lived publish credentials.
               node scripts/release/publish.mjs --publish "${ARGS[@]}"
               ;;
             publish-single)
