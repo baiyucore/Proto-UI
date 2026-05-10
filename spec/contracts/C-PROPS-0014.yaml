@@ -1,0 +1,35 @@
+id: C-PROPS-0014
+type: contract
+title: Props exposes distinct setup-time declaration APIs and runtime access APIs
+status: draft
+since: 0.1.0
+summary: Props API availability is split between setup-time declaration and watcher registration APIs and runtime access APIs.
+sources:
+  - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
+    sections:
+      - '1. 范围与术语'
+  - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
+    sections:
+      - '2. 公共运行时 API'
+  - path: internal/contracts/props/base-text/03.watch-resolved.v0.zh-CN.md
+    sections:
+      - '3. watchAll(cb)'
+      - '4. watch(keys, cb)'
+relates:
+  modules:
+    - M-PROPS-0001
+  contracts:
+    - C-PROPS-0004
+    - C-PROPS-0007
+    - C-LIFECYCLE-0001
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Drafted a placeholder for setup/runtime props API surface semantics.
+tags:
+  - props
+  - api
+  - setup
+  - runtime
+  - draft
+  - deferred

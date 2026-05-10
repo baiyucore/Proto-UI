@@ -1,7 +1,7 @@
 id: C-PROPS-0006
 type: contract
 title: Prop declaration merge preserves evolution safety
-status: draft
+status: active
 since: 0.1.0
 summary: Prop declaration merging must reject breaking narrowing and keep widening changes traceable.
 sources:

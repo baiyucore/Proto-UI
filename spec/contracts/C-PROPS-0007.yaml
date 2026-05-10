@@ -1,7 +1,7 @@
 id: C-PROPS-0007
 type: contract
 title: Runtime props resolution produces a declared-key resolved snapshot
-status: draft
+status: active
 since: 0.1.0
 summary: Resolved props contain all and only declared keys, never expose undefined, and use null as the canonical empty value.
 sources:

@@ -1,7 +1,7 @@
 id: C-PROPS-0003
 type: contract
 title: Prop semantic state is classified per key
-status: draft
+status: active
 since: 0.1.0
 summary: Missing, empty, non-empty, and invalid states are evaluated for each individual prop key.
 sources:

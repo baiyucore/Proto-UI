@@ -1,7 +1,7 @@
 id: C-PROPS-0008
 type: contract
 title: Empty and invalid prop values resolve through deterministic fallback
-status: draft
+status: active
 since: 0.1.0
 summary: Missing, empty, and invalid prop values resolve through the configured empty behavior and fallback chain.
 sources:

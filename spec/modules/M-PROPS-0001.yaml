@@ -14,6 +14,12 @@ relates:
     - C-PROPS-0006
     - C-PROPS-0007
     - C-PROPS-0008
+    - C-PROPS-0009
+    - C-PROPS-0010
+    - C-PROPS-0011
+    - C-PROPS-0012
+    - C-PROPS-0013
+    - C-PROPS-0014
 revisions:
   - version: 0.1.0
     change: introduced

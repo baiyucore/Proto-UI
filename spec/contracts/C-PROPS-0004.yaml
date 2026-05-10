@@ -1,7 +1,7 @@
 id: C-PROPS-0004
 type: contract
 title: Setup-time prop declarations are mergeable plans
-status: draft
+status: active
 since: 0.1.0
 summary: Setup-time props define calls contribute to a planned configurable prop surface and can be merged before runtime execution.
 sources:

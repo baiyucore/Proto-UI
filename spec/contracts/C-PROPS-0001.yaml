@@ -1,7 +1,7 @@
 id: C-PROPS-0001
 type: contract
 title: Props is the app-maker-to-prototype configuration channel
-status: draft
+status: active
 since: 0.1.0
 summary: Props carries configuration data from the app maker into a prototype.
 notes: ./C-PROPS-0001.md

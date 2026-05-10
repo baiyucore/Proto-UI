@@ -1,7 +1,7 @@
 id: C-PROPS-0005
 type: contract
 title: Prop declaration descriptors have constrained shape
-status: draft
+status: active
 since: 0.1.0
 summary: Incoming prop declarations must satisfy the minimal v0 descriptor shape for type, empty behavior, and range.
 sources:

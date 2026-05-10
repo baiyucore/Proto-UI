@@ -1,7 +1,7 @@
 id: C-PROPS-0002
 type: contract
 title: Props values must be serializable JSON-like static data
-status: draft
+status: active
 since: 0.1.0
 summary: Props values must be serializable, portable, static data and must not contain function values.
 sources:
