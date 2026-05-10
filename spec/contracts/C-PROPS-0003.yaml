@@ -1,0 +1,29 @@
+id: C-PROPS-0003
+type: contract
+title: Prop semantic state is classified per key
+status: draft
+since: 0.1.0
+summary: Missing, empty, non-empty, and invalid states are evaluated for each individual prop key.
+sources:
+  - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
+    sections:
+      - '3.1 输入状态分类（每个 key）'
+  - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
+    sections:
+      - '1. 输入分类'
+relates:
+  modules:
+    - M-PROPS-0001
+  contracts:
+    - C-PROPS-0001
+verifies:
+  tests:
+    - T-PROPS-0002
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Captured per-key prop state classification as a fallback and watch prerequisite.
+tags:
+  - props
+  - state
+  - per-key

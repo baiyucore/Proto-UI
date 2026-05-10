@@ -1,0 +1,20 @@
+id: T-PROPS-0005
+type: test
+title: Resolved props snapshot shape tests
+status: draft
+since: 0.1.0
+summary: Placeholder mapping for tests that verify declared-key resolved snapshot invariants.
+verifies:
+  contracts:
+    - C-PROPS-0007
+relates:
+  modules:
+    - M-PROPS-0001
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Drafted the resolved snapshot shape test mapping placeholder.
+tags:
+  - props
+  - contract-test
+  - draft

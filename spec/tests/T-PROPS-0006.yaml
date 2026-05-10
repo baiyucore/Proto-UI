@@ -1,0 +1,20 @@
+id: T-PROPS-0006
+type: test
+title: Empty and fallback resolution tests
+status: draft
+since: 0.1.0
+summary: Placeholder mapping for tests that verify empty behavior, fallback chain, and prevValid behavior.
+verifies:
+  contracts:
+    - C-PROPS-0008
+relates:
+  modules:
+    - M-PROPS-0001
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Drafted the empty and fallback resolution test mapping placeholder.
+tags:
+  - props
+  - contract-test
+  - draft

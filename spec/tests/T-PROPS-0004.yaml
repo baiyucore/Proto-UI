@@ -1,0 +1,20 @@
+id: T-PROPS-0004
+type: test
+title: Prop declaration merge safety tests
+status: draft
+since: 0.1.0
+summary: Placeholder mapping for tests that verify evolution-safety merge behavior for setup-time prop declarations.
+verifies:
+  contracts:
+    - C-PROPS-0006
+relates:
+  modules:
+    - M-PROPS-0001
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Drafted the declaration merge safety test mapping placeholder.
+tags:
+  - props
+  - contract-test
+  - draft

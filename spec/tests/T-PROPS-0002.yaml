@@ -1,0 +1,20 @@
+id: T-PROPS-0002
+type: test
+title: Per-key prop semantic state classification tests
+status: draft
+since: 0.1.0
+summary: Placeholder mapping for tests that verify missing, empty, non-empty, and invalid states per prop key.
+verifies:
+  contracts:
+    - C-PROPS-0003
+relates:
+  modules:
+    - M-PROPS-0001
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Drafted the per-key state classification test mapping placeholder.
+tags:
+  - props
+  - contract-test
+  - draft

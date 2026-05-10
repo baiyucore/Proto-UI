@@ -1,0 +1,34 @@
+id: C-PROPS-0008
+type: contract
+title: Empty and invalid prop values resolve through deterministic fallback
+status: draft
+since: 0.1.0
+summary: Missing, empty, and invalid prop values resolve through the configured empty behavior and fallback chain.
+sources:
+  - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
+    sections:
+      - '5.2 EmptyBehavior'
+      - '5.3 Fallback 链（顺序）'
+      - '5.4 prevValid 规则'
+  - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
+    sections:
+      - '4. EmptyBehavior 语义'
+      - '5. Fallback 链（顺序）'
+      - '6. prevValid 规则'
+relates:
+  modules:
+    - M-PROPS-0001
+  contracts:
+    - C-PROPS-0003
+    - C-PROPS-0007
+verifies:
+  tests:
+    - T-PROPS-0006
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Captured deterministic empty, invalid, fallback, and prevValid behavior.
+tags:
+  - props
+  - fallback
+  - resolution

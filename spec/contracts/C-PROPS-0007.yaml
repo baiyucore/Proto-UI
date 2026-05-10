@@ -1,0 +1,32 @@
+id: C-PROPS-0007
+type: contract
+title: Runtime props resolution produces a declared-key resolved snapshot
+status: draft
+since: 0.1.0
+summary: Resolved props contain all and only declared keys, never expose undefined, and use null as the canonical empty value.
+sources:
+  - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
+    sections:
+      - '5.1 输出约束'
+  - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
+    sections:
+      - '2. 公共运行时 API'
+      - '3. resolved 输出不变量'
+relates:
+  modules:
+    - M-PROPS-0001
+  contracts:
+    - C-PROPS-0001
+    - C-PROPS-0003
+    - C-VALUE-0001
+verifies:
+  tests:
+    - T-PROPS-0005
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Captured resolved snapshot shape and empty-value invariants.
+tags:
+  - props
+  - runtime
+  - resolved

@@ -1,22 +1,21 @@
 id: C-PROPS-0001
 type: contract
-title: Props records must remain serializable
-status: active
+title: Props is the app-maker-to-prototype configuration channel
+status: draft
 since: 0.1.0
-summary: Host adapter props should be representable as stable structured data.
+summary: Props carries configuration data from the app maker into a prototype.
 notes: ./C-PROPS-0001.md
+sources:
+  - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
+    sections:
+      - '1. 基本定位'
 relates:
   modules:
     - M-PROPS-0001
-  decisions:
-    - D-NO-FUNCTION-PROPS-0001
-verifies:
-  tests:
-    - T-PROPS-0001
 revisions:
   - version: 0.1.0
     change: introduced
-    summary: Initial props serialization contract.
+    summary: Captured the top-level channel identity for props.
 tags:
   - props
-  - adapter
+  - channel

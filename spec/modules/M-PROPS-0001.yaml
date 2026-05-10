@@ -7,6 +7,13 @@ summary: Owns the semantic model for host-facing props.
 relates:
   contracts:
     - C-PROPS-0001
+    - C-PROPS-0002
+    - C-PROPS-0003
+    - C-PROPS-0004
+    - C-PROPS-0005
+    - C-PROPS-0006
+    - C-PROPS-0007
+    - C-PROPS-0008
 revisions:
   - version: 0.1.0
     change: introduced

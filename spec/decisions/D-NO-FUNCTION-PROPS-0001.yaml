@@ -7,7 +7,7 @@ summary: Function values are host-local behavior and should not be part of seria
 notes: ./D-NO-FUNCTION-PROPS-0001.md
 relates:
   contracts:
-    - C-PROPS-0001
+    - C-PROPS-0002
 revisions:
   - version: 0.1.0
     change: introduced

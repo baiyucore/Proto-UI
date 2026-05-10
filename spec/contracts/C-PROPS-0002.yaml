@@ -1,0 +1,28 @@
+id: C-PROPS-0002
+type: contract
+title: Props values must be serializable JSON-like static data
+status: draft
+since: 0.1.0
+summary: Props values must be serializable, portable, static data and must not contain function values.
+sources:
+  - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
+    sections:
+      - '2. 类型与可序列化要求（JSON-like）'
+relates:
+  modules:
+    - M-PROPS-0001
+  decisions:
+    - D-NO-FUNCTION-PROPS-0001
+  contracts:
+    - C-PROPS-0001
+verifies:
+  tests:
+    - T-PROPS-0001
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Captured the serializable static-data boundary for props.
+tags:
+  - props
+  - values
+  - serialization

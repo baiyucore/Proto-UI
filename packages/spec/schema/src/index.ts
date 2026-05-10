@@ -68,6 +68,12 @@ export const specRevisionSchema = z.object({
   breaking: z.boolean().optional(),
 });
 
+export const specSourceRefSchema = z.object({
+  path: z.string().min(1),
+  label: z.string().optional(),
+  sections: z.array(z.string()).optional(),
+});
+
 export const specEntitySchema = z
   .object({
     id: z.string().regex(specIdPattern, 'Expected a Proto UI spec ID.'),
@@ -80,6 +86,7 @@ export const specEntitySchema = z
     replacedBy: z.string().optional(),
     summary: z.string().optional(),
     notes: z.string().optional(),
+    sources: z.array(specSourceRefSchema).default([]),
     relates: specRelationsSchema,
     requires: specRelationsSchema,
     verifies: specRelationsSchema,
@@ -118,6 +125,7 @@ export const specEntitySchema = z
 export type SpecRelationTarget = z.infer<typeof specRelationTargetSchema>;
 export type SpecRelations = z.infer<typeof specRelationsSchema>;
 export type SpecRevision = z.infer<typeof specRevisionSchema>;
+export type SpecSourceRef = z.infer<typeof specSourceRefSchema>;
 export type SpecEntity = z.infer<typeof specEntitySchema>;
 
 export type SpecValidationIssue = {
