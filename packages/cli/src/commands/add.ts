@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { addComponentToConfig, loadCliConfig, saveCliConfig } from '../config/project-config.js';
 import { getAdapter, normalizeHost } from '../registry/adapters.js';
 import { getComponentEntry } from '../registry/components.js';

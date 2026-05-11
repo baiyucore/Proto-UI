@@ -8,8 +8,7 @@
   },
   "files": [
     "bin/",
-    "src/",
-    "!src/**/*.ts",
+    "dist/",
     "README.md"
   ],
   "dependencies": {
@@ -36,5 +35,9 @@
     "components",
     "tailwind",
     "tokens"
-  ]
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build"
+  }
 }

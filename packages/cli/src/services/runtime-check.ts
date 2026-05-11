@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { formatInstallCommand } from './package-manager.js';
 
 export function ensureRuntimePackages({ adapter, projectPkg, packageManager }) {

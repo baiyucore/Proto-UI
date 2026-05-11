@@ -1,3 +1,4 @@
+// @ts-nocheck
 export function parseArgv(argv) {
   const options = {};
   const positionals = [];

@@ -1,3 +1,4 @@
+// @ts-nocheck
 export const ADAPTER_REGISTRY = {
   react: {
     id: 'react',

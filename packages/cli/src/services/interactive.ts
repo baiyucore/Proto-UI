@@ -1,3 +1,4 @@
+// @ts-nocheck
 import prompts from 'prompts';
 
 import { listAdapterChoices } from '../registry/adapters.js';

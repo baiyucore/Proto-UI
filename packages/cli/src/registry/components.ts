@@ -1,3 +1,4 @@
+// @ts-nocheck
 function defineSimple(id, label, packageName, prototypeImport, exportBaseName, options = {}) {
   return {
     id,

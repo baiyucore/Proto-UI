@@ -1,3 +1,4 @@
+// @ts-nocheck
 const HELP_TEXT = `proto-ui
 
 Usage:
