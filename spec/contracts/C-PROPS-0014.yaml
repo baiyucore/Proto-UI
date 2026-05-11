@@ -8,9 +8,12 @@ sources:
   - path: internal/contracts/props/base-text/05.runtime-integration.v0.zh-CN.md
     sections:
       - '5. applyRawProps 不触发渲染'
-relates:
-  modules:
-    - M-PROPS-0001
+dependsOn:
+  contracts:
+    - id: C-PROPS-0002
+      anchors:
+        - C-PROPS-0002-E
+      note: applyRawProps inherits the rule that Props changes do not imply view updates.
 revisions:
   - version: 0.1.0
     change: introduced

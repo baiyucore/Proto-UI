@@ -3,10 +3,12 @@ import path from 'node:path';
 import { parse } from 'yaml';
 
 import {
+  SPEC_RELATION_KINDS,
   compareSpecVersions,
   validateSpecEntity,
   type SpecEntity,
   type SpecEntityType,
+  type SpecRelationKind,
   type SpecRelations,
   type SpecValidationIssue,
 } from '@proto.ui/spec-schema';
@@ -157,9 +159,10 @@ function validateWorkspaceRelations(
 
   for (const entry of loaded) {
     validateReplacement(entry, byId, issues);
-    validateRelationGroup(entry, byId, issues, 'relates', entry.entity.relates);
-    validateRelationGroup(entry, byId, issues, 'requires', entry.entity.requires);
-    validateRelationGroup(entry, byId, issues, 'verifies', entry.entity.verifies);
+
+    for (const relationKind of SPEC_RELATION_KINDS) {
+      validateRelationGroup(entry, byId, issues, relationKind, entry.entity[relationKind]);
+    }
   }
 }
 
@@ -193,7 +196,7 @@ function validateRelationGroup(
   entry: LoadedSpecEntity,
   byId: Map<string, LoadedSpecEntity>,
   issues: SpecValidationIssue[],
-  groupName: 'relates' | 'requires' | 'verifies',
+  groupName: SpecRelationKind,
   relations: SpecRelations
 ): void {
   if (!relations) return;

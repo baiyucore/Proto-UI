@@ -12,15 +12,10 @@ sources:
     sections:
       - '3. 合并规则（同 key）'
       - '4. 合并结果与原子性'
-relates:
-  modules:
-    - M-PROPS-0001
+dependsOn:
   contracts:
     - C-PROPS-0005
     - C-PROPS-0006
-verifies:
-  tests:
-    - T-PROPS-0004
 revisions:
   - version: 0.1.0
     change: introduced

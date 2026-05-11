@@ -12,11 +12,12 @@ sources:
       - '3. watchAll(cb)'
       - '4. watch(keys, cb)'
       - '5. 调用顺序'
-relates:
-  modules:
-    - M-PROPS-0001
+dependsOn:
   contracts:
     - C-PROPS-0008
+refines:
+  contracts:
+    - C-PROPS-0002
 revisions:
   - version: 0.1.0
     change: introduced

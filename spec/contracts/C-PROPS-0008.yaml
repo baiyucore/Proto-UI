@@ -12,16 +12,14 @@ sources:
     sections:
       - '2. 公共运行时 API'
       - '3. resolved 输出不变量'
-relates:
-  modules:
-    - M-PROPS-0001
+dependsOn:
   contracts:
     - C-PROPS-0001
     - C-PROPS-0004
     - C-CORE-VALUE-0001
-verifies:
-  tests:
-    - T-PROPS-0005
+refines:
+  contracts:
+    - C-PROPS-0002
 revisions:
   - version: 0.1.0
     change: introduced

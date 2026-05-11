@@ -9,9 +9,6 @@ sources:
   - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
     sections:
       - '1. 基本定位'
-relates:
-  modules:
-    - M-PROPS-0001
 revisions:
   - version: 0.1.0
     change: introduced

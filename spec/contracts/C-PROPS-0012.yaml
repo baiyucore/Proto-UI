@@ -14,11 +14,12 @@ sources:
   - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
     sections:
       - '2. 公共运行时 API'
-relates:
-  modules:
-    - M-PROPS-0001
+dependsOn:
   contracts:
     - C-PROPS-0008
+refines:
+  contracts:
+    - C-PROPS-0002
 revisions:
   - version: 0.1.0
     change: introduced

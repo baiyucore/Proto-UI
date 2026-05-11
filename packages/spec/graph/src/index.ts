@@ -1,5 +1,10 @@
 import type { SpecSnapshot } from '@proto.ui/spec-engine';
-import type { SpecEntity, SpecRelations } from '@proto.ui/spec-schema';
+import {
+  SPEC_RELATION_KINDS,
+  type SpecEntity,
+  type SpecRelationKind,
+  type SpecRelations,
+} from '@proto.ui/spec-schema';
 
 export type SpecGraphNode = {
   id: string;
@@ -12,8 +17,9 @@ export type SpecGraphEdge = {
   id: string;
   from: string;
   to: string;
-  kind: 'relates' | 'requires' | 'verifies';
+  kind: SpecRelationKind;
   relation: keyof NonNullable<SpecRelations>;
+  anchors: string[];
 };
 
 export type SpecGraph = {
@@ -32,9 +38,9 @@ export function buildSpecGraph(snapshot: SpecSnapshot): SpecGraph {
   const edges: SpecGraphEdge[] = [];
 
   for (const entity of snapshot.entities) {
-    appendEdges(edges, knownIds, entity, 'relates', entity.relates);
-    appendEdges(edges, knownIds, entity, 'requires', entity.requires);
-    appendEdges(edges, knownIds, entity, 'verifies', entity.verifies);
+    for (const relationKind of SPEC_RELATION_KINDS) {
+      appendEdges(edges, knownIds, entity, relationKind, entity[relationKind]);
+    }
   }
 
   return { nodes, edges };
@@ -44,7 +50,7 @@ function appendEdges(
   edges: SpecGraphEdge[],
   knownIds: Set<string>,
   entity: SpecEntity,
-  kind: SpecGraphEdge['kind'],
+  kind: SpecRelationKind,
   relations: SpecRelations | undefined
 ): void {
   if (!relations) return;
@@ -59,6 +65,7 @@ function appendEdges(
         to: target.id,
         kind,
         relation: relation as keyof NonNullable<SpecRelations>,
+        anchors: target.anchors ?? [],
       });
     }
   }

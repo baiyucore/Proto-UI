@@ -11,14 +11,9 @@ sources:
   - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
     sections:
       - '2. 基本形状校验（v0 最小校验）'
-relates:
-  modules:
-    - M-PROPS-0001
+refines:
   contracts:
     - C-PROPS-0005
-verifies:
-  tests:
-    - T-PROPS-0003
 revisions:
   - version: 0.1.0
     change: introduced

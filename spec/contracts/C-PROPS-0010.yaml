@@ -8,9 +8,7 @@ sources:
   - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
     sections:
       - '4. 合并结果与原子性'
-relates:
-  modules:
-    - M-PROPS-0001
+dependsOn:
   contracts:
     - C-PROPS-0005
     - C-PROPS-0007

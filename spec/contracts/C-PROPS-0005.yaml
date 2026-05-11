@@ -8,12 +8,13 @@ sources:
   - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
     sections:
       - '1. 范围与术语'
-relates:
-  modules:
-    - M-PROPS-0001
+dependsOn:
   contracts:
     - C-PROPS-0001
     - C-LIFECYCLE-0001
+refines:
+  contracts:
+    - C-PROPS-0002
 revisions:
   - version: 0.1.0
     change: introduced

@@ -5,7 +5,7 @@ status: active
 since: 0.1.0
 summary: Function values are host-local behavior and should not be part of serialized props records.
 notes: ./D-NO-FUNCTION-PROPS-0001.md
-relates:
+explains:
   contracts:
     - C-PROPS-0003
 revisions:

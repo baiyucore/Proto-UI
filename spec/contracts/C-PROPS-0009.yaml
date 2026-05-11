@@ -4,6 +4,14 @@ title: Empty and invalid prop values resolve through deterministic fallback
 status: active
 since: 0.1.0
 summary: Missing, empty, and invalid prop values resolve through the configured empty behavior and fallback chain.
+openQuestions:
+  - id: C-PROPS-0009-Q1
+    question:
+      zh-CN: 当 fallback 链最终落到 null 时，resolved props 是否允许 typed prop（例如 number）获得 null 值，还是应视 empty behavior 配置决定？
+      en: When the fallback chain reaches null, may a typed prop such as number resolve to null, or must this depend on the configured empty behavior?
+    context:
+      zh-CN: 现有底本允许 empty 非 error 时 fallback 链末尾为 null；但这可能与“typed prop 默认不应得到 null resolved value”的直觉冲突，需要回看实现与测试。
+      en: The current base text allows null at the end of the fallback chain when empty is not error; this may conflict with the intuition that typed props should not resolve to null by default, so implementation and tests need review.
 sources:
   - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
     sections:
@@ -15,15 +23,10 @@ sources:
       - '4. EmptyBehavior 语义'
       - '5. Fallback 链（顺序）'
       - '6. prevValid 规则'
-relates:
-  modules:
-    - M-PROPS-0001
+dependsOn:
   contracts:
     - C-PROPS-0004
     - C-PROPS-0008
-verifies:
-  tests:
-    - T-PROPS-0006
 revisions:
   - version: 0.1.0
     change: introduced

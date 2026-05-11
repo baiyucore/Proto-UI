@@ -8,16 +8,9 @@ sources:
   - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
     sections:
       - '2. 类型与可序列化要求（JSON-like）'
-relates:
-  modules:
-    - M-PROPS-0001
-  decisions:
-    - D-NO-FUNCTION-PROPS-0001
+refines:
   contracts:
     - C-PROPS-0001
-verifies:
-  tests:
-    - T-PROPS-0001
 revisions:
   - version: 0.1.0
     change: introduced

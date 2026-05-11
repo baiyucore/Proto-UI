@@ -4,7 +4,7 @@ title: Props module
 status: active
 since: 0.1.0
 summary: Owns the semantic model for host-facing props.
-relates:
+satisfies:
   contracts:
     - C-PROPS-0001
     - C-PROPS-0002

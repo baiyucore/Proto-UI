@@ -21,9 +21,20 @@ export const SPEC_ENTITY_PREFIXES = {
 } as const satisfies Record<SpecEntityType, string>;
 
 export const SPEC_ENTITY_STATUSES = ['draft', 'active', 'deprecated', 'removed'] as const;
+export const SPEC_RELATION_KINDS = [
+  'relates',
+  'dependsOn',
+  'refines',
+  'satisfies',
+  'verifies',
+  'explains',
+  'requires',
+  'owns',
+] as const;
 
 export type SpecEntityType = (typeof SPEC_ENTITY_TYPES)[number];
 export type SpecEntityStatus = (typeof SPEC_ENTITY_STATUSES)[number];
+export type SpecRelationKind = (typeof SPEC_RELATION_KINDS)[number];
 
 export type SpecIdParts = {
   id: string;
@@ -36,6 +47,13 @@ const specIdPattern = /^(C|M|D|HC|T|V|K)-([A-Z0-9]+(?:-[A-Z0-9]+)*)-(\d{4})$/;
 const semverPattern = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 
 export const specVersionSchema = z.string().regex(semverPattern, 'Expected a semver version.');
+export const specLocalizedTextSchema = z.union([
+  z.string().min(1),
+  z.object({
+    en: z.string().min(1).optional(),
+    'zh-CN': z.string().min(1).optional(),
+  }),
+]);
 
 export const specRelationTargetSchema = z
   .union([
@@ -44,6 +62,7 @@ export const specRelationTargetSchema = z
       id: z.string(),
       since: specVersionSchema.optional(),
       until: specVersionSchema.optional(),
+      anchors: z.array(z.string().min(1)).optional(),
       note: z.string().optional(),
     }),
   ])
@@ -74,6 +93,19 @@ export const specSourceRefSchema = z.object({
   sections: z.array(z.string()).optional(),
 });
 
+export const specCriterionSchema = z.object({
+  id: z.string().min(1),
+  text: specLocalizedTextSchema,
+  rationale: specLocalizedTextSchema.optional(),
+});
+
+export const specOpenQuestionSchema = z.object({
+  id: z.string().min(1),
+  question: specLocalizedTextSchema,
+  context: specLocalizedTextSchema.optional(),
+  blocks: z.array(z.string().min(1)).default([]),
+});
+
 export const specEntitySchema = z
   .object({
     id: z.string().regex(specIdPattern, 'Expected a Proto UI spec ID.'),
@@ -85,11 +117,19 @@ export const specEntitySchema = z
     removedSince: specVersionSchema.optional(),
     replacedBy: z.string().optional(),
     summary: z.string().optional(),
+    statement: specLocalizedTextSchema.optional(),
+    criteria: z.array(specCriterionSchema).default([]),
+    openQuestions: z.array(specOpenQuestionSchema).default([]),
     notes: z.string().optional(),
     sources: z.array(specSourceRefSchema).default([]),
     relates: specRelationsSchema,
+    dependsOn: specRelationsSchema,
+    refines: specRelationsSchema,
+    satisfies: specRelationsSchema,
     requires: specRelationsSchema,
     verifies: specRelationsSchema,
+    explains: specRelationsSchema,
+    owns: specRelationsSchema,
     revisions: z.array(specRevisionSchema).default([]),
     tags: z.array(z.string()).default([]),
   })
@@ -120,12 +160,58 @@ export const specEntitySchema = z
         message: 'Removed entities must set removedSince.',
       });
     }
+
+    const criteriaIds = new Set<string>();
+
+    for (const criterion of entity.criteria) {
+      if (!criterion.id.startsWith(`${entity.id}-`)) {
+        context.addIssue({
+          code: 'custom',
+          path: ['criteria'],
+          message: `Criterion ID ${criterion.id} must start with ${entity.id}-.`,
+        });
+      }
+
+      if (criteriaIds.has(criterion.id)) {
+        context.addIssue({
+          code: 'custom',
+          path: ['criteria'],
+          message: `Duplicate criterion ID ${criterion.id}.`,
+        });
+      }
+
+      criteriaIds.add(criterion.id);
+    }
+
+    const openQuestionIds = new Set<string>();
+
+    for (const question of entity.openQuestions) {
+      if (!question.id.startsWith(`${entity.id}-Q`)) {
+        context.addIssue({
+          code: 'custom',
+          path: ['openQuestions'],
+          message: `Open question ID ${question.id} must start with ${entity.id}-Q.`,
+        });
+      }
+
+      if (openQuestionIds.has(question.id)) {
+        context.addIssue({
+          code: 'custom',
+          path: ['openQuestions'],
+          message: `Duplicate open question ID ${question.id}.`,
+        });
+      }
+
+      openQuestionIds.add(question.id);
+    }
   });
 
 export type SpecRelationTarget = z.infer<typeof specRelationTargetSchema>;
 export type SpecRelations = z.infer<typeof specRelationsSchema>;
 export type SpecRevision = z.infer<typeof specRevisionSchema>;
 export type SpecSourceRef = z.infer<typeof specSourceRefSchema>;
+export type SpecCriterion = z.infer<typeof specCriterionSchema>;
+export type SpecOpenQuestion = z.infer<typeof specOpenQuestionSchema>;
 export type SpecEntity = z.infer<typeof specEntitySchema>;
 
 export type SpecValidationIssue = {
