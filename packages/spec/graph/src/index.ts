@@ -20,6 +20,8 @@ export type SpecGraphEdge = {
   kind: SpecRelationKind;
   relation: keyof NonNullable<SpecRelations>;
   anchors: string[];
+  role?: string;
+  coverageImpact?: string;
 };
 
 export type SpecGraph = {
@@ -66,6 +68,8 @@ function appendEdges(
         kind,
         relation: relation as keyof NonNullable<SpecRelations>,
         anchors: target.anchors ?? [],
+        role: target.role,
+        coverageImpact: target.coverageImpact,
       });
     }
   }

@@ -11,6 +11,12 @@ sources:
   - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
     sections:
       - '2. 基本形状校验（v0 最小校验）'
+dependsOn:
+  contracts:
+    - id: C-PROPS-0003
+      role: value-boundary
+      coverageImpact: expands-test-surface
+      note: Prop declaration descriptors may carry default or fallback candidate values; those values must use the JSON value boundary.
 refines:
   contracts:
     - C-PROPS-0005

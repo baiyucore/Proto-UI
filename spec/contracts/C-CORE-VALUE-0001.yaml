@@ -12,7 +12,7 @@ sources:
   - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
     sections:
       - '3. resolved 输出不变量'
-      - '8. JSON-like 语义约束（补充）'
+      - '8. JSON 语义约束（补充）'
 revisions:
   - version: 0.1.0
     change: introduced

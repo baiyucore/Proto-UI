@@ -16,6 +16,10 @@ dependsOn:
   contracts:
     - C-PROPS-0001
     - C-PROPS-0004
+    - id: C-PROPS-0003
+      role: value-boundary
+      coverageImpact: expands-test-surface
+      note: The resolved snapshot exposes portable props values, so every resolved value must satisfy the JSON value boundary.
     - C-CORE-VALUE-0001
 refines:
   contracts:

@@ -26,6 +26,10 @@ sources:
 dependsOn:
   contracts:
     - C-PROPS-0004
+    - id: C-PROPS-0003
+      role: value-boundary
+      coverageImpact: expands-test-surface
+      note: The fallback chain selects or produces props values, so accepted fallback results must satisfy the JSON value boundary.
     - C-PROPS-0008
 revisions:
   - version: 0.1.0

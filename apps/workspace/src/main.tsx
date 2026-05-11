@@ -44,6 +44,7 @@ const UI_TEXT = {
       satisfies: 'Satisfies',
       verifies: 'Verifies',
       explains: 'Explains',
+      exercises: 'Exercises',
       requires: 'Requires',
       owns: 'Owns',
     },
@@ -98,6 +99,7 @@ const UI_TEXT = {
       satisfies: '满足',
       verifies: '验证',
       explains: '解释',
+      exercises: '演练',
       requires: '要求',
       owns: '拥有',
     },
@@ -471,6 +473,8 @@ function RelationList(props: { title: string; relations: SpecEntity['relates'] }
           <span className="relation-chip" key={`${kind}:${target.id}`}>
             <strong>{target.id}</strong>
             {target.anchors?.length ? <small>{target.anchors.join(', ')}</small> : null}
+            {target.role ? <small>role={target.role}</small> : null}
+            {target.coverageImpact ? <small>coverageImpact={target.coverageImpact}</small> : null}
             {target.note ? <small>{target.note}</small> : null}
           </span>
         ))}

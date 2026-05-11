@@ -91,8 +91,8 @@ For each declared key:
 
 ---
 
-## 8. JSON-like Constraints (supplement)
+## 8. JSON Constraints (supplement)
 
-- props are semantically JSON-like portable data
+- props are semantically JSON values for portable data
 - `undefined` is not allowed as a semantic value; runtime `undefined` must be normalized to `null`
-- non JSON-like values may appear but are not guaranteed to be portable across adapters
+- non-JSON values must not enter the props portability guarantee and are not guaranteed to be portable across adapters

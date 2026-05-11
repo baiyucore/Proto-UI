@@ -1,12 +1,32 @@
 id: T-PROPS-0001
 type: test
-title: Serializable JSON-like props value boundary tests
+title: JSON props value boundary tests
 status: draft
 since: 0.1.0
-summary: Placeholder mapping for tests that verify the serializable static-data boundary for props values.
+summary: Placeholder mapping for tests that verify the JSON value boundary for props values.
 verifies:
   contracts:
-    - C-PROPS-0003
+    - id: C-PROPS-0003
+      anchors:
+        - C-PROPS-0003-A
+        - C-PROPS-0003-B
+        - C-PROPS-0003-C
+        - C-PROPS-0003-D
+        - C-PROPS-0003-E
+exercises:
+  contracts:
+    - id: C-PROPS-0006
+      role: test-entrypoint
+      coverageImpact: exercises-test-surface
+      note: Exercises setup-time declaration/default value paths that can introduce props values.
+    - id: C-PROPS-0008
+      role: test-entrypoint
+      coverageImpact: exercises-test-surface
+      note: Exercises runtime resolved props output paths that expose portable props values.
+    - id: C-PROPS-0009
+      role: test-entrypoint
+      coverageImpact: exercises-test-surface
+      note: Exercises fallback paths that can select or produce resolved props values.
 relates:
   modules:
     - M-PROPS-0001
@@ -17,4 +37,5 @@ revisions:
 tags:
   - props
   - contract-test
+  - json
   - draft

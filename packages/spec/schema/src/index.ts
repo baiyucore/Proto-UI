@@ -28,13 +28,33 @@ export const SPEC_RELATION_KINDS = [
   'satisfies',
   'verifies',
   'explains',
+  'exercises',
   'requires',
   'owns',
+] as const;
+export const SPEC_RELATION_ROLES = [
+  'value-boundary',
+  'phase-boundary',
+  'api-surface',
+  'lifecycle-model',
+  'portability-rationale',
+  'execution-order',
+  'diagnostic-policy',
+  'test-surface',
+  'test-entrypoint',
+] as const;
+export const SPEC_COVERAGE_IMPACTS = [
+  'expands-test-surface',
+  'exercises-test-surface',
+  'no-direct-test-surface',
+  'review-test-surface',
 ] as const;
 
 export type SpecEntityType = (typeof SPEC_ENTITY_TYPES)[number];
 export type SpecEntityStatus = (typeof SPEC_ENTITY_STATUSES)[number];
 export type SpecRelationKind = (typeof SPEC_RELATION_KINDS)[number];
+export type SpecRelationRole = (typeof SPEC_RELATION_ROLES)[number];
+export type SpecCoverageImpact = (typeof SPEC_COVERAGE_IMPACTS)[number];
 
 export type SpecIdParts = {
   id: string;
@@ -63,6 +83,8 @@ export const specRelationTargetSchema = z
       since: specVersionSchema.optional(),
       until: specVersionSchema.optional(),
       anchors: z.array(z.string().min(1)).optional(),
+      role: z.enum(SPEC_RELATION_ROLES).optional(),
+      coverageImpact: z.enum(SPEC_COVERAGE_IMPACTS).optional(),
       note: z.string().optional(),
     }),
   ])
@@ -129,6 +151,7 @@ export const specEntitySchema = z
     requires: specRelationsSchema,
     verifies: specRelationsSchema,
     explains: specRelationsSchema,
+    exercises: specRelationsSchema,
     owns: specRelationsSchema,
     revisions: z.array(specRevisionSchema).default([]),
     tags: z.array(z.string()).default([]),

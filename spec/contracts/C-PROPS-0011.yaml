@@ -14,6 +14,10 @@ sources:
       - '5. 调用顺序'
 dependsOn:
   contracts:
+    - id: C-PROPS-0003
+      role: value-boundary
+      coverageImpact: expands-test-surface
+      note: Resolved watchers are another observation surface for resolved props values and must not propagate non-JSON values as portable resolved values.
     - C-PROPS-0008
 refines:
   contracts:
