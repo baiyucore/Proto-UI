@@ -10,7 +10,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { getLaunchProfilePackageNames, loadLaunchPackageGovernance } from './governance.mjs';
 
@@ -280,6 +280,21 @@ export function recommendedPackages(packages) {
   return packages.filter((pkg) => !pkg.isLegacy);
 }
 
+/**
+ * Build prerequisite packages that declare their own build step.
+ *
+ * Only packages with BOTH:
+ *   1. exports pointing to dist/ (pkg.distExport)
+ *   2. A scripts.build in their package.json
+ *
+ * ...are built here before staging. All other packages rely on the
+ * unified stagePackage tsc build.
+ *
+ * This is the escape hatch for packages that need a custom build
+ * pipeline (e.g. types with a dedicated tsconfig). Packages that
+ * can be built by the standard tsc invocation should NOT declare
+ * scripts.build -- they will be handled uniformly by stagePackage.
+ */
 export function buildPrerequisitePackages(packages) {
   const prerequisites = packages.filter(
     (pkg) => pkg.distExport && typeof pkg.manifest?.scripts?.build === 'string'
@@ -344,8 +359,6 @@ export function stagePackage(pkg, options) {
     '--declaration',
     '--emitDeclarationOnly',
     'false',
-    '--allowJs',
-    'true',
     '--rootDir',
     join(pkg.dir, 'src'),
     '--outDir',
@@ -373,6 +386,46 @@ export function stagePackage(pkg, options) {
   const binDir = join(pkg.dir, 'bin');
   if (existsSync(binDir)) {
     cpSync(binDir, join(stageDir, 'bin'), { recursive: true });
+  }
+
+  // verify staged dist/index.js is not a self-referencing stub and can be parsed
+  const smokeEntry = join(distDir, 'index.js');
+  if (existsSync(smokeEntry)) {
+    const content = readFileSync(smokeEntry, 'utf8');
+    const nonCommentLines = content
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0 && !l.startsWith('//'));
+    if (nonCommentLines.length === 1 && nonCommentLines[0].includes("from './index.js'")) {
+      throw new Error(
+        `Stage smoke test failed for ${pkg.name}: dist/index.js is a self-referencing stub`
+      );
+    }
+
+    const smokeScript = join(stageDir, '.smoke-test.mjs');
+    writeFileSync(
+      smokeScript,
+      `import('${pathToFileURL(smokeEntry).href}').then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); })\n`,
+      'utf8'
+    );
+    const importTest = spawnSync('node', [smokeScript], {
+      cwd: stageDir,
+      encoding: 'utf8',
+      shell: IS_WINDOWS,
+      timeout: 10000,
+    });
+    rmSync(smokeScript, { force: true });
+    if (importTest.status !== 0) {
+      const stderr = importTest.stderr || '';
+      const isMissingDep =
+        stderr.includes('ERR_MODULE_NOT_FOUND') || stderr.includes('ERR_PACKAGE_PATH_NOT_EXPORTED');
+      if (!isMissingDep) {
+        const errors = collectNonEmptyLines(`${importTest.stdout}\n${stderr}`);
+        throw new Error(
+          `Stage smoke test failed for ${pkg.name}: cannot import dist/index.js\n${errors.join('\n')}`
+        );
+      }
+    }
   }
 
   let publishResult = null;
@@ -441,6 +494,11 @@ export function createPublishManifest(pkg, options) {
   manifest.license ??= readRootLicenseId();
   const files = ['dist', 'README.md', 'LICENSE'];
   if (manifest.bin && !files.includes('bin')) files.push('bin');
+  if (pkg.manifest.files && pkg.manifest.files.length > 0) {
+    console.warn(
+      `[${pkg.name}] package.json#files overridden by publish script: ${JSON.stringify(pkg.manifest.files)} -> ${JSON.stringify(files)}`
+    );
+  }
   manifest.files = files;
   manifest.publishConfig = {
     access,
