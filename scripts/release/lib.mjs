@@ -281,19 +281,20 @@ export function recommendedPackages(packages) {
 }
 
 /**
- * Build prerequisite packages that declare their own build step.
+ * Preflight build for packages that declare their own build step.
  *
  * Only packages with BOTH:
  *   1. exports pointing to dist/ (pkg.distExport)
  *   2. A scripts.build in their package.json
  *
- * ...are built here before staging. All other packages rely on the
- * unified stagePackage tsc build.
+ * ...are built here as a preflight check. Note: stagePackage still
+ * runs its own unified tsc build afterwards; this function does NOT
+ * consume or copy the prerequisite build output. Its purpose is to
+ * surface build diagnostics early, before staging begins.
  *
- * This is the escape hatch for packages that need a custom build
- * pipeline (e.g. types with a dedicated tsconfig). Packages that
- * can be built by the standard tsc invocation should NOT declare
- * scripts.build -- they will be handled uniformly by stagePackage.
+ * Packages that can be built by the standard tsc invocation should
+ * NOT declare scripts.build -- they will be handled uniformly by
+ * stagePackage.
  */
 export function buildPrerequisitePackages(packages) {
   const prerequisites = packages.filter(
