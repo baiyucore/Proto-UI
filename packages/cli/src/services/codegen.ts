@@ -74,6 +74,9 @@ export function renderRootIndex(componentsByHost: Record<string, string[]>): str
 
   for (const host of Object.keys(componentsByHost).sort()) {
     const adapter = getAdapter(host);
+    if (!adapter) {
+      throw new Error(`unsupported host "${host}" in Proto UI config`);
+    }
     const componentIds = componentsByHost[host] ?? [];
 
     for (const componentId of componentIds) {
@@ -89,7 +92,7 @@ export function renderRootIndex(componentsByHost: Record<string, string[]>): str
 
         const exportName = host === 'react' ? item.reactExport : item.vueExport;
         lines.push(
-          `export { ${exportName} as ${adapter?.rootAliasPrefix}${exportName} } from './${host}';`
+          `export { ${exportName} as ${adapter.rootAliasPrefix}${exportName} } from './${host}';`
         );
         wrote = true;
       }
