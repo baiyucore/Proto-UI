@@ -5,9 +5,8 @@ import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
-const distEntry = path.join(dir, '../dist/index.js');
-const srcEntry = path.join(dir, '../src/index.js');
-const entryUrl = pathToFileURL(existsSync(distEntry) ? distEntry : srcEntry).href;
+const entry = path.join(dir, '../dist/index.js');
+const entryUrl = pathToFileURL(entry).href;
 
 const { run } = await import(entryUrl);
 

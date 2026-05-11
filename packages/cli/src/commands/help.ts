@@ -22,7 +22,7 @@ Examples:
   proto-ui add wc shadcn-button --no-install
 `;
 
-const COMMAND_HELP = {
+const COMMAND_HELP: Record<string, string> = {
   init: `proto-ui init
 
 Usage:
@@ -61,11 +61,11 @@ Behavior:
 `,
 };
 
-export function printHelp() {
+export function printHelp(): void {
   console.log(HELP_TEXT);
 }
 
-export function printCommandHelp(command) {
+export function printCommandHelp(command: string): void {
   const text = COMMAND_HELP[command];
   if (!text) {
     printHelp();

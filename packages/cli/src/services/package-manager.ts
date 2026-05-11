@@ -3,24 +3,35 @@ import path from 'node:path';
 
 import { fileExists, readJsonFile } from '../utils/fs.js';
 
-export async function detectPackageManager(cwd) {
+export type PackageManager = 'npm' | 'pnpm' | 'yarn';
+
+export async function detectPackageManager(cwd: string): Promise<PackageManager> {
   if (await fileExists(path.join(cwd, 'pnpm-lock.yaml'))) return 'pnpm';
   if (await fileExists(path.join(cwd, 'yarn.lock'))) return 'yarn';
   return 'npm';
 }
 
-export function formatInstallCommand(pm, packages, { dev = false } = {}) {
+export function formatInstallCommand(
+  pm: PackageManager,
+  packages: string[],
+  { dev = false }: { dev?: boolean } = {}
+): string {
   const list = packages.join(' ');
   if (pm === 'pnpm') return dev ? `pnpm add -D ${list}` : `pnpm add ${list}`;
   if (pm === 'yarn') return dev ? `yarn add -D ${list}` : `yarn add ${list}`;
   return dev ? `npm install --save-dev ${list}` : `npm install --save ${list}`;
 }
 
-export function installPackages(pm, cwd, packages, { dev = false } = {}) {
+export function installPackages(
+  pm: PackageManager,
+  cwd: string,
+  packages: string[],
+  { dev = false }: { dev?: boolean } = {}
+): void {
   if (packages.length === 0) return;
 
   let cmd = 'npm';
-  let args = ['install', '--save', ...packages];
+  let args: string[];
   if (pm === 'pnpm') {
     cmd = 'pnpm';
     args = dev ? ['add', '-D', ...packages] : ['add', ...packages];
@@ -29,6 +40,8 @@ export function installPackages(pm, cwd, packages, { dev = false } = {}) {
     args = dev ? ['add', '-D', ...packages] : ['add', ...packages];
   } else if (dev) {
     args = ['install', '--save-dev', ...packages];
+  } else {
+    args = ['install', '--save', ...packages];
   }
 
   // Windows: spawnSync needs shell:true to resolve npm/yarn/pnpm via .cmd shims.
@@ -45,18 +58,25 @@ export function installPackages(pm, cwd, packages, { dev = false } = {}) {
   }
 }
 
-export async function readProjectPackageJson(cwd) {
+export async function readProjectPackageJson(cwd: string): Promise<Record<string, unknown> | null> {
   const packageJsonPath = path.join(cwd, 'package.json');
   if (!(await fileExists(packageJsonPath))) return null;
-  return readJsonFile(packageJsonPath);
+  return readJsonFile(packageJsonPath) as Promise<Record<string, unknown>>;
 }
 
-export function hasPackage(projectPkg, packageName) {
+export function hasPackage(
+  projectPkg: Record<string, unknown> | null,
+  packageName: string
+): boolean {
   if (!projectPkg) return false;
+  const deps = projectPkg.dependencies as Record<string, unknown> | undefined;
+  const devDeps = projectPkg.devDependencies as Record<string, unknown> | undefined;
+  const peerDeps = projectPkg.peerDependencies as Record<string, unknown> | undefined;
+  const optDeps = projectPkg.optionalDependencies as Record<string, unknown> | undefined;
   return Boolean(
-    projectPkg.dependencies?.[packageName] ||
-    projectPkg.devDependencies?.[packageName] ||
-    projectPkg.peerDependencies?.[packageName] ||
-    projectPkg.optionalDependencies?.[packageName]
+    deps?.[packageName] ||
+    devDeps?.[packageName] ||
+    peerDeps?.[packageName] ||
+    optDeps?.[packageName]
   );
 }

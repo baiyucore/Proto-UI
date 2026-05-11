@@ -14,16 +14,17 @@ import { ensureRuntimePackages } from '../services/runtime-check.js';
 import { isInteractiveDisabled, parseArgv } from '../utils/args.js';
 import { relativeToCwd } from '../utils/fs.js';
 
-export async function runAddCommand(argv) {
+export async function runAddCommand(argv: string[]): Promise<void> {
   const { options, positionals } = parseArgv(argv);
   const cwd = process.cwd();
   const interactive =
     !isInteractiveDisabled(options) && process.stdin.isTTY && process.stdout.isTTY;
-  const rootDir = options['root-dir'];
+  const rootDir = options['root-dir'] as string | undefined;
 
-  let [hostInput, componentInput] = positionals;
-  if (!hostInput && interactive) hostInput = await promptForHost();
-  if (!componentInput && interactive) componentInput = await promptForComponent();
+  let hostInput: string | undefined = positionals[0];
+  let componentInput: string | undefined = positionals[1];
+  if (!hostInput && interactive) hostInput = (await promptForHost()) ?? undefined;
+  if (!componentInput && interactive) componentInput = (await promptForComponent()) ?? undefined;
 
   const host = normalizeHost(hostInput);
   if (!host) {
@@ -42,6 +43,11 @@ export async function runAddCommand(argv) {
   }
 
   const adapter = getAdapter(host);
+  if (!adapter) {
+    // unreachable: normalizeHost only returns ids drawn from ADAPTER_REGISTRY,
+    // so getAdapter on its result must succeed. defensive guard for TS strict.
+    throw new Error(`unsupported host "${host}"`);
+  }
   const { config, paths } = await loadCliConfig(cwd, rootDir);
   if (!config) {
     throw new Error(

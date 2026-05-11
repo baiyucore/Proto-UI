@@ -9,7 +9,7 @@ const cancelHandler = {
   },
 };
 
-export async function promptForStylesEnabled(defaultValue = true) {
+export async function promptForStylesEnabled(defaultValue = true): Promise<boolean> {
   const response = await prompts(
     {
       type: 'confirm',
@@ -22,7 +22,7 @@ export async function promptForStylesEnabled(defaultValue = true) {
   return Boolean(response.enabled);
 }
 
-export async function promptForHost() {
+export async function promptForHost(): Promise<string | null> {
   const response = await prompts(
     {
       type: 'select',
@@ -33,10 +33,10 @@ export async function promptForHost() {
     },
     cancelHandler
   );
-  return response.host ?? null;
+  return (response.host as string | undefined) ?? null;
 }
 
-export async function promptForComponent() {
+export async function promptForComponent(): Promise<string | null> {
   const response = await prompts(
     {
       type: 'select',
@@ -47,5 +47,5 @@ export async function promptForComponent() {
     },
     cancelHandler
   );
-  return response.component ?? null;
+  return (response.component as string | undefined) ?? null;
 }

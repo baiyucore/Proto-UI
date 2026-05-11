@@ -1,6 +1,9 @@
-export function parseArgv(argv) {
-  const options = {};
-  const positionals = [];
+export function parseArgv(argv: string[]): {
+  options: Record<string, string | boolean>;
+  positionals: string[];
+} {
+  const options: Record<string, string | boolean> = {};
+  const positionals: string[] = [];
   let stop = false;
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -51,15 +54,19 @@ export function parseArgv(argv) {
   return { options, positionals };
 }
 
-export function isHelpToken(token) {
+export function isHelpToken(token: string): boolean {
   return token === '--help' || token === '-h' || token === '-help' || token === 'help';
 }
 
-export function isInteractiveDisabled(options) {
+export function isInteractiveDisabled(options: Record<string, string | boolean>): boolean {
   return options.interactive === false || process.env.CI === 'true' || process.env.CI === '1';
 }
 
-export function resolveBooleanOption(options, key, fallback = false) {
-  if (typeof options[key] === 'boolean') return options[key];
+export function resolveBooleanOption(
+  options: Record<string, string | boolean>,
+  key: string,
+  fallback = false
+): boolean {
+  if (typeof options[key] === 'boolean') return options[key] as boolean;
   return fallback;
 }

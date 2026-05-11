@@ -4,10 +4,29 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
-const BIN_PATH = path.resolve(TEST_DIR, '../bin/proto-ui.js');
+const CLI_DIR = path.resolve(TEST_DIR, '..');
+const BIN_PATH = path.join(CLI_DIR, 'bin/proto-ui.js');
+
+beforeAll(() => {
+  // bin/proto-ui.js imports ../dist/index.js, so the cli must be compiled
+  // before any spawnSync call below. building unconditionally here keeps
+  // the test hermetic — `pnpm -s test` from the repo root works even when
+  // no one has run `pnpm --filter @proto.ui/cli build` first.
+  const result = spawnSync('npm', ['run', 'build'], {
+    cwd: CLI_DIR,
+    encoding: 'utf8',
+    stdio: 'pipe',
+    shell: process.platform === 'win32',
+  });
+  if (result.status !== 0) {
+    throw new Error(
+      `Failed to build @proto.ui/cli before tests:\n${result.stdout}\n${result.stderr}`
+    );
+  }
+}, 120_000);
 
 function runCli(cwd: string, args: string[]) {
   return spawnSync('node', [BIN_PATH, ...args], {
