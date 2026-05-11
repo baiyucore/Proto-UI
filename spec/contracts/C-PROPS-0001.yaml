@@ -9,6 +9,19 @@ sources:
   - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
     sections:
       - '1. 基本定位'
+  - path: apps/www/src/content/docs/zh-cn/whitepaper/information-flow-model.md
+    sections:
+      - Maker ↔ Component
+  - path: apps/www/src/content/docs/en/whitepaper/information-flow-model.md
+    sections:
+      - Maker ↔ Component
+refines:
+  contracts:
+    - id: C-CORE-CHANNEL-0001
+      anchors:
+        - C-CORE-CHANNEL-0001-A
+        - C-CORE-CHANNEL-0001-C
+      note: Props is the Maker-to-component configuration channel currently admitted into Proto UI's portable channel model.
 revisions:
   - version: 0.1.0
     change: introduced

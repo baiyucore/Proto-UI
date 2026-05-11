@@ -9,7 +9,7 @@ import {
   type SpecSnapshotDiff,
 } from '@proto.ui/spec-engine';
 import { buildSpecGraph, type SpecGraph } from '@proto.ui/spec-graph';
-import type { SpecEntity } from '@proto.ui/spec-schema';
+import { SPEC_RELATION_KINDS, type SpecEntity } from '@proto.ui/spec-schema';
 
 import './styles.css';
 
@@ -25,14 +25,28 @@ const UI_TEXT = {
     entities: 'Entities',
     graphNodes: 'Graph Nodes',
     graphEdges: 'Graph Edges',
+    criteria: 'Criteria',
+    openQuestions: 'Open Questions',
     issues: 'Issues',
     id: 'ID',
     status: 'Status',
     since: 'Since',
     noEntity: 'No entity selected.',
-    relates: 'Relates',
-    requires: 'Requires',
-    verifies: 'Verifies',
+    statement: 'Statement',
+    rationale: 'Rationale',
+    blocks: 'Blocks',
+    note: 'Note',
+    relationships: 'Relationships',
+    relationKinds: {
+      relates: 'Relates',
+      dependsOn: 'Depends On',
+      refines: 'Refines',
+      satisfies: 'Satisfies',
+      verifies: 'Verifies',
+      explains: 'Explains',
+      requires: 'Requires',
+      owns: 'Owns',
+    },
     semanticDiff: 'Semantic Diff',
     added: 'Added',
     removed: 'Removed',
@@ -43,6 +57,7 @@ const UI_TEXT = {
     noActiveEdges: 'No active edges in this snapshot.',
     validation: 'Validation',
     noIssues: 'No validation issues.',
+    noOpenQuestions: 'No unresolved work items.',
     file: 'File',
     language: 'Language',
     entityTypes: {
@@ -64,14 +79,28 @@ const UI_TEXT = {
     entities: '实体',
     graphNodes: '图节点',
     graphEdges: '图关系',
+    criteria: '判定准则',
+    openQuestions: '断口',
     issues: '问题',
     id: 'ID',
     status: '状态',
     since: '引入版本',
     noEntity: '未选择实体。',
-    relates: '关联',
-    requires: '依赖',
-    verifies: '验证',
+    statement: '契约陈述',
+    rationale: '理由',
+    blocks: '阻塞项',
+    note: '备注',
+    relationships: '实体关系',
+    relationKinds: {
+      relates: '关联',
+      dependsOn: '依赖',
+      refines: '细化',
+      satisfies: '满足',
+      verifies: '验证',
+      explains: '解释',
+      requires: '要求',
+      owns: '拥有',
+    },
     semanticDiff: '语义差异',
     added: '新增',
     removed: '移除',
@@ -82,6 +111,7 @@ const UI_TEXT = {
     noActiveEdges: '当前快照没有有效关系。',
     validation: '校验',
     noIssues: '没有校验问题。',
+    noOpenQuestions: '没有待解决断口。',
     file: '文件',
     language: '语言',
     entityTypes: {
@@ -199,6 +229,14 @@ function WorkspaceView(props: {
     () => groupEntitiesByType(props.snapshot.entities),
     [props.snapshot.entities]
   );
+  const criteriaCount = props.snapshot.entities.reduce(
+    (count, entity) => count + entity.criteria.length,
+    0
+  );
+  const openQuestionCount = props.snapshot.entities.reduce(
+    (count, entity) => count + entity.openQuestions.length,
+    0
+  );
 
   return (
     <main className="workspace-shell">
@@ -269,6 +307,7 @@ function WorkspaceView(props: {
                 >
                   <strong>{entity.id}</strong>
                   <span>{entity.title}</span>
+                  {entity.openQuestions.length > 0 ? <em>{entity.openQuestions.length}</em> : null}
                 </button>
               ))}
             </section>
@@ -281,6 +320,12 @@ function WorkspaceView(props: {
           <SummaryMetric label={props.t.entities} value={props.snapshot.entities.length} />
           <SummaryMetric label={props.t.graphNodes} value={props.graph.nodes.length} />
           <SummaryMetric label={props.t.graphEdges} value={props.graph.edges.length} />
+          <SummaryMetric label={props.t.criteria} value={criteriaCount} />
+          <SummaryMetric
+            label={props.t.openQuestions}
+            value={openQuestionCount}
+            tone={openQuestionCount > 0 ? 'warn' : 'ok'}
+          />
           <SummaryMetric
             label={props.t.issues}
             value={props.dataset.issues.length}
@@ -289,9 +334,20 @@ function WorkspaceView(props: {
         </header>
 
         <section className="main-grid">
-          <EntityInspector entity={props.selectedEntity} t={props.t} />
+          <EntityInspector entity={props.selectedEntity} locale={props.locale} t={props.t} />
           <DiffPanel diff={props.diff} t={props.t} />
-          <GraphPanel graph={props.graph} t={props.t} />
+          <GraphPanel
+            graph={props.graph}
+            selectedId={props.selectedId}
+            t={props.t}
+            onSelectEntity={props.onSelectEntity}
+          />
+          <OpenQuestionsPanel
+            entities={props.snapshot.entities}
+            locale={props.locale}
+            t={props.t}
+            onSelectEntity={props.onSelectEntity}
+          />
           <IssuesPanel issues={props.dataset.issues} t={props.t} />
         </section>
       </section>
@@ -308,7 +364,7 @@ function SummaryMetric(props: { label: string; value: number; tone?: 'ok' | 'war
   );
 }
 
-function EntityInspector(props: { entity: SpecEntity | null; t: UiText }) {
+function EntityInspector(props: { entity: SpecEntity | null; locale: Locale; t: UiText }) {
   if (!props.entity) {
     return <section className="panel">{props.t.noEntity}</section>;
   }
@@ -336,9 +392,64 @@ function EntityInspector(props: { entity: SpecEntity | null; t: UiText }) {
         </div>
       </dl>
       {entity.summary ? <p className="summary">{entity.summary}</p> : null}
-      <RelationList title={props.t.relates} relations={entity.relates} />
-      <RelationList title={props.t.requires} relations={entity.requires} />
-      <RelationList title={props.t.verifies} relations={entity.verifies} />
+      {entity.statement ? (
+        <section className="detail-section">
+          <h3>{props.t.statement}</h3>
+          <p>{formatLocalizedText(entity.statement, props.locale)}</p>
+        </section>
+      ) : null}
+      {entity.criteria.length > 0 ? (
+        <section className="detail-section">
+          <h3>{props.t.criteria}</h3>
+          <div className="criteria-list">
+            {entity.criteria.map((criterion) => (
+              <article className="criterion-row" key={criterion.id}>
+                <strong>{criterion.id}</strong>
+                <p>{formatLocalizedText(criterion.text, props.locale)}</p>
+                {criterion.rationale ? (
+                  <p className="rationale">
+                    <span>{props.t.rationale}: </span>
+                    {formatLocalizedText(criterion.rationale, props.locale)}
+                  </p>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+      {entity.openQuestions.length > 0 ? (
+        <section className="detail-section">
+          <h3>{props.t.openQuestions}</h3>
+          <div className="issue-list compact">
+            {entity.openQuestions.map((question) => (
+              <article className="issue-row" key={question.id}>
+                <p className="issue-file">{question.id}</p>
+                <p>{formatLocalizedText(question.question, props.locale)}</p>
+                {question.context ? (
+                  <p className="issue-context">
+                    {formatLocalizedText(question.context, props.locale)}
+                  </p>
+                ) : null}
+                {question.blocks.length > 0 ? (
+                  <p className="blocked-items">
+                    {props.t.blocks}: {question.blocks.join(', ')}
+                  </p>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+      <section className="detail-section">
+        <h3>{props.t.relationships}</h3>
+        {SPEC_RELATION_KINDS.map((relationKind) => (
+          <RelationList
+            key={relationKind}
+            title={props.t.relationKinds[relationKind]}
+            relations={entity[relationKind]}
+          />
+        ))}
+      </section>
     </section>
   );
 }
@@ -358,7 +469,9 @@ function RelationList(props: { title: string; relations: SpecEntity['relates'] }
       <div className="relation-list">
         {entries.map(({ kind, target }) => (
           <span className="relation-chip" key={`${kind}:${target.id}`}>
-            {kind}: {target.id}
+            <strong>{target.id}</strong>
+            {target.anchors?.length ? <small>{target.anchors.join(', ')}</small> : null}
+            {target.note ? <small>{target.note}</small> : null}
           </span>
         ))}
       </div>
@@ -409,26 +522,141 @@ function DiffColumn(props: { title: string; entities: SpecEntity[]; emptyLabel: 
   );
 }
 
-function GraphPanel(props: { graph: SpecGraph; t: UiText }) {
+function GraphPanel(props: {
+  graph: SpecGraph;
+  selectedId: string | null;
+  t: UiText;
+  onSelectEntity(id: string): void;
+}) {
+  const layout = useMemo(() => createGraphLayout(props.graph), [props.graph]);
+  const highlightedIds = getHighlightedGraphIds(props.graph, props.selectedId);
+
   return (
     <section className="panel graph-panel">
       <div className="panel-heading">
         <p className="eyebrow">{props.t.explicitRelations}</p>
         <h2>{props.t.graphProjection}</h2>
       </div>
-      <div className="edge-list">
+      <div className="graph-canvas" aria-label={props.t.graphProjection}>
         {props.graph.edges.length === 0 ? (
           <p className="empty">{props.t.noActiveEdges}</p>
         ) : (
-          props.graph.edges.map((edge) => (
-            <div className="edge-row" key={edge.id}>
-              <span>{edge.from}</span>
-              <strong>{edge.kind}</strong>
-              <span>{edge.to}</span>
-            </div>
-          ))
+          <svg role="img" viewBox="0 0 720 520">
+            <defs>
+              <marker
+                id="arrowhead"
+                markerHeight="6"
+                markerWidth="8"
+                orient="auto"
+                refX="7"
+                refY="3"
+              >
+                <path d="M0,0 L8,3 L0,6 Z" />
+              </marker>
+            </defs>
+            <g className="graph-edges">
+              {props.graph.edges.map((edge) => {
+                const from = layout.get(edge.from);
+                const to = layout.get(edge.to);
+                if (!from || !to) return null;
+                const active =
+                  props.selectedId === null ||
+                  edge.from === props.selectedId ||
+                  edge.to === props.selectedId;
+
+                return (
+                  <g className={active ? 'active' : ''} key={edge.id}>
+                    <line markerEnd="url(#arrowhead)" x1={from.x} y1={from.y} x2={to.x} y2={to.y} />
+                    <text x={(from.x + to.x) / 2} y={(from.y + to.y) / 2}>
+                      {edge.kind}
+                    </text>
+                  </g>
+                );
+              })}
+            </g>
+            <g className="graph-nodes">
+              {props.graph.nodes.map((node) => {
+                const point = layout.get(node.id);
+                if (!point) return null;
+                const active = highlightedIds.has(node.id);
+
+                return (
+                  <g
+                    className={`graph-node type-${node.type} ${active ? 'active' : ''}`}
+                    key={node.id}
+                    role="button"
+                    tabIndex={0}
+                    transform={`translate(${point.x} ${point.y})`}
+                    onClick={() => props.onSelectEntity(node.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        props.onSelectEntity(node.id);
+                      }
+                    }}
+                  >
+                    <circle r={node.id === props.selectedId ? 28 : 22} />
+                    <title>{node.id}</title>
+                    <text>{compactSpecId(node.id)}</text>
+                  </g>
+                );
+              })}
+            </g>
+          </svg>
         )}
       </div>
+      <div className="edge-list">
+        {props.graph.edges.slice(0, 12).map((edge) => (
+          <div className="edge-row" key={edge.id}>
+            <span>{edge.from}</span>
+            <strong>{edge.kind}</strong>
+            <span>{edge.to}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function OpenQuestionsPanel(props: {
+  entities: SpecEntity[];
+  locale: Locale;
+  t: UiText;
+  onSelectEntity(id: string): void;
+}) {
+  const questions = props.entities.flatMap((entity) =>
+    entity.openQuestions.map((question) => ({ entity, question }))
+  );
+
+  return (
+    <section className="panel work-panel">
+      <div className="panel-heading">
+        <p className="eyebrow">WIP</p>
+        <h2>
+          {props.t.openQuestions}
+          <span>{questions.length}</span>
+        </h2>
+      </div>
+      {questions.length === 0 ? (
+        <p className="empty">{props.t.noOpenQuestions}</p>
+      ) : (
+        <div className="issue-list">
+          {questions.map(({ entity, question }) => (
+            <article className="issue-row" key={question.id}>
+              <button type="button" onClick={() => props.onSelectEntity(entity.id)}>
+                {entity.id}
+              </button>
+              <p className="issue-file">{question.id}</p>
+              <p>{formatLocalizedText(question.question, props.locale)}</p>
+              {question.blocks.length > 0 ? (
+                <p className="blocked-items">
+                  {props.t.blocks}: {question.blocks.join(', ')}
+                </p>
+              ) : null}
+            </article>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
@@ -469,6 +697,78 @@ function groupEntitiesByType(entities: SpecEntity[]): Record<string, SpecEntity[
     groups[entity.type].push(entity);
     return groups;
   }, {});
+}
+
+function formatLocalizedText(
+  value: string | { en?: string | undefined; 'zh-CN'?: string | undefined },
+  locale: Locale
+): string {
+  if (typeof value === 'string') return value;
+
+  if (locale === 'zh') {
+    return value['zh-CN'] ?? value.en ?? '';
+  }
+
+  return value.en ?? value['zh-CN'] ?? '';
+}
+
+function createGraphLayout(graph: SpecGraph): Map<string, { x: number; y: number }> {
+  const center = { x: 360, y: 260 };
+  const radiusX = 270;
+  const radiusY = 185;
+  const byType = groupGraphNodesByType(graph.nodes);
+  const typeOrder = Object.keys(byType).sort();
+  const layout = new Map<string, { x: number; y: number }>();
+
+  if (graph.nodes.length === 1) {
+    layout.set(graph.nodes[0].id, center);
+    return layout;
+  }
+
+  let cursor = 0;
+
+  for (const type of typeOrder) {
+    const nodes = byType[type];
+
+    for (const node of nodes) {
+      const angle = (cursor / graph.nodes.length) * Math.PI * 2 - Math.PI / 2;
+      layout.set(node.id, {
+        x: center.x + Math.cos(angle) * radiusX,
+        y: center.y + Math.sin(angle) * radiusY,
+      });
+      cursor += 1;
+    }
+  }
+
+  return layout;
+}
+
+function groupGraphNodesByType(nodes: SpecGraph['nodes']): Record<string, SpecGraph['nodes']> {
+  return nodes.reduce<Record<string, SpecGraph['nodes']>>((groups, node) => {
+    groups[node.type] ??= [];
+    groups[node.type].push(node);
+    return groups;
+  }, {});
+}
+
+function getHighlightedGraphIds(graph: SpecGraph, selectedId: string | null): Set<string> {
+  if (!selectedId) return new Set(graph.nodes.map((node) => node.id));
+
+  const ids = new Set([selectedId]);
+
+  for (const edge of graph.edges) {
+    if (edge.from === selectedId) ids.add(edge.to);
+    if (edge.to === selectedId) ids.add(edge.from);
+  }
+
+  return ids;
+}
+
+function compactSpecId(id: string): string {
+  const parts = id.split('-');
+  if (parts.length <= 3) return id;
+
+  return `${parts[0]}-${parts.at(-2)}-${parts.at(-1)}`;
 }
 
 createRoot(document.getElementById('root')!).render(

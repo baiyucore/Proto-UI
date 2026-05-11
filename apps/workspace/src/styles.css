@@ -39,8 +39,11 @@ select {
 }
 
 .sidebar {
+  position: sticky;
+  top: 0;
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  min-height: 0;
   flex-direction: column;
   gap: 24px;
   border-right: 1px solid #d9ded8;
@@ -138,6 +141,7 @@ h1 {
 .entity-nav {
   display: grid;
   gap: 22px;
+  min-height: 0;
   overflow: auto;
   padding-right: 4px;
 }
@@ -162,6 +166,7 @@ h1 {
 }
 
 .entity-link {
+  position: relative;
   display: grid;
   width: 100%;
   gap: 4px;
@@ -184,8 +189,24 @@ h1 {
 }
 
 .entity-link span {
+  padding-right: 24px;
   color: #5b6862;
   font-size: 13px;
+}
+
+.entity-link em {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  min-width: 20px;
+  border-radius: 6px;
+  background: #9b5b16;
+  color: #fff8ec;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: center;
 }
 
 .content {
@@ -195,7 +216,7 @@ h1 {
 
 .topbar {
   display: grid;
-  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
   margin-bottom: 18px;
 }
@@ -287,15 +308,59 @@ h1 {
   line-height: 1.55;
 }
 
+.detail-section {
+  margin-top: 20px;
+}
+
 .relations {
-  margin-top: 18px;
+  margin-top: 12px;
 }
 
 .relations h3,
+.detail-section h3,
 .diff-column h3 {
   margin: 0 0 8px;
   color: #44524b;
   font-size: 14px;
+}
+
+.detail-section > p {
+  margin: 0;
+  color: #3e4b45;
+  line-height: 1.55;
+}
+
+.criteria-list {
+  display: grid;
+  gap: 10px;
+}
+
+.criterion-row {
+  border-left: 3px solid #5c7869;
+  background: #f6f8f6;
+  padding: 10px 12px;
+}
+
+.criterion-row strong {
+  color: #314139;
+  font-size: 13px;
+}
+
+.criterion-row p {
+  margin: 6px 0 0;
+  color: #33423b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.criterion-row .rationale {
+  color: #617069;
+  font-size: 13px;
+}
+
+.criterion-row .rationale span {
+  color: #44524b;
+  font-weight: 700;
 }
 
 .relation-list {
@@ -306,12 +371,20 @@ h1 {
 
 .relation-chip,
 .diff-item {
-  border-radius: 999px;
+  display: grid;
+  gap: 3px;
+  border-radius: 6px;
   background: #edf3f1;
   color: #26342e;
   padding: 6px 9px;
   font-size: 13px;
   font-weight: 700;
+}
+
+.relation-chip small {
+  color: #617069;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .diff-grid {
@@ -340,7 +413,9 @@ h1 {
 .edge-list {
   display: grid;
   gap: 8px;
-  margin-top: 18px;
+  max-height: 220px;
+  margin-top: 14px;
+  overflow: auto;
 }
 
 .edge-row {
@@ -362,6 +437,88 @@ h1 {
   color: #4c685a;
 }
 
+.graph-canvas {
+  margin-top: 18px;
+  overflow: hidden;
+  border: 1px solid #e1e5e1;
+  border-radius: 6px;
+  background: #f8faf8;
+}
+
+.graph-canvas svg {
+  display: block;
+  width: 100%;
+  min-height: 360px;
+}
+
+.graph-canvas marker path {
+  fill: #8d9c95;
+}
+
+.graph-edges line {
+  stroke: #c8d2cc;
+  stroke-width: 1.3;
+}
+
+.graph-edges text {
+  fill: #7a8982;
+  font-size: 10px;
+  opacity: 0;
+  paint-order: stroke;
+  stroke: #f8faf8;
+  stroke-width: 4px;
+}
+
+.graph-edges .active line {
+  stroke: #517564;
+  stroke-width: 1.8;
+}
+
+.graph-edges .active text {
+  opacity: 1;
+}
+
+.graph-node {
+  cursor: pointer;
+  outline: none;
+}
+
+.graph-node circle {
+  fill: #ffffff;
+  stroke: #7f9389;
+  stroke-width: 2;
+}
+
+.graph-node text {
+  dominant-baseline: middle;
+  fill: #22302a;
+  font-size: 10px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+
+.graph-node:not(.active) {
+  opacity: 0.35;
+}
+
+.graph-node.active circle {
+  fill: #eef6f1;
+  stroke: #2b6d4f;
+}
+
+.graph-node.type-module circle {
+  stroke: #8662a8;
+}
+
+.graph-node.type-test circle {
+  stroke: #9b5b16;
+}
+
+.graph-node.type-decision circle {
+  stroke: #3f6f9b;
+}
+
+.work-panel,
 .issues-panel {
   grid-column: 2;
 }
@@ -379,6 +536,10 @@ h1 {
   padding: 10px;
 }
 
+.issue-list.compact {
+  margin-top: 0;
+}
+
 .issue-row p {
   margin: 0;
   color: #4d3820;
@@ -392,15 +553,39 @@ h1 {
   font-weight: 700;
 }
 
+.issue-row button {
+  margin: 0 0 6px;
+  border: 0;
+  border-radius: 6px;
+  background: #f0e3cf;
+  color: #4d3820;
+  cursor: pointer;
+  padding: 4px 7px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.issue-row .issue-context,
+.issue-row .blocked-items {
+  margin-top: 6px;
+  color: #7e5f35;
+}
+
 @media (max-width: 900px) {
   .workspace-shell {
     grid-template-columns: 1fr;
   }
 
   .sidebar {
+    position: static;
+    height: auto;
     min-height: auto;
     border-right: 0;
     border-bottom: 1px solid #d9ded8;
+  }
+
+  .entity-nav {
+    max-height: 420px;
   }
 
   .topbar,
@@ -412,6 +597,7 @@ h1 {
     grid-row: auto;
   }
 
+  .work-panel,
   .issues-panel {
     grid-column: auto;
   }
