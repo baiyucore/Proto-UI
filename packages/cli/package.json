@@ -33,7 +33,6 @@
     "proto-ui",
     "cli",
     "components",
-    "tailwind",
     "tokens"
   ],
   "scripts": {

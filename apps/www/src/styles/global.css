@@ -1,4 +1,5 @@
 @import './tailwindcss.css';
+@import './proto-ui-style.css';
 @import './search-trigger.css';
 @import './markdown.css';
 @import './sidebar.css';

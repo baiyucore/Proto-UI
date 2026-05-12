@@ -52,11 +52,15 @@ if (host.getAttribute('tabindex') !== '0') {
   );
 }
 const className = host.getAttribute('class') || '';
-if (!className.includes('group/button')) {
+const styleName = host.getAttribute('data-pui-style') || '';
+if (!styleName.includes('group/button')) {
   throw new Error(
-    'vue smoke: Button host missing prototype tokens (feedback.style did not stamp); host=' +
+    'vue smoke: Button host missing prototype tokens (feedback.style did not stamp data-pui-style); host=' +
       host.outerHTML
   );
+}
+if (className.includes('group/button')) {
+  throw new Error('vue smoke: Button leaked prototype token into class; host=' + host.outerHTML);
 }
 if (!className.includes('user-added')) {
   throw new Error('vue smoke: Button host missing user class; host=' + host.outerHTML);

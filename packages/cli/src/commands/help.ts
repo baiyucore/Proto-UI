@@ -9,10 +9,10 @@ Core commands:
   init              Create ./proto-ui, write config, and optionally generate style preset files
   add               Install adapter/prototype packages and generate component facade exports
 
-Legacy style commands (still supported):
+Style commands:
   proto-ui shadcn --styles-dir ./src/styles
-  proto-ui tokens --input ./packages/prototypes --out ./src/styles/prototype-tokens.generated.css
-  proto-ui tailwindcss --out ./src/styles/tailwindcss.css
+  proto-ui tokens --input ./packages/prototypes --out ./src/styles/proto-ui-tokens.generated.css
+  proto-ui style --out ./src/styles/proto-ui-style.css
   proto-ui theme shadcn --out ./src/styles/shadcn-theme.css
 
 Examples:

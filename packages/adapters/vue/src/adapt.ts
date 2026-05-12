@@ -406,8 +406,10 @@ export function createVueAdapter(runtime: VueRuntime) {
               ref: (el: HTMLElement | null) => {
                 rootRef.value = el;
               },
-              class: mergeHostClass([props.hostClass, ctx.attrs.class], hostTokens.value),
+              class: mergeHostClass([props.hostClass, ctx.attrs.class]),
               style: props.hostStyle,
+              'data-pui-root': '',
+              'data-pui-style': serializeStyleTokens(hostTokens.value),
               'data-demo-ref': ctx.attrs['data-demo-ref'] as string | undefined,
             },
             rendered as any
@@ -418,8 +420,8 @@ export function createVueAdapter(runtime: VueRuntime) {
   };
 }
 
-function mergeHostClass(input: unknown, hostTokens: string[]) {
-  const values = [...(Array.isArray(input) ? input : [input]), hostTokens.join(' ')]
+function mergeHostClass(input: unknown) {
+  const values = (Array.isArray(input) ? input : [input])
     .map((value: any) => value ?? '')
     .filter((value: any) => {
       if (Array.isArray(value)) return value.length > 0;
@@ -451,6 +453,10 @@ function mergeHostClass(input: unknown, hostTokens: string[]) {
   }
 
   return out;
+}
+
+function serializeStyleTokens(tokens: string[]) {
+  return tokens.length > 0 ? tokens.join(' ') : undefined;
 }
 
 function isFrameworkEventProp(key: string, value: unknown) {

@@ -1,6 +1,6 @@
 # @proto.ui/cli
 
-Proto UI command line tooling for initializing a local `proto-ui/` workspace and generating adapter-specific component facades.
+Proto UI command line tooling for initializing a local `proto-ui/` workspace, generating adapter-specific component facades, and writing Proto UI style preset files.
 
 ## Usage
 
@@ -41,12 +41,12 @@ Supported hosts:
 - `vue`
 - `wc`
 
-The CLI also keeps the legacy style-generation commands available for existing docs and build flows:
+The CLI also writes concrete Proto UI CSS for prototype style tokens:
 
 ```bash
 proto-ui shadcn --styles-dir ./src/styles
-proto-ui tokens --input ./packages/prototypes --out ./src/styles/prototype-tokens.generated.css
-proto-ui tailwindcss --out ./src/styles/tailwindcss.css
+proto-ui tokens --input ./packages/prototypes --out ./src/styles/proto-ui-tokens.generated.css
+proto-ui style --out ./src/styles/proto-ui-style.css
 proto-ui theme shadcn --out ./src/styles/shadcn-theme.css
 ```
 

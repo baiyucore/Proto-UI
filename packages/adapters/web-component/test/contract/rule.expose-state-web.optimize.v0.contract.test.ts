@@ -31,9 +31,9 @@ describe('adapter-web-component: rule expose-state-web optimization (v0)', () =>
     await Promise.resolve();
     await Promise.resolve();
 
-    // selector-style token should be present (setup-time optimization)
-    expect(el.classList.contains('data-[btn-disabled]:opacity-50'), el.className).toBe(true);
-    // runtime plain token should not be used
+    // selector-style token should be present in Proto UI's data style channel.
+    expect(el.getAttribute('data-pui-style')).toBe('data-[btn-disabled]:opacity-50');
+    expect(el.classList.contains('data-[btn-disabled]:opacity-50'), el.className).toBe(false);
     expect(el.classList.contains('opacity-50')).toBe(false);
 
     // expose-state-web should still toggle attr
@@ -69,7 +69,8 @@ describe('adapter-web-component: rule expose-state-web optimization (v0)', () =>
     await Promise.resolve();
 
     // fallback to runtime style token
-    expect(el.classList.contains('opacity-50')).toBe(true);
+    expect(el.getAttribute('data-pui-style')).toBe('opacity-50');
+    expect(el.classList.contains('opacity-50')).toBe(false);
     // no selector token for continuous number
     expect(el.classList.contains('data-[slider-value=0.5]:opacity-50')).toBe(false);
 
@@ -103,7 +104,8 @@ describe('adapter-web-component: rule expose-state-web optimization (v0)', () =>
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(el.classList.contains('data-[btn-disabled]:dark:bg-zinc-950'), el.className).toBe(true);
+    expect(el.getAttribute('data-pui-style')).toBe('data-[btn-disabled]:dark:bg-zinc-950');
+    expect(el.classList.contains('data-[btn-disabled]:dark:bg-zinc-950'), el.className).toBe(false);
     expect(el.classList.contains('bg-zinc-950')).toBe(false);
 
     document.body.removeChild(el);
@@ -151,9 +153,12 @@ describe('adapter-web-component: rule expose-state-web optimization (v0)', () =>
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(el.classList.contains('hover:opacity-50'), el.className).toBe(true);
-    expect(el.classList.contains('active:ring-2'), el.className).toBe(true);
-    expect(el.classList.contains('aria-invalid:border-destructive'), el.className).toBe(true);
+    expect(el.getAttribute('data-pui-style')).toBe(
+      'hover:opacity-50 active:ring-2 aria-invalid:border-destructive'
+    );
+    expect(el.classList.contains('hover:opacity-50'), el.className).toBe(false);
+    expect(el.classList.contains('active:ring-2'), el.className).toBe(false);
+    expect(el.classList.contains('aria-invalid:border-destructive'), el.className).toBe(false);
 
     document.body.removeChild(el);
   });
@@ -193,8 +198,11 @@ describe('adapter-web-component: rule expose-state-web optimization (v0)', () =>
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(el.classList.contains('data-[disabled]:opacity-50'), el.className).toBe(true);
-    expect(el.classList.contains('data-[focus-visible]:ring-2'), el.className).toBe(true);
+    expect(el.getAttribute('data-pui-style')).toBe(
+      'data-[disabled]:opacity-50 data-[focus-visible]:ring-2'
+    );
+    expect(el.classList.contains('data-[disabled]:opacity-50'), el.className).toBe(false);
+    expect(el.classList.contains('data-[focus-visible]:ring-2'), el.className).toBe(false);
     expect(el.classList.contains('disabled:opacity-50'), el.className).toBe(false);
     expect(el.classList.contains('focus-visible:ring-2'), el.className).toBe(false);
 

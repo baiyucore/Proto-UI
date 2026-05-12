@@ -25,16 +25,18 @@ describe('adapter-web-component: intra-document move', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(el.classList.contains('inline-flex')).toBe(true);
-    expect(el.classList.contains('rounded-lg')).toBe(true);
+    expect(el.classList.contains('inline-flex')).toBe(false);
+    expect(el.classList.contains('rounded-lg')).toBe(false);
+    expect(el.getAttribute('data-pui-style')).toBe('inline-flex rounded-lg');
 
     hostB.appendChild(el);
 
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(el.classList.contains('inline-flex')).toBe(true);
-    expect(el.classList.contains('rounded-lg')).toBe(true);
+    expect(el.classList.contains('inline-flex')).toBe(false);
+    expect(el.classList.contains('rounded-lg')).toBe(false);
+    expect(el.getAttribute('data-pui-style')).toBe('inline-flex rounded-lg');
 
     hostA.remove();
     hostB.remove();

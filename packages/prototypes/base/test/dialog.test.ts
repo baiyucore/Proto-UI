@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { styleContains } from '../../test-utils/style';
 import { AdaptToWebComponent, setElementProps } from '@proto.ui/adapter-web-component';
 import { dialogClose, dialogContent, dialogMask, dialogRoot, dialogTrigger } from '../src/dialog';
 
@@ -26,22 +27,22 @@ describe('prototypes/base: dialog', () => {
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
-    expect(mask.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
+    expect(styleContains(mask, 'hidden')).toBe(true);
 
     trigger.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(true);
-    expect(content.classList.contains('hidden')).toBe(false);
-    expect(mask.classList.contains('hidden')).toBe(false);
+    expect(styleContains(content, 'hidden')).toBe(false);
+    expect(styleContains(mask, 'hidden')).toBe(false);
 
     close.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
-    expect(mask.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
+    expect(styleContains(mask, 'hidden')).toBe(true);
 
     root.remove();
     await Promise.resolve();
@@ -65,20 +66,20 @@ describe('prototypes/base: dialog', () => {
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     trigger.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     setElementProps(root, { open: true });
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(true);
-    expect(content.classList.contains('hidden')).toBe(false);
-    expect(mask.classList.contains('hidden')).toBe(false);
+    expect(styleContains(content, 'hidden')).toBe(false);
+    expect(styleContains(mask, 'hidden')).toBe(false);
 
     close.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await Promise.resolve();
@@ -89,8 +90,8 @@ describe('prototypes/base: dialog', () => {
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
-    expect(mask.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
+    expect(styleContains(mask, 'hidden')).toBe(true);
 
     root.remove();
     await Promise.resolve();
@@ -112,14 +113,14 @@ describe('prototypes/base: dialog', () => {
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(true);
-    expect(content.classList.contains('hidden')).toBe(false);
+    expect(styleContains(content, 'hidden')).toBe(false);
 
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     await Promise.resolve();
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     root.remove();
     await Promise.resolve();
@@ -147,7 +148,7 @@ describe('prototypes/base: dialog', () => {
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     root.remove();
     await Promise.resolve();
@@ -176,14 +177,14 @@ describe('prototypes/base: dialog', () => {
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(true);
-    expect(content.classList.contains('hidden')).toBe(false);
+    expect(styleContains(content, 'hidden')).toBe(false);
 
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     await Promise.resolve();
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     root.remove();
     await Promise.resolve();
@@ -254,7 +255,7 @@ describe('prototypes/base: dialog', () => {
 
     expect(root.getExposes().open.get()).toBe(true);
     expect(mask.style.pointerEvents).toBe('none');
-    expect(content.classList.contains('hidden')).toBe(false);
+    expect(styleContains(content, 'hidden')).toBe(false);
 
     setElementProps(mask, { passthrough: false });
     await Promise.resolve();

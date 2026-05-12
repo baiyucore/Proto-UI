@@ -385,8 +385,10 @@ export function createReactAdapter(runtimeInput: ReactRuntimeInput) {
         rootTag,
         {
           ref: rootRef as { current: HTMLElement | null },
-          className: mergeHostClassName([props.hostClassName, props.className], hostTokens),
+          className: mergeHostClassName([props.hostClassName, props.className]),
           style: props.hostStyle,
+          'data-pui-root': '',
+          'data-pui-style': serializeStyleTokens(hostTokens),
           'data-demo-ref': props['data-demo-ref' as keyof typeof props] as string | undefined,
         },
         rendered
@@ -402,8 +404,8 @@ function normalizeRuntime(input: ReactRuntimeInput): ReactRuntime {
   return (input as any).React ?? (input as ReactRuntime);
 }
 
-function mergeHostClassName(input: unknown, hostTokens: string[]) {
-  const values = [...(Array.isArray(input) ? input : [input]), hostTokens.join(' ')]
+function mergeHostClassName(input: unknown) {
+  const values = (Array.isArray(input) ? input : [input])
     .map((value: any) => (typeof value === 'string' ? value.trim() : value))
     .filter((value: any) => {
       if (typeof value === 'string') return value.length > 0;
@@ -423,6 +425,10 @@ function mergeHostClassName(input: unknown, hostTokens: string[]) {
   }
 
   return out.length > 0 ? out.join(' ') : undefined;
+}
+
+function serializeStyleTokens(tokens: string[]) {
+  return tokens.length > 0 ? tokens.join(' ') : undefined;
 }
 
 function collectEventCallbacks(

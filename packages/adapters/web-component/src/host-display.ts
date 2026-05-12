@@ -1,5 +1,6 @@
 const HOST_DISPLAY_STYLE_ID = 'proto-ui-wc-host-display';
 const HOST_DISPLAY_CLASS = 'pui-host-root';
+const PUI_STYLE_ATTR = 'data-pui-style';
 
 const RULES_BY_DOCUMENT = new WeakMap<Document, boolean>();
 
@@ -66,6 +67,9 @@ function hasExplicitDisplayClass(el: HTMLElement): boolean {
   for (const token of Array.from(el.classList)) {
     if (token === HOST_DISPLAY_CLASS) continue;
     if (isDisplayUtilityClass(token)) return true;
+  }
+  for (const token of (el.getAttribute(PUI_STYLE_ATTR) ?? '').split(/\s+/)) {
+    if (token && isDisplayUtilityClass(token)) return true;
   }
   return false;
 }

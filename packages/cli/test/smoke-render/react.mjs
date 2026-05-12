@@ -62,10 +62,16 @@ async function renderHost(label, Component) {
 
 const shadcn = await renderHost('shadcn Button', ShadcnButton);
 const shadcnClass = shadcn.getAttribute('class') || '';
-if (!shadcnClass.includes('group/button')) {
+const shadcnStyle = shadcn.getAttribute('data-pui-style') || '';
+if (!shadcnStyle.includes('group/button')) {
   throw new Error(
-    'react smoke: shadcn Button host missing prototype tokens (feedback.style did not stamp); host=' +
+    'react smoke: shadcn Button host missing prototype tokens (feedback.style did not stamp data-pui-style); host=' +
       shadcn.outerHTML
+  );
+}
+if (shadcnClass.includes('group/button')) {
+  throw new Error(
+    'react smoke: shadcn Button leaked prototype token into class; host=' + shadcn.outerHTML
   );
 }
 if (!shadcnClass.includes('user-added')) {

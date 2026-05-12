@@ -39,14 +39,15 @@ describe('adapter-web-component: rule state -> style (v0)', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(el.classList.contains('opacity-50')).toBe(true);
+    expect(el.getAttribute('data-pui-style')).toBe('opacity-50');
+    expect(el.classList.contains('opacity-50')).toBe(false);
 
     // trigger update -> onUpdated runs -> state false -> rule unUse
     (el as any).update();
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(el.classList.contains('opacity-50')).toBe(false);
+    expect(el.hasAttribute('data-pui-style')).toBe(false);
 
     document.body.removeChild(el);
   });

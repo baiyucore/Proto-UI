@@ -65,8 +65,9 @@ describe('adapter-web-component: host display', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(el.classList.contains('rounded')).toBe(true);
-    expect(el.classList.contains('bg-red-500')).toBe(true);
+    expect(el.getAttribute('data-pui-style')).toBe('rounded bg-red-500 text-white');
+    expect(el.classList.contains('rounded')).toBe(false);
+    expect(el.classList.contains('bg-red-500')).toBe(false);
     expect(el.classList.contains('pui-host-root')).toBe(true);
   });
 
@@ -86,7 +87,8 @@ describe('adapter-web-component: host display', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(el.classList.contains('inline-flex')).toBe(true);
+    expect(el.getAttribute('data-pui-style')).toBe('inline-flex rounded');
+    expect(el.classList.contains('inline-flex')).toBe(false);
     expect(el.classList.contains('pui-host-root')).toBe(false);
   });
 
@@ -111,13 +113,15 @@ describe('adapter-web-component: host display', () => {
     el.setProps({ className: 'user-a' });
 
     expect(el.classList.contains('user-a')).toBe(true);
-    expect(el.classList.contains('rounded')).toBe(true);
-    expect(el.classList.contains('bg-red-500')).toBe(true);
+    expect(el.getAttribute('data-pui-style')).toBe('rounded bg-red-500');
+    expect(el.classList.contains('rounded')).toBe(false);
+    expect(el.classList.contains('bg-red-500')).toBe(false);
 
     el.setProps({});
 
     expect(el.classList.contains('user-a')).toBe(false);
-    expect(el.classList.contains('rounded')).toBe(true);
-    expect(el.classList.contains('bg-red-500')).toBe(true);
+    expect(el.getAttribute('data-pui-style')).toBe('rounded bg-red-500');
+    expect(el.classList.contains('rounded')).toBe(false);
+    expect(el.classList.contains('bg-red-500')).toBe(false);
   });
 });

@@ -81,7 +81,8 @@ describe('contract: adapter-web-component / lifecycle (v0)', () => {
     await Promise.resolve();
 
     expect(calls).toEqual([]);
-    expect(el.classList.contains('inline-flex')).toBe(true);
+    expect(el.classList.contains('inline-flex')).toBe(false);
+    expect(el.getAttribute('data-pui-style')).toBe('inline-flex');
 
     el.remove();
     await Promise.resolve();
