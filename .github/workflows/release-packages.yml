@@ -198,7 +198,7 @@ jobs:
           # which the commit+tag step downstream consumes. publish-single
           # is patch-only by contract; the script bumps patch unconditionally.
           TARGETS=$(echo "${{ inputs.only }}" | tr ',' ' ')
-          node scripts/release/bump-version.mjs -- $TARGETS
+          node scripts/release/bump-version.mjs --prefer-published -- $TARGETS
           node scripts/release/check-lockstep.mjs
 
       - name: Run Release Command
