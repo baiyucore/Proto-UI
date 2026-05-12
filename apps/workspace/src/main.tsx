@@ -26,6 +26,8 @@ const UI_TEXT = {
     graphNodes: 'Graph Nodes',
     graphEdges: 'Graph Edges',
     criteria: 'Criteria',
+    cases: 'Cases',
+    implementations: 'Implementations',
     openQuestions: 'Open Questions',
     issues: 'Issues',
     id: 'ID',
@@ -35,6 +37,10 @@ const UI_TEXT = {
     statement: 'Statement',
     rationale: 'Rationale',
     blocks: 'Blocks',
+    covers: 'Covers',
+    consumes: 'Consumes',
+    expectation: 'Expectation',
+    implementationStatus: 'Implementation Status',
     note: 'Note',
     relationships: 'Relationships',
     relationKinds: {
@@ -81,6 +87,8 @@ const UI_TEXT = {
     graphNodes: '图节点',
     graphEdges: '图关系',
     criteria: '判定准则',
+    cases: '用例',
+    implementations: '工程落点',
     openQuestions: '断口',
     issues: '问题',
     id: 'ID',
@@ -90,6 +98,10 @@ const UI_TEXT = {
     statement: '契约陈述',
     rationale: '理由',
     blocks: '阻塞项',
+    covers: '覆盖',
+    consumes: '消费',
+    expectation: '预期',
+    implementationStatus: '落点状态',
     note: '备注',
     relationships: '实体关系',
     relationKinds: {
@@ -435,6 +447,50 @@ function EntityInspector(props: { entity: SpecEntity | null; locale: Locale; t: 
                 {question.blocks.length > 0 ? (
                   <p className="blocked-items">
                     {props.t.blocks}: {question.blocks.join(', ')}
+                  </p>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+      {entity.cases.length > 0 ? (
+        <section className="detail-section">
+          <h3>{props.t.cases}</h3>
+          <div className="criteria-list">
+            {entity.cases.map((testCase) => (
+              <article className="criterion-row" key={testCase.id}>
+                <strong>{testCase.id}</strong>
+                <p>{testCase.title}</p>
+                <p className="rationale">
+                  <span>{props.t.expectation}: </span>
+                  {testCase.expectation}
+                </p>
+                {testCase.covers.length > 0 ? (
+                  <p className="rationale">
+                    <span>{props.t.covers}: </span>
+                    {testCase.covers.join(', ')}
+                  </p>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+      {entity.implementations.length > 0 ? (
+        <section className="detail-section">
+          <h3>{props.t.implementations}</h3>
+          <div className="issue-list compact">
+            {entity.implementations.map((implementation) => (
+              <article className="issue-row" key={implementation.id}>
+                <p className="issue-file">{implementation.id}</p>
+                <p>
+                  {implementation.kind} / {props.t.implementationStatus}: {implementation.status}
+                </p>
+                {implementation.path ? <p>{implementation.path}</p> : null}
+                {implementation.consumesCases.length > 0 ? (
+                  <p className="blocked-items">
+                    {props.t.consumes}: {implementation.consumesCases.join(', ')}
                   </p>
                 ) : null}
               </article>

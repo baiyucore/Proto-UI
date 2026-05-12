@@ -19,6 +19,8 @@ function resolveProtoUiImport(id: string): string | null {
     subdir = path.join('adapters', pkg.slice('adapter-'.length));
   } else if (pkg.startsWith('prototypes-')) {
     subdir = path.join('prototypes', pkg.slice('prototypes-'.length));
+  } else if (pkg.startsWith('spec-')) {
+    subdir = path.join('spec', pkg.slice('spec-'.length));
   } else if (pkg === 'rule') {
     subdir = path.join('legacy', 'rule');
   } else {
@@ -30,6 +32,8 @@ function resolveProtoUiImport(id: string): string | null {
   const index = path.join(target, 'index.ts');
 
   if (fs.existsSync(index)) return index;
+  if (fs.existsSync(`${target}.ts`)) return `${target}.ts`;
+  if (fs.existsSync(`${target}.tsx`)) return `${target}.tsx`;
   if (fs.existsSync(target)) return target;
   return null;
 }

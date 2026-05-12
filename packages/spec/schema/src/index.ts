@@ -49,12 +49,30 @@ export const SPEC_COVERAGE_IMPACTS = [
   'no-direct-test-surface',
   'review-test-surface',
 ] as const;
+export const SPEC_TEST_IMPLEMENTATION_KINDS = [
+  'fixture',
+  'module-test',
+  'adapter-test',
+  'runtime-test',
+  'workspace-check',
+] as const;
+export const SPEC_TEST_IMPLEMENTATION_STATUSES = [
+  'missing',
+  'planned',
+  'active',
+  'passing',
+  'failing',
+  'needs-review',
+  'skipped',
+] as const;
 
 export type SpecEntityType = (typeof SPEC_ENTITY_TYPES)[number];
 export type SpecEntityStatus = (typeof SPEC_ENTITY_STATUSES)[number];
 export type SpecRelationKind = (typeof SPEC_RELATION_KINDS)[number];
 export type SpecRelationRole = (typeof SPEC_RELATION_ROLES)[number];
 export type SpecCoverageImpact = (typeof SPEC_COVERAGE_IMPACTS)[number];
+export type SpecTestImplementationKind = (typeof SPEC_TEST_IMPLEMENTATION_KINDS)[number];
+export type SpecTestImplementationStatus = (typeof SPEC_TEST_IMPLEMENTATION_STATUSES)[number];
 
 export type SpecIdParts = {
   id: string;
@@ -128,6 +146,27 @@ export const specOpenQuestionSchema = z.object({
   blocks: z.array(z.string().min(1)).default([]),
 });
 
+export const specTestCaseSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  summary: z.string().optional(),
+  covers: z.array(z.string().min(1)).default([]),
+  valueKind: z.string().optional(),
+  expectation: z.string().min(1),
+  notes: z.array(z.string().min(1)).default([]),
+});
+
+export const specTestImplementationSchema = z.object({
+  id: z.string().min(1),
+  kind: z.enum(SPEC_TEST_IMPLEMENTATION_KINDS),
+  status: z.enum(SPEC_TEST_IMPLEMENTATION_STATUSES),
+  path: z.string().min(1).optional(),
+  required: z.boolean().default(false),
+  consumesCases: z.array(z.string().min(1)).default([]),
+  exercises: z.array(z.string().min(1)).default([]),
+  notes: z.array(z.string().min(1)).default([]),
+});
+
 export const specEntitySchema = z
   .object({
     id: z.string().regex(specIdPattern, 'Expected a Proto UI spec ID.'),
@@ -142,6 +181,8 @@ export const specEntitySchema = z
     statement: specLocalizedTextSchema.optional(),
     criteria: z.array(specCriterionSchema).default([]),
     openQuestions: z.array(specOpenQuestionSchema).default([]),
+    cases: z.array(specTestCaseSchema).default([]),
+    implementations: z.array(specTestImplementationSchema).default([]),
     notes: z.string().optional(),
     sources: z.array(specSourceRefSchema).default([]),
     relates: specRelationsSchema,
@@ -227,6 +268,52 @@ export const specEntitySchema = z
 
       openQuestionIds.add(question.id);
     }
+
+    const testCaseIds = new Set<string>();
+
+    for (const testCase of entity.cases) {
+      if (!testCase.id.startsWith(`${entity.id}-CASE-`)) {
+        context.addIssue({
+          code: 'custom',
+          path: ['cases'],
+          message: `Test case ID ${testCase.id} must start with ${entity.id}-CASE-.`,
+        });
+      }
+
+      if (testCaseIds.has(testCase.id)) {
+        context.addIssue({
+          code: 'custom',
+          path: ['cases'],
+          message: `Duplicate test case ID ${testCase.id}.`,
+        });
+      }
+
+      testCaseIds.add(testCase.id);
+    }
+
+    const implementationIds = new Set<string>();
+
+    for (const implementation of entity.implementations) {
+      if (implementationIds.has(implementation.id)) {
+        context.addIssue({
+          code: 'custom',
+          path: ['implementations'],
+          message: `Duplicate test implementation ID ${implementation.id}.`,
+        });
+      }
+
+      implementationIds.add(implementation.id);
+
+      for (const caseId of implementation.consumesCases) {
+        if (!testCaseIds.has(caseId)) {
+          context.addIssue({
+            code: 'custom',
+            path: ['implementations'],
+            message: `Test implementation ${implementation.id} consumes unknown case ${caseId}.`,
+          });
+        }
+      }
+    }
   });
 
 export type SpecRelationTarget = z.infer<typeof specRelationTargetSchema>;
@@ -235,6 +322,8 @@ export type SpecRevision = z.infer<typeof specRevisionSchema>;
 export type SpecSourceRef = z.infer<typeof specSourceRefSchema>;
 export type SpecCriterion = z.infer<typeof specCriterionSchema>;
 export type SpecOpenQuestion = z.infer<typeof specOpenQuestionSchema>;
+export type SpecTestCase = z.infer<typeof specTestCaseSchema>;
+export type SpecTestImplementation = z.infer<typeof specTestImplementationSchema>;
 export type SpecEntity = z.infer<typeof specEntitySchema>;
 
 export type SpecValidationIssue = {

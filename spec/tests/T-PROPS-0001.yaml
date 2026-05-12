@@ -4,6 +4,109 @@ title: JSON props value boundary tests
 status: draft
 since: 0.1.0
 summary: Placeholder mapping for tests that verify the JSON value boundary for props values.
+cases:
+  - id: T-PROPS-0001-CASE-JSON-PRIMITIVES
+    title: JSON primitive values are portable props values
+    covers:
+      - C-PROPS-0003-A
+    valueKind: json-primitives
+    expectation: accepted-as-portable
+    notes:
+      - Covers string, finite number, boolean, and null.
+  - id: T-PROPS-0001-CASE-JSON-CONTAINERS
+    title: JSON arrays and objects are portable when all nested values are JSON
+    covers:
+      - C-PROPS-0003-B
+      - C-PROPS-0003-C
+    valueKind: json-containers
+    expectation: accepted-as-portable
+    notes:
+      - Covers arrays, plain objects, and nested JSON values.
+  - id: T-PROPS-0001-CASE-NON-JSON-TOP-LEVEL
+    title: Top-level non-JSON values are excluded from portable props semantics
+    covers:
+      - C-PROPS-0003-D
+      - C-PROPS-0003-E
+    valueKind: non-json-top-level
+    expectation: excluded-from-portable-resolved-semantics
+    notes:
+      - Covers undefined, function, symbol, bigint, Date, RegExp, Map, Set, and class instance values.
+  - id: T-PROPS-0001-CASE-NON-JSON-NESTED
+    title: Nested non-JSON values make the containing props value non-portable
+    covers:
+      - C-PROPS-0003-B
+      - C-PROPS-0003-C
+      - C-PROPS-0003-D
+      - C-PROPS-0003-E
+    valueKind: non-json-nested
+    expectation: excluded-from-portable-resolved-semantics
+    notes:
+      - Covers object and array values that contain non-JSON values recursively.
+  - id: T-PROPS-0001-CASE-RAW-ESCAPE-HATCH
+    title: Raw props may observe host-local input without extending portable props semantics
+    covers:
+      - C-PROPS-0003-E
+    valueKind: raw-host-local-input
+    expectation: raw-observable-but-not-portable
+    notes:
+      - Raw APIs may expose host-local values as escape hatches, but resolved portable props must not accept them as JSON props values.
+implementations:
+  - id: props-json-value-boundary-fixture
+    kind: fixture
+    status: active
+    path: packages/spec/fixtures/src/props/json-value-boundary.ts
+    required: true
+    consumesCases:
+      - T-PROPS-0001-CASE-JSON-PRIMITIVES
+      - T-PROPS-0001-CASE-JSON-CONTAINERS
+      - T-PROPS-0001-CASE-NON-JSON-TOP-LEVEL
+      - T-PROPS-0001-CASE-NON-JSON-NESTED
+      - T-PROPS-0001-CASE-RAW-ESCAPE-HATCH
+    notes:
+      - Shared fixture consumed by module, adapter, and runtime test implementations.
+  - id: module-props-define-json-value-boundary
+    kind: module-test
+    status: missing
+    required: true
+    consumesCases:
+      - T-PROPS-0001-CASE-JSON-PRIMITIVES
+      - T-PROPS-0001-CASE-JSON-CONTAINERS
+      - T-PROPS-0001-CASE-NON-JSON-TOP-LEVEL
+      - T-PROPS-0001-CASE-NON-JSON-NESTED
+    exercises:
+      - C-PROPS-0006
+    notes:
+      - Should test setup-time declaration/default value paths once the module test entrypoint is selected.
+  - id: module-props-resolved-json-value-boundary
+    kind: module-test
+    status: missing
+    required: true
+    consumesCases:
+      - T-PROPS-0001-CASE-JSON-PRIMITIVES
+      - T-PROPS-0001-CASE-JSON-CONTAINERS
+      - T-PROPS-0001-CASE-NON-JSON-TOP-LEVEL
+      - T-PROPS-0001-CASE-NON-JSON-NESTED
+      - T-PROPS-0001-CASE-RAW-ESCAPE-HATCH
+    exercises:
+      - C-PROPS-0008
+      - C-PROPS-0009
+    notes:
+      - Should verify that resolved portable props do not expose non-JSON raw input as accepted JSON values.
+  - id: adapter-props-json-value-boundary
+    kind: adapter-test
+    status: missing
+    required: true
+    consumesCases:
+      - T-PROPS-0001-CASE-JSON-PRIMITIVES
+      - T-PROPS-0001-CASE-JSON-CONTAINERS
+      - T-PROPS-0001-CASE-NON-JSON-TOP-LEVEL
+      - T-PROPS-0001-CASE-NON-JSON-NESTED
+      - T-PROPS-0001-CASE-RAW-ESCAPE-HATCH
+    exercises:
+      - C-PROPS-0008
+      - C-PROPS-0009
+    notes:
+      - Adapter-specific tests may differ in raw input tolerance, but must not expand portable resolved props semantics beyond JSON values.
 verifies:
   contracts:
     - id: C-PROPS-0003

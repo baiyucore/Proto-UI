@@ -4,6 +4,10 @@
     "paths": {
       "@proto.ui/core/internal": ["packages/core/src/internal.ts"],
       "@proto.ui/spec-*": ["packages/spec/*/src"],
+      "@proto.ui/spec-engine/*": ["packages/spec/engine/src/*"],
+      "@proto.ui/spec-fixtures/*": ["packages/spec/fixtures/src/*"],
+      "@proto.ui/spec-graph/*": ["packages/spec/graph/src/*"],
+      "@proto.ui/spec-schema/*": ["packages/spec/schema/src/*"],
       "@proto.ui/module-*": ["packages/modules/*/src"],
       "@proto.ui/adapter-*": ["packages/adapters/*/src"],
       "@proto.ui/prototypes-base": ["packages/prototypes/base/src/index.ts"],
