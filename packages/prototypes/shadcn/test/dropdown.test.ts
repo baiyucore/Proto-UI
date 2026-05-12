@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { styleContains } from '../../test-utils/style';
 import { AdaptToWebComponent, setElementProps } from '@proto.ui/adapter-web-component';
 import { dropdownContent, dropdownItem, dropdownRoot, dropdownTrigger } from '../src/dropdown';
 
@@ -27,23 +28,23 @@ describe('prototypes/shadcn: dropdown', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(trigger.className.includes('rounded-md')).toBe(true);
+    expect(styleContains(trigger, 'rounded-md')).toBe(true);
     const indicator = trigger.querySelector('svg');
     expect(indicator?.getAttribute('viewBox')).toBe('0 0 24 24');
     expect(indicator?.querySelector('path')?.getAttribute('d')).toBe('m6 9 6 6 6-6');
-    expect(content.classList.contains('hidden')).toBe(true);
-    expect(itemA.className.includes('rounded-lg')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
+    expect(styleContains(itemA, 'rounded-lg')).toBe(true);
 
     trigger.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await Promise.resolve();
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(true);
-    expect(content.className.includes('rounded-xl')).toBe(true);
-    expect(content.className.includes('shadow-lg')).toBe(true);
-    expect(content.classList.contains('hidden')).toBe(false);
+    expect(styleContains(content, 'rounded-xl')).toBe(true);
+    expect(styleContains(content, 'shadow-lg')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(false);
     expect(document.activeElement).toBe(itemA);
-    expect(itemB.className.includes('opacity-50')).toBe(true);
+    expect(styleContains(itemB, 'data-[disabled]:opacity-50')).toBe(true);
 
     itemA.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await Promise.resolve();
@@ -76,14 +77,14 @@ describe('prototypes/shadcn: dropdown', () => {
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(true);
-    expect(content.classList.contains('hidden')).toBe(false);
+    expect(styleContains(content, 'hidden')).toBe(false);
 
     document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
     await Promise.resolve();
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     root.remove();
     await Promise.resolve();

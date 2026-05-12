@@ -28,7 +28,7 @@ GlobalRegistrator.register();
 
 const React = await import('react');
 const ReactDOMClient = await import('react-dom/client');
-const { Button, BaseButton } = await import('./proto-ui/components/react/index.ts');
+const { ShadcnButton, BaseButton } = await import('./proto-ui/components/react/index.ts');
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 50));
 
@@ -36,7 +36,7 @@ async function renderHost(label, Component) {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = ReactDOMClient.createRoot(container);
-  root.render(React.createElement(Component, null, 'click'));
+  root.render(React.createElement(Component, { className: 'user-added' }, 'click'));
   await flush();
   const host = container.firstElementChild;
   if (!host) {
@@ -60,12 +60,23 @@ async function renderHost(label, Component) {
   return host;
 }
 
-const shadcn = await renderHost('shadcn Button', Button);
+const shadcn = await renderHost('shadcn Button', ShadcnButton);
 const shadcnClass = shadcn.getAttribute('class') || '';
-if (!shadcnClass.includes('group/button')) {
+const shadcnStyle = shadcn.getAttribute('data-pui-style') || '';
+if (!shadcnStyle.includes('group/button')) {
   throw new Error(
-    'react smoke: shadcn Button host missing prototype tokens (feedback.style did not stamp); host=' +
+    'react smoke: shadcn Button host missing prototype tokens (feedback.style did not stamp data-pui-style); host=' +
       shadcn.outerHTML
+  );
+}
+if (shadcnClass.includes('group/button')) {
+  throw new Error(
+    'react smoke: shadcn Button leaked prototype token into class; host=' + shadcn.outerHTML
+  );
+}
+if (!shadcnClass.includes('user-added')) {
+  throw new Error(
+    'react smoke: shadcn Button host missing user className; host=' + shadcn.outerHTML
   );
 }
 

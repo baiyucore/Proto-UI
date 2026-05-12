@@ -24,6 +24,7 @@ export type ProtoReactProps<TProto extends ProtoLike> = (PropsOf<TProto> extends
   ? PropsOf<TProto>
   : never) & {
   children?: any;
+  className?: string;
   hostClassName?: string;
   hostStyle?: any;
 } & ProtoReactEventProps<TProto>;

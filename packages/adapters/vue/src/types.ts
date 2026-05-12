@@ -41,6 +41,7 @@ export type ProtoVueEventProps<TProto extends ProtoLike> = ProtoEventProps<Expos
 export type ProtoVueProps<TProto extends ProtoLike> = (PropsOf<TProto> extends PropsBaseType
   ? PropsOf<TProto>
   : never) & {
+  class?: string | string[] | Record<string, boolean>;
   hostClass?: string | string[] | Record<string, boolean>;
   hostStyle?: Record<string, string> | string | Array<Record<string, string>>;
 } & ProtoVueEventProps<TProto>;

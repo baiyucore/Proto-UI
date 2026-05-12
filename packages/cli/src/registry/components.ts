@@ -101,18 +101,18 @@ const baseCompound = (
 ) => defineCompound(id, label, '@proto.ui/prototypes-base', parts);
 
 export const COMPONENT_REGISTRY: Record<string, ComponentEntry> = {
-  'shadcn-button': shadcn('shadcn-button', 'shadcn Button', 'shadcnButton', 'Button'),
-  'shadcn-toggle': shadcn('shadcn-toggle', 'shadcn Toggle', 'shadcnToggle', 'Toggle'),
+  'shadcn-button': shadcn('shadcn-button', 'shadcn Button', 'shadcnButton', 'ShadcnButton'),
+  'shadcn-toggle': shadcn('shadcn-toggle', 'shadcn Toggle', 'shadcnToggle', 'ShadcnToggle'),
 
   'shadcn-switch': shadcnCompound('shadcn-switch', 'shadcn Switch', [
     {
       prototypeImport: 'shadcnSwitchRoot',
-      exportBaseName: 'SwitchRoot',
+      exportBaseName: 'ShadcnSwitchRoot',
       elementName: 'proto-ui-shadcn-switch-root',
     },
     {
       prototypeImport: 'shadcnSwitchThumb',
-      exportBaseName: 'SwitchThumb',
+      exportBaseName: 'ShadcnSwitchThumb',
       elementName: 'proto-ui-shadcn-switch-thumb',
     },
   ]),
@@ -120,22 +120,22 @@ export const COMPONENT_REGISTRY: Record<string, ComponentEntry> = {
   'shadcn-tabs': shadcnCompound('shadcn-tabs', 'shadcn Tabs', [
     {
       prototypeImport: 'shadcnTabsRoot',
-      exportBaseName: 'TabsRoot',
+      exportBaseName: 'ShadcnTabsRoot',
       elementName: 'proto-ui-shadcn-tabs-root',
     },
     {
       prototypeImport: 'shadcnTabsList',
-      exportBaseName: 'TabsList',
+      exportBaseName: 'ShadcnTabsList',
       elementName: 'proto-ui-shadcn-tabs-list',
     },
     {
       prototypeImport: 'shadcnTabsTrigger',
-      exportBaseName: 'TabsTrigger',
+      exportBaseName: 'ShadcnTabsTrigger',
       elementName: 'proto-ui-shadcn-tabs-trigger',
     },
     {
       prototypeImport: 'shadcnTabsContent',
-      exportBaseName: 'TabsContent',
+      exportBaseName: 'ShadcnTabsContent',
       elementName: 'proto-ui-shadcn-tabs-content',
     },
   ]),
@@ -143,17 +143,17 @@ export const COMPONENT_REGISTRY: Record<string, ComponentEntry> = {
   'shadcn-hover-card': shadcnCompound('shadcn-hover-card', 'shadcn Hover Card', [
     {
       prototypeImport: 'shadcnHoverCardRoot',
-      exportBaseName: 'HoverCardRoot',
+      exportBaseName: 'ShadcnHoverCardRoot',
       elementName: 'proto-ui-shadcn-hover-card-root',
     },
     {
       prototypeImport: 'shadcnHoverCardTrigger',
-      exportBaseName: 'HoverCardTrigger',
+      exportBaseName: 'ShadcnHoverCardTrigger',
       elementName: 'proto-ui-shadcn-hover-card-trigger',
     },
     {
       prototypeImport: 'shadcnHoverCardContent',
-      exportBaseName: 'HoverCardContent',
+      exportBaseName: 'ShadcnHoverCardContent',
       elementName: 'proto-ui-shadcn-hover-card-content',
     },
   ]),
@@ -161,22 +161,22 @@ export const COMPONENT_REGISTRY: Record<string, ComponentEntry> = {
   'shadcn-dropdown': shadcnCompound('shadcn-dropdown', 'shadcn Dropdown', [
     {
       prototypeImport: 'shadcnDropdownRoot',
-      exportBaseName: 'DropdownRoot',
+      exportBaseName: 'ShadcnDropdownRoot',
       elementName: 'proto-ui-shadcn-dropdown-root',
     },
     {
       prototypeImport: 'shadcnDropdownTrigger',
-      exportBaseName: 'DropdownTrigger',
+      exportBaseName: 'ShadcnDropdownTrigger',
       elementName: 'proto-ui-shadcn-dropdown-trigger',
     },
     {
       prototypeImport: 'shadcnDropdownContent',
-      exportBaseName: 'DropdownContent',
+      exportBaseName: 'ShadcnDropdownContent',
       elementName: 'proto-ui-shadcn-dropdown-content',
     },
     {
       prototypeImport: 'shadcnDropdownItem',
-      exportBaseName: 'DropdownItem',
+      exportBaseName: 'ShadcnDropdownItem',
       elementName: 'proto-ui-shadcn-dropdown-item',
     },
   ]),
@@ -184,37 +184,37 @@ export const COMPONENT_REGISTRY: Record<string, ComponentEntry> = {
   'shadcn-dialog': shadcnCompound('shadcn-dialog', 'shadcn Dialog', [
     {
       prototypeImport: 'shadcnDialogRoot',
-      exportBaseName: 'DialogRoot',
+      exportBaseName: 'ShadcnDialogRoot',
       elementName: 'proto-ui-shadcn-dialog-root',
     },
     {
       prototypeImport: 'shadcnDialogTrigger',
-      exportBaseName: 'DialogTrigger',
+      exportBaseName: 'ShadcnDialogTrigger',
       elementName: 'proto-ui-shadcn-dialog-trigger',
     },
     {
       prototypeImport: 'shadcnDialogMask',
-      exportBaseName: 'DialogMask',
+      exportBaseName: 'ShadcnDialogMask',
       elementName: 'proto-ui-shadcn-dialog-mask',
     },
     {
       prototypeImport: 'shadcnDialogContent',
-      exportBaseName: 'DialogContent',
+      exportBaseName: 'ShadcnDialogContent',
       elementName: 'proto-ui-shadcn-dialog-content',
     },
     {
       prototypeImport: 'shadcnDialogTitle',
-      exportBaseName: 'DialogTitle',
+      exportBaseName: 'ShadcnDialogTitle',
       elementName: 'proto-ui-shadcn-dialog-title',
     },
     {
       prototypeImport: 'shadcnDialogDescription',
-      exportBaseName: 'DialogDescription',
+      exportBaseName: 'ShadcnDialogDescription',
       elementName: 'proto-ui-shadcn-dialog-description',
     },
     {
       prototypeImport: 'shadcnDialogClose',
-      exportBaseName: 'DialogClose',
+      exportBaseName: 'ShadcnDialogClose',
       elementName: 'proto-ui-shadcn-dialog-close',
     },
   ]),

@@ -51,7 +51,8 @@ describe('@proto.ui/cli', () => {
     expect(result.status).toBe(0);
     expect(result.stdout).toContain('proto-ui init');
     expect(result.stdout).toContain('proto-ui add <host> <component>');
-    expect(result.stdout).toContain('Legacy style commands');
+    expect(result.stdout).toContain('Style commands');
+    expect(result.stdout).toContain('proto-ui style --out ./src/styles/proto-ui-style.css');
 
     const addHelp = runCli(process.cwd(), ['add', '--help']);
     expect(addHelp.status).toBe(0);
@@ -70,11 +71,20 @@ describe('@proto.ui/cli', () => {
 
     await expect(fs.stat(path.join(cwd, 'proto-ui/config.json'))).resolves.toBeTruthy();
     await expect(fs.stat(path.join(cwd, 'proto-ui/components'))).resolves.toBeTruthy();
-    await expect(
-      fs.stat(path.join(cwd, 'src/styles/prototype-tokens.generated.css'))
-    ).resolves.toBeTruthy();
+    const tokensCss = await fs.readFile(
+      path.join(cwd, 'src/styles/proto-ui-tokens.generated.css'),
+      'utf8'
+    );
+    const styleCss = await fs.readFile(path.join(cwd, 'src/styles/proto-ui-style.css'), 'utf8');
+    const themeCss = await fs.readFile(path.join(cwd, 'src/styles/shadcn-theme.css'), 'utf8');
+
+    expect(tokensCss).toContain(`[data-pui-style~="bg-primary"]`);
+    expect(tokensCss).not.toContain('@source');
+    expect(styleCss).toContain(`@import './shadcn-theme.css';`);
+    expect(styleCss).toContain(`@import './proto-ui-tokens.generated.css';`);
+    expect(themeCss).toContain('--pui-background');
+    expect(themeCss).not.toContain('--background:');
     await expect(fs.stat(path.join(cwd, 'src/styles/shadcn-theme.css'))).resolves.toBeTruthy();
-    await expect(fs.stat(path.join(cwd, 'src/styles/tailwindcss.css'))).resolves.toBeTruthy();
   });
 
   it('adds a React facade without installing packages when --no-install is used', async () => {
@@ -102,8 +112,8 @@ describe('@proto.ui/cli', () => {
 
     expect(reactIndex).toContain(`createReactAdapter`);
     expect(reactIndex).toContain(`shadcnButton`);
-    expect(reactIndex).toContain(`export const Button = adapt(shadcnButton);`);
-    expect(rootIndex).toContain(`export { Button as ReactButton } from './react';`);
+    expect(reactIndex).toContain(`export const ShadcnButton = adapt(shadcnButton);`);
+    expect(rootIndex).toContain(`export { ShadcnButton as ReactShadcnButton } from './react';`);
     expect(config.components.react).toEqual(['shadcn-button']);
   });
 
@@ -130,6 +140,26 @@ describe('@proto.ui/cli', () => {
     expect(wcIndex).toContain(`registerAs: 'proto-ui-base-dialog-root'`);
     expect(rootIndex).toContain(`export { BaseDialogRootElement } from './wc';`);
     expect(config.components.wc).toEqual(['base-dialog']);
+  });
+
+  it('adds a namespaced Web Component facade from shadcn prototypes', async () => {
+    const cwd = await createTempProject('pui-cli-add-wc-shadcn', {
+      name: 'pui-cli-add-wc-shadcn',
+      private: true,
+    });
+
+    expect(runCli(cwd, ['init', '--no-interactive', '--no-styles']).status).toBe(0);
+    const result = runCli(cwd, ['add', 'wc', 'shadcn-button', '--no-install']);
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('@proto.ui/adapter-web-component');
+    expect(result.stdout).toContain('@proto.ui/prototypes-shadcn');
+
+    const wcIndex = await fs.readFile(path.join(cwd, 'proto-ui/components/wc/index.ts'), 'utf8');
+    const rootIndex = await fs.readFile(path.join(cwd, 'proto-ui/components/index.ts'), 'utf8');
+
+    expect(wcIndex).toContain(`export const ShadcnButtonElement = AdaptToWebComponent`);
+    expect(rootIndex).toContain(`export { ShadcnButtonElement } from './wc';`);
   });
 
   it('fails fast when the required React runtime is missing', async () => {

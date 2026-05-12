@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { styleContains } from '../../test-utils/style';
 import { AdaptToWebComponent, setElementProps } from '@proto.ui/adapter-web-component';
 import { selectContent, selectItem, selectRoot, selectTrigger, selectValue } from '../src/select';
 
@@ -45,7 +46,7 @@ describe('prototypes/base: select', () => {
     expect(root.getExposes().value.get()).toBe('b');
     expect(root.getExposes().textValue.get()).toBe('Beta');
     expect(value.textContent).toBe('Beta');
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     root.remove();
     await Promise.resolve();
@@ -72,14 +73,14 @@ describe('prototypes/base: select', () => {
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(true);
-    expect(content.classList.contains('hidden')).toBe(false);
+    expect(styleContains(content, 'hidden')).toBe(false);
 
     document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
     await Promise.resolve();
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     root.remove();
     await Promise.resolve();

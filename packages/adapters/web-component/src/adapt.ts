@@ -135,6 +135,7 @@ export function AdaptToWebComponent<Props extends PropsBaseType>(
 
       const thisEl = this;
       const thisRoot = this._root;
+      thisEl.setAttribute('data-pui-root', '');
       this._hostDisplay = installDefaultHostDisplay(thisEl);
 
       const router = createWebProtoEventRouter({

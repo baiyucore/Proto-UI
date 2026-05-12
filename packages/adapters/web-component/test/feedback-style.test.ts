@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { createOwnedTwTokenApplier } from '../src/feedback-style';
 
 describe('adapter-web-component: owned tw tokens applier', () => {
-  it('apply adds tokens and does not touch user classes', () => {
+  it('apply adds tokens to data-pui-style and does not touch user classes', () => {
     const host = document.createElement('div');
     host.className = 'user-a user-b';
 
@@ -11,8 +11,9 @@ describe('adapter-web-component: owned tw tokens applier', () => {
 
     expect(host.classList.contains('user-a')).toBe(true);
     expect(host.classList.contains('user-b')).toBe(true);
-    expect(host.classList.contains('opacity-50')).toBe(true);
-    expect(host.classList.contains('bg-red-500')).toBe(true);
+    expect(host.classList.contains('opacity-50')).toBe(false);
+    expect(host.classList.contains('bg-red-500')).toBe(false);
+    expect(host.getAttribute('data-pui-style')).toBe('opacity-50 bg-red-500');
   });
 
   it('replace removes old owned tokens and adds new ones', () => {
@@ -22,13 +23,10 @@ describe('adapter-web-component: owned tw tokens applier', () => {
     const applier = createOwnedTwTokenApplier(host);
 
     applier.apply(['bg-red-500', 'opacity-50']);
-    expect(host.classList.contains('bg-red-500')).toBe(true);
-    expect(host.classList.contains('opacity-50')).toBe(true);
+    expect(host.getAttribute('data-pui-style')).toBe('bg-red-500 opacity-50');
 
     applier.apply(['bg-blue-500']); // replace
-    expect(host.classList.contains('bg-red-500')).toBe(false);
-    expect(host.classList.contains('opacity-50')).toBe(false);
-    expect(host.classList.contains('bg-blue-500')).toBe(true);
+    expect(host.getAttribute('data-pui-style')).toBe('bg-blue-500');
 
     // user class preserved
     expect(host.classList.contains('user-a')).toBe(true);
@@ -42,8 +40,7 @@ describe('adapter-web-component: owned tw tokens applier', () => {
     applier.apply(['bg-red-500', 'opacity-50']);
     applier.apply([]);
 
-    expect(host.classList.contains('bg-red-500')).toBe(false);
-    expect(host.classList.contains('opacity-50')).toBe(false);
+    expect(host.hasAttribute('data-pui-style')).toBe(false);
     expect(host.classList.contains('user-a')).toBe(true);
   });
 
@@ -59,5 +56,6 @@ describe('adapter-web-component: owned tw tokens applier', () => {
 
     expect(owned1).toEqual(owned2);
     expect(owned2).toEqual(['bg-red-500']);
+    expect(host.getAttribute('data-pui-style')).toBe('bg-red-500');
   });
 });

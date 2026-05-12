@@ -34,6 +34,7 @@ describe('adapter-react: type helpers', () => {
       label?: string;
       disabled?: boolean;
       children?: any;
+      className?: string;
       hostClassName?: string;
       hostStyle?: any;
       onClick?: () => void;

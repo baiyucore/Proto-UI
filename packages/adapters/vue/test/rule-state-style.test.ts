@@ -30,12 +30,14 @@ describe('adapter-vue: rule state -> style', () => {
     mounted.vm.update();
     await flushVue();
     await flushVue();
-    expect(mounted.root?.classList.contains('opacity-50')).toBe(true);
+    expect(mounted.root?.classList.contains('opacity-50')).toBe(false);
+    expect(mounted.root?.getAttribute('data-pui-style')).toBe('opacity-50');
 
     mounted.vm.update();
     await flushVue();
     await flushVue();
     expect(mounted.root?.classList.contains('opacity-50')).toBe(false);
+    expect(mounted.root?.hasAttribute('data-pui-style')).toBe(false);
 
     mounted.unmount();
   });

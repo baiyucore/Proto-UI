@@ -343,6 +343,9 @@ importers:
         specifier: ^5.0.0
         version: 5.9.3
     devDependencies:
+      '@types/node':
+        specifier: ^25.6.2
+        version: 25.6.2
       '@types/prompts':
         specifier: ^2.4.9
         version: 2.4.9

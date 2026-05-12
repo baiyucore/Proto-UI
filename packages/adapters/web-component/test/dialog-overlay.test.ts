@@ -30,6 +30,10 @@ function registerDialogWcs() {
   }
 }
 
+function styleContains(el: Element, token: string): boolean {
+  return (el.getAttribute('data-pui-style') ?? '').split(/\s+/).includes(token);
+}
+
 describe('adapter-web-component: dialog overlay', () => {
   it('sets body overflow hidden on open and restores on close (modal)', async () => {
     registerDialogWcs();
@@ -89,14 +93,14 @@ describe('adapter-web-component: dialog overlay', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(content.classList.contains('hidden')).toBe(false);
+    expect(styleContains(content, 'hidden')).toBe(false);
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     await Promise.resolve();
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     root.remove();
     document.body.style.overflow = '';
@@ -124,14 +128,14 @@ describe('adapter-web-component: dialog overlay', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(content.classList.contains('hidden')).toBe(false);
+    expect(styleContains(content, 'hidden')).toBe(false);
 
     closeBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await Promise.resolve();
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     root.remove();
     document.body.style.overflow = '';

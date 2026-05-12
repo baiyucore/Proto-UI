@@ -1,4 +1,4 @@
-import type { EffectsPort, StyleHandle } from '@proto.ui/core';
+import { mergeTwTokensV0, type EffectsPort, type StyleHandle } from '@proto.ui/core';
 
 import { type OwnedTokenApplier } from '../feedback-style';
 
@@ -12,7 +12,7 @@ export function createWebEffectsPort(applier: OwnedTokenApplier): EffectsPort {
     try {
       const handle = latest;
       if (!handle) return;
-      if (handle.kind === 'tw') applier.apply(handle.tokens);
+      if (handle.kind === 'tw') applier.apply(mergeTwTokensV0(handle.tokens).tokens);
     } finally {
       flushing = false;
     }

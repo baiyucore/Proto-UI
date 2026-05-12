@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { styleContains } from '../../test-utils/style';
 import { AdaptToWebComponent, setElementProps } from '@proto.ui/adapter-web-component';
 import { hoverCardContent, hoverCardRoot, hoverCardTrigger } from '../src/hover-card';
 
@@ -20,27 +21,27 @@ describe('prototypes/base: hover-card', () => {
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     trigger.dispatchEvent(new Event('pointerenter'));
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(true);
     expect(content.getExposes().open.get()).toBe(true);
-    expect(content.classList.contains('hidden')).toBe(false);
+    expect(styleContains(content, 'hidden')).toBe(false);
 
     content.dispatchEvent(new Event('pointerenter'));
     trigger.dispatchEvent(new Event('pointerleave'));
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(true);
-    expect(content.classList.contains('hidden')).toBe(false);
+    expect(styleContains(content, 'hidden')).toBe(false);
 
     content.dispatchEvent(new Event('pointerleave'));
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     root.remove();
     await Promise.resolve();
@@ -63,13 +64,13 @@ describe('prototypes/base: hover-card', () => {
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     setElementProps(root, { open: true });
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(true);
-    expect(content.classList.contains('hidden')).toBe(false);
+    expect(styleContains(content, 'hidden')).toBe(false);
 
     root.remove();
     await Promise.resolve();

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { styleContains } from '../../test-utils/style';
 import { AdaptToWebComponent } from '@proto.ui/adapter-web-component';
 import {
   dialogClose,
@@ -39,27 +40,27 @@ describe('prototypes/shadcn: dialog', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(trigger.className.includes('rounded-lg')).toBe(true);
-    expect(content.classList.contains('hidden')).toBe(true);
-    expect(mask.classList.contains('hidden')).toBe(true);
+    expect(styleContains(trigger, 'rounded-lg')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
+    expect(styleContains(mask, 'hidden')).toBe(true);
 
     trigger.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(true);
-    expect(content.classList.contains('hidden')).toBe(false);
-    expect(mask.classList.contains('hidden')).toBe(false);
-    expect(content.className.includes('rounded-lg')).toBe(true);
-    expect(content.className.includes('shadow-lg')).toBe(true);
-    expect(title.className.includes('text-lg')).toBe(true);
-    expect(description.className.includes('text-muted-foreground')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(false);
+    expect(styleContains(mask, 'hidden')).toBe(false);
+    expect(styleContains(content, 'rounded-lg')).toBe(true);
+    expect(styleContains(content, 'shadow-lg')).toBe(true);
+    expect(styleContains(title, 'text-lg')).toBe(true);
+    expect(styleContains(description, 'text-muted-foreground')).toBe(true);
 
     close.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
-    expect(mask.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
+    expect(styleContains(mask, 'hidden')).toBe(true);
 
     root.remove();
     await Promise.resolve();

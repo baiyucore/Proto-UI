@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { styleContains } from '../../test-utils/style';
 import { AdaptToWebComponent, setElementProps } from '@proto.ui/adapter-web-component';
 import { tabsContent, tabsList, tabsRoot, tabsTrigger } from '../src/tabs';
 
@@ -37,8 +38,8 @@ describe('prototypes/base: tabs', () => {
     expect(triggerB.getExposes().selected.get()).toBe(false);
     expect(contentA.getExposes().current.get()).toBe(true);
     expect(contentB.getExposes().current.get()).toBe(false);
-    expect(contentA.classList.contains('hidden')).toBe(false);
-    expect(contentB.classList.contains('hidden')).toBe(true);
+    expect(styleContains(contentA, 'hidden')).toBe(false);
+    expect(styleContains(contentB, 'hidden')).toBe(true);
 
     triggerB.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 
@@ -47,8 +48,8 @@ describe('prototypes/base: tabs', () => {
     expect(triggerB.getExposes().selected.get()).toBe(true);
     expect(contentA.getExposes().current.get()).toBe(false);
     expect(contentB.getExposes().current.get()).toBe(true);
-    expect(contentA.classList.contains('hidden')).toBe(true);
-    expect(contentB.classList.contains('hidden')).toBe(false);
+    expect(styleContains(contentA, 'hidden')).toBe(true);
+    expect(styleContains(contentB, 'hidden')).toBe(false);
 
     root.remove();
     await Promise.resolve();

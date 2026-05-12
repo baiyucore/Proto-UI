@@ -3,6 +3,9 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.32.1",
+  "engines": {
+    "pnpm": ">=10.32.1 <11"
+  },
   "devDependencies": {
     "@proto.ui/types": "workspace:*",
     "@types/node": "^25.6.2",
@@ -17,9 +20,9 @@
     "vitest": "^2.0.0"
   },
   "scripts": {
-    "docs:dev": "pnpm --filter apps-www dev",
-    "docs:build": "pnpm --filter apps-www build",
-    "docs:preview": "pnpm --filter apps-www preview",
+    "docs:dev": "corepack pnpm@10.32.1 --filter apps-www dev",
+    "docs:build": "corepack pnpm@10.32.1 --filter apps-www build",
+    "docs:preview": "corepack pnpm@10.32.1 --filter apps-www preview",
     "sync:links": "node scripts/sync-shared-links.mjs",
     "release:scan": "node scripts/release/scan.mjs",
     "release:scan:launch": "node scripts/release/scan.mjs --profile launch --check-governance",
@@ -31,11 +34,11 @@
     "issues:good-first:dry-run": "node scripts/issues/publish-good-first-issues.mjs --dry-run",
     "issues:good-first:publish": "node scripts/issues/publish-good-first-issues.mjs --publish",
     "check:types:workspace": "tsc -p tsconfig.workspace.json --noEmit",
-    "check:types:docs": "pnpm --filter apps-www check",
-    "check:types": "pnpm -s check:types:workspace && pnpm -s check:types:docs",
+    "check:types:docs": "corepack pnpm@10.32.1 --filter apps-www check",
+    "check:types": "corepack pnpm@10.32.1 -s check:types:workspace && corepack pnpm@10.32.1 -s check:types:docs",
     "format": "prettier --write .",
     "prepare": "husky install",
-    "test": "pnpm -s test:types && pnpm -s test:runtime",
+    "test": "corepack pnpm@10.32.1 -s test:types && corepack pnpm@10.32.1 -s test:runtime",
     "test:types": "echo \"[types] checking type contracts...\" && tsc -p internal/contracts/types/tsconfig.json && echo \"[types] OK\"",
     "test:runtime": "vitest run"
   },

@@ -33,6 +33,7 @@ describe('adapter-vue: type helpers', () => {
     expectTypeOf<ProtoVueProps<typeof proto>>().toEqualTypeOf<{
       label?: string;
       disabled?: boolean;
+      class?: string | string[] | Record<string, boolean>;
       hostClass?: string | string[] | Record<string, boolean>;
       hostStyle?: Record<string, string> | string | Array<Record<string, string>>;
       onClick?: () => void;
