@@ -59,7 +59,11 @@ export async function run(argv) {
     return;
   }
 
-  if (command === 'style' || command === 'tailwindcss') {
+  if (command === 'tailwindcss') {
+    throw new Error('The tailwindcss command has been removed. Use `proto-ui style` instead.');
+  }
+
+  if (command === 'style') {
     await runGenerateStyleCss(rest);
     return;
   }

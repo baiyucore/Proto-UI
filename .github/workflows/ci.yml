@@ -329,21 +329,21 @@ jobs:
 
           # React facade per onboarding decision §4.5
           grep -q "createReactAdapter(React)" proto-ui/components/react/index.ts
-          grep -q "export const Button = adapt(shadcnButton)" proto-ui/components/react/index.ts
+          grep -q "export const ShadcnButton = adapt(shadcnButton)" proto-ui/components/react/index.ts
           grep -q "export const BaseButton = adapt(button)" proto-ui/components/react/index.ts
 
           # Vue facade
           grep -q "createVueAdapter(Vue)" proto-ui/components/vue/index.ts
-          grep -q "export const Button = adapt(shadcnButton)" proto-ui/components/vue/index.ts
+          grep -q "export const ShadcnButton = adapt(shadcnButton)" proto-ui/components/vue/index.ts
 
           # Web Component facade
           grep -q "AdaptToWebComponent(shadcnButton" proto-ui/components/wc/index.ts
 
           # Host-prefixed root re-export per onboarding decision §4.6
-          grep -q "Button as ReactButton" proto-ui/components/index.ts
+          grep -q "ShadcnButton as ReactShadcnButton" proto-ui/components/index.ts
           grep -q "BaseButton as ReactBaseButton" proto-ui/components/index.ts
-          grep -q "Button as VueButton" proto-ui/components/index.ts
-          grep -q "ButtonElement } from './wc'" proto-ui/components/index.ts
+          grep -q "ShadcnButton as VueShadcnButton" proto-ui/components/index.ts
+          grep -q "ShadcnButtonElement } from './wc'" proto-ui/components/index.ts
 
           # All adapter + prototype packages must actually be installed end-to-end
           test -d node_modules/@proto.ui/adapter-react

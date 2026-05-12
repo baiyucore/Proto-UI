@@ -80,11 +80,41 @@ describe('@proto.ui/cli', () => {
 
     expect(tokensCss).toContain(`[data-pui-style~="bg-primary"]`);
     expect(tokensCss).not.toContain('@source');
+    expect(tokensCss).not.toContain('Unsupported Proto UI style tokens');
     expect(styleCss).toContain(`@import './shadcn-theme.css';`);
     expect(styleCss).toContain(`@import './proto-ui-tokens.generated.css';`);
     expect(themeCss).toContain('--pui-background');
     expect(themeCss).not.toContain('--background:');
     await expect(fs.stat(path.join(cwd, 'src/styles/shadcn-theme.css'))).resolves.toBeTruthy();
+  });
+
+  it('renders the official prototype token set without unsupported-token comments', async () => {
+    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), 'pui-cli-token-coverage-'));
+    const outFile = path.join(cwd, 'proto-ui-tokens.generated.css');
+
+    const result = runCli(process.cwd(), [
+      'tokens',
+      '--input',
+      'packages/prototypes',
+      '--out',
+      outFile,
+    ]);
+
+    expect(result.status).toBe(0);
+
+    const tokensCss = await fs.readFile(outFile, 'utf8');
+    expect(tokensCss).toContain(`[data-pui-style~="bg-primary"]`);
+    expect(tokensCss).toContain(`[data-pui-style~="rounded-md"]`);
+    expect(tokensCss).not.toContain('Unsupported Proto UI style tokens');
+  }, 30_000);
+
+  it('rejects the removed tailwindcss command with an explicit migration message', () => {
+    const result = runCli(process.cwd(), ['tailwindcss', '--out', './unused.css']);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      'The tailwindcss command has been removed. Use `proto-ui style` instead.'
+    );
   });
 
   it('adds a React facade without installing packages when --no-install is used', async () => {

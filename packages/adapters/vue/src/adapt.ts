@@ -28,12 +28,12 @@ export type VueRuntime = VueRenderRuntime & {
   defineComponent: (opt: any) => any;
   h: (type: any, props?: any, children?: any) => any;
   Teleport?: any;
-  ref: <T>(v: T) => { value: any };
-  shallowRef: <T>(v: T) => { value: any };
-  watch: (...args: any[]) => any;
+  ref: <T>(v: T) => { value: T };
+  shallowRef: <T>(v: T) => { value: T };
+  watch: (source: any, cb: (...args: any[]) => void | Promise<void>, options?: any) => unknown;
   onMounted: (cb: () => void) => void;
   onBeforeUnmount: (cb: () => void) => void;
-  nextTick: (...args: any[]) => Promise<any>;
+  nextTick: (fn?: () => void) => Promise<void>;
 };
 
 export type VueAdapterHandle = {

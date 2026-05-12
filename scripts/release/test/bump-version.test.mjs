@@ -70,6 +70,33 @@ test('bumps multiple packages by patch', () => {
   }
 });
 
+test('prefers the highest published patch in the same minor when requested', () => {
+  const root = makeFixture({
+    version: '0.1.0',
+    packages: [{ relPath: 'cli', name: '@proto.ui/cli', version: '0.1.1' }],
+  });
+  try {
+    const versionsPath = join(root, 'published-versions.json');
+    writeFileSync(
+      versionsPath,
+      `${JSON.stringify({ '@proto.ui/cli': ['0.1.0', '0.1.2', '0.2.0'] }, null, 2)}\n`
+    );
+
+    const result = runBump(root, [
+      '--prefer-published',
+      '--published-versions-file',
+      versionsPath,
+      '--',
+      '@proto.ui/cli',
+    ]);
+
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    assert.equal(readManifestVersion(root, 'cli'), '0.1.3');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('writes release-bump.json summary in cwd', () => {
   const root = makeFixture({
     version: '0.1.0',

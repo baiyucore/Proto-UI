@@ -65,10 +65,10 @@ describe('adapter-vue: framework contract', () => {
         return { type, props, children };
       },
       ref<T>(value: T) {
-        return { value: value as unknown };
+        return { value };
       },
       shallowRef<T>(value: T) {
-        return { value: value as unknown };
+        return { value };
       },
       watch: (() => () => {}) as VueStyleWatch,
       onMounted() {},
