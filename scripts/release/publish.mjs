@@ -78,6 +78,9 @@ const selected = selectPackages(packages, {
   launchGovernance,
 });
 const ordered = topoSortPackages(selected);
+const packageVersions = new Map(
+  packages.map((pkg) => [pkg.name, args.version ?? pkg.manifest.version ?? pkg.version])
+);
 
 if (ordered.length === 0) {
   console.error('No packages selected.');
@@ -113,6 +116,7 @@ const results = [];
 for (const [index, pkg] of ordered.entries()) {
   const result = stagePackage(pkg, {
     ...args,
+    packageVersions,
     publishSequenceIndex: index,
   });
   results.push(result);

@@ -338,6 +338,7 @@ export function stagePackage(pkg, options) {
     maxPublishRetries = 2,
     retryDelayMs = 15000,
     publishSequenceIndex = 0,
+    packageVersions = new Map(),
   } = options;
   const stageDir = join(outDir, sanitizePackageName(pkg.name));
   const npmCacheDir = join(tmpdir(), 'proto-ui-npm-cache');
@@ -380,7 +381,7 @@ export function stagePackage(pkg, options) {
   });
 
   const buildErrors = collectNonEmptyLines(`${buildResult.stdout}\n${buildResult.stderr}`);
-  const manifest = createPublishManifest(pkg, { version, access });
+  const manifest = createPublishManifest(pkg, { version, access, packageVersions });
   writeFileSync(join(stageDir, 'package.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   writeSupportingFiles(pkg, stageDir);
 
@@ -508,7 +509,7 @@ export function stagePackage(pkg, options) {
 }
 
 export function createPublishManifest(pkg, options) {
-  const { version, access } = options;
+  const { version, access, packageVersions = new Map() } = options;
   const manifest = JSON.parse(JSON.stringify(pkg.manifest));
 
   delete manifest.private;
@@ -548,12 +549,18 @@ export function createPublishManifest(pkg, options) {
     if (!manifest[field]) continue;
     for (const [name, depVersion] of Object.entries(manifest[field])) {
       if (String(depVersion).startsWith('workspace:')) {
-        manifest[field][name] = version ?? pkg.version;
+        manifest[field][name] = toPublishedWorkspaceRange(
+          packageVersions.get(name) ?? version ?? pkg.version
+        );
       }
     }
   }
 
   return manifest;
+}
+
+function toPublishedWorkspaceRange(version) {
+  return `^${version}`;
 }
 
 function rewriteManifestField(manifest, field) {
