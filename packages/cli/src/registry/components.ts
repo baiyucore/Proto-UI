@@ -1,4 +1,27 @@
-function defineSimple(id, label, packageName, prototypeImport, exportBaseName, options = {}) {
+export interface ComponentItem {
+  prototypeImport: string;
+  reactExport: string;
+  vueExport: string;
+  wcExport: string;
+  elementName: string;
+}
+
+export interface ComponentEntry {
+  id: string;
+  label: string;
+  packageName: string;
+  stylePreset: string | null;
+  items: ComponentItem[];
+}
+
+function defineSimple(
+  id: string,
+  label: string,
+  packageName: string,
+  prototypeImport: string,
+  exportBaseName: string,
+  options: { stylePreset?: string | null; elementName?: string } = {}
+): ComponentEntry {
   return {
     id,
     label,
@@ -14,7 +37,13 @@ function defineSimple(id, label, packageName, prototypeImport, exportBaseName, o
   };
 }
 
-function defineCompound(id, label, packageName, parts, options = {}) {
+function defineCompound(
+  id: string,
+  label: string,
+  packageName: string,
+  parts: { prototypeImport: string; exportBaseName: string; elementName: string }[],
+  options: { stylePreset?: string | null } = {}
+): ComponentEntry {
   return {
     id,
     label,
@@ -30,7 +59,15 @@ function defineCompound(id, label, packageName, parts, options = {}) {
   };
 }
 
-function createItem({ prototypeImport, exportBaseName, elementName }) {
+function createItem({
+  prototypeImport,
+  exportBaseName,
+  elementName,
+}: {
+  prototypeImport: string;
+  exportBaseName: string;
+  elementName: string;
+}): ComponentItem {
   return {
     prototypeImport,
     reactExport: exportBaseName,
@@ -40,35 +77,42 @@ function createItem({ prototypeImport, exportBaseName, elementName }) {
   };
 }
 
-const shadcn = (id, label, prototypeImport, exportBaseName) =>
+const shadcn = (id: string, label: string, prototypeImport: string, exportBaseName: string) =>
   defineSimple(id, label, '@proto.ui/prototypes-shadcn', prototypeImport, exportBaseName, {
     stylePreset: 'shadcn',
   });
 
-const shadcnCompound = (id, label, parts) =>
+const shadcnCompound = (
+  id: string,
+  label: string,
+  parts: { prototypeImport: string; exportBaseName: string; elementName: string }[]
+) =>
   defineCompound(id, label, '@proto.ui/prototypes-shadcn', parts, {
     stylePreset: 'shadcn',
   });
 
-const base = (id, label, prototypeImport, exportBaseName) =>
+const base = (id: string, label: string, prototypeImport: string, exportBaseName: string) =>
   defineSimple(id, label, '@proto.ui/prototypes-base', prototypeImport, exportBaseName);
 
-const baseCompound = (id, label, parts) =>
-  defineCompound(id, label, '@proto.ui/prototypes-base', parts);
+const baseCompound = (
+  id: string,
+  label: string,
+  parts: { prototypeImport: string; exportBaseName: string; elementName: string }[]
+) => defineCompound(id, label, '@proto.ui/prototypes-base', parts);
 
-export const COMPONENT_REGISTRY = {
-  'shadcn-button': shadcn('shadcn-button', 'shadcn Button', 'shadcnButton', 'Button'),
-  'shadcn-toggle': shadcn('shadcn-toggle', 'shadcn Toggle', 'shadcnToggle', 'Toggle'),
+export const COMPONENT_REGISTRY: Record<string, ComponentEntry> = {
+  'shadcn-button': shadcn('shadcn-button', 'shadcn Button', 'shadcnButton', 'ShadcnButton'),
+  'shadcn-toggle': shadcn('shadcn-toggle', 'shadcn Toggle', 'shadcnToggle', 'ShadcnToggle'),
 
   'shadcn-switch': shadcnCompound('shadcn-switch', 'shadcn Switch', [
     {
       prototypeImport: 'shadcnSwitchRoot',
-      exportBaseName: 'SwitchRoot',
+      exportBaseName: 'ShadcnSwitchRoot',
       elementName: 'proto-ui-shadcn-switch-root',
     },
     {
       prototypeImport: 'shadcnSwitchThumb',
-      exportBaseName: 'SwitchThumb',
+      exportBaseName: 'ShadcnSwitchThumb',
       elementName: 'proto-ui-shadcn-switch-thumb',
     },
   ]),
@@ -76,22 +120,22 @@ export const COMPONENT_REGISTRY = {
   'shadcn-tabs': shadcnCompound('shadcn-tabs', 'shadcn Tabs', [
     {
       prototypeImport: 'shadcnTabsRoot',
-      exportBaseName: 'TabsRoot',
+      exportBaseName: 'ShadcnTabsRoot',
       elementName: 'proto-ui-shadcn-tabs-root',
     },
     {
       prototypeImport: 'shadcnTabsList',
-      exportBaseName: 'TabsList',
+      exportBaseName: 'ShadcnTabsList',
       elementName: 'proto-ui-shadcn-tabs-list',
     },
     {
       prototypeImport: 'shadcnTabsTrigger',
-      exportBaseName: 'TabsTrigger',
+      exportBaseName: 'ShadcnTabsTrigger',
       elementName: 'proto-ui-shadcn-tabs-trigger',
     },
     {
       prototypeImport: 'shadcnTabsContent',
-      exportBaseName: 'TabsContent',
+      exportBaseName: 'ShadcnTabsContent',
       elementName: 'proto-ui-shadcn-tabs-content',
     },
   ]),
@@ -99,17 +143,17 @@ export const COMPONENT_REGISTRY = {
   'shadcn-hover-card': shadcnCompound('shadcn-hover-card', 'shadcn Hover Card', [
     {
       prototypeImport: 'shadcnHoverCardRoot',
-      exportBaseName: 'HoverCardRoot',
+      exportBaseName: 'ShadcnHoverCardRoot',
       elementName: 'proto-ui-shadcn-hover-card-root',
     },
     {
       prototypeImport: 'shadcnHoverCardTrigger',
-      exportBaseName: 'HoverCardTrigger',
+      exportBaseName: 'ShadcnHoverCardTrigger',
       elementName: 'proto-ui-shadcn-hover-card-trigger',
     },
     {
       prototypeImport: 'shadcnHoverCardContent',
-      exportBaseName: 'HoverCardContent',
+      exportBaseName: 'ShadcnHoverCardContent',
       elementName: 'proto-ui-shadcn-hover-card-content',
     },
   ]),
@@ -117,22 +161,22 @@ export const COMPONENT_REGISTRY = {
   'shadcn-dropdown': shadcnCompound('shadcn-dropdown', 'shadcn Dropdown', [
     {
       prototypeImport: 'shadcnDropdownRoot',
-      exportBaseName: 'DropdownRoot',
+      exportBaseName: 'ShadcnDropdownRoot',
       elementName: 'proto-ui-shadcn-dropdown-root',
     },
     {
       prototypeImport: 'shadcnDropdownTrigger',
-      exportBaseName: 'DropdownTrigger',
+      exportBaseName: 'ShadcnDropdownTrigger',
       elementName: 'proto-ui-shadcn-dropdown-trigger',
     },
     {
       prototypeImport: 'shadcnDropdownContent',
-      exportBaseName: 'DropdownContent',
+      exportBaseName: 'ShadcnDropdownContent',
       elementName: 'proto-ui-shadcn-dropdown-content',
     },
     {
       prototypeImport: 'shadcnDropdownItem',
-      exportBaseName: 'DropdownItem',
+      exportBaseName: 'ShadcnDropdownItem',
       elementName: 'proto-ui-shadcn-dropdown-item',
     },
   ]),
@@ -140,37 +184,37 @@ export const COMPONENT_REGISTRY = {
   'shadcn-dialog': shadcnCompound('shadcn-dialog', 'shadcn Dialog', [
     {
       prototypeImport: 'shadcnDialogRoot',
-      exportBaseName: 'DialogRoot',
+      exportBaseName: 'ShadcnDialogRoot',
       elementName: 'proto-ui-shadcn-dialog-root',
     },
     {
       prototypeImport: 'shadcnDialogTrigger',
-      exportBaseName: 'DialogTrigger',
+      exportBaseName: 'ShadcnDialogTrigger',
       elementName: 'proto-ui-shadcn-dialog-trigger',
     },
     {
       prototypeImport: 'shadcnDialogMask',
-      exportBaseName: 'DialogMask',
+      exportBaseName: 'ShadcnDialogMask',
       elementName: 'proto-ui-shadcn-dialog-mask',
     },
     {
       prototypeImport: 'shadcnDialogContent',
-      exportBaseName: 'DialogContent',
+      exportBaseName: 'ShadcnDialogContent',
       elementName: 'proto-ui-shadcn-dialog-content',
     },
     {
       prototypeImport: 'shadcnDialogTitle',
-      exportBaseName: 'DialogTitle',
+      exportBaseName: 'ShadcnDialogTitle',
       elementName: 'proto-ui-shadcn-dialog-title',
     },
     {
       prototypeImport: 'shadcnDialogDescription',
-      exportBaseName: 'DialogDescription',
+      exportBaseName: 'ShadcnDialogDescription',
       elementName: 'proto-ui-shadcn-dialog-description',
     },
     {
       prototypeImport: 'shadcnDialogClose',
-      exportBaseName: 'DialogClose',
+      exportBaseName: 'ShadcnDialogClose',
       elementName: 'proto-ui-shadcn-dialog-close',
     },
   ]),
@@ -323,11 +367,12 @@ export const COMPONENT_REGISTRY = {
   ]),
 };
 
-export function getComponentEntry(componentId) {
+export function getComponentEntry(componentId: string | undefined): ComponentEntry | null {
+  if (!componentId) return null;
   return COMPONENT_REGISTRY[componentId] ?? null;
 }
 
-export function listComponentChoices() {
+export function listComponentChoices(): { title: string; value: string }[] {
   return Object.values(COMPONENT_REGISTRY)
     .map((entry) => ({
       title: entry.label,

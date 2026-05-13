@@ -1,44 +1,25 @@
-// packages/adapters/web-component/src/feedback-style.ts
 import { mergeTwTokensV0 } from '@proto.ui/core';
 
 const KEY = '__proto_ui_applied_style_tokens_v0__';
+export const PUI_STYLE_ATTR = 'data-pui-style';
+const SETUP_STYLE_SOURCE = Symbol('proto-ui.setup-style');
+const ownedTokensByHost = new WeakMap<HTMLElement, Map<unknown, Set<string>>>();
 
 /**
- * v0: map style tokens -> host classList (Tailwind runtime).
- * It only removes classes previously applied by us.
+ * v0 compatibility helper: map style tokens onto the Proto UI style attribute.
  */
 export function applyStyleTokensToHost(el: HTMLElement, tokens: string[]) {
-  // optional defensive merge (can remove if upstream guarantees merged)
   const merged = mergeTwTokensV0(tokens).tokens;
-
-  const prev: string[] = (el as any)[KEY] ?? [];
-  const prevSet = new Set(prev);
-  const nextSet = new Set(merged);
-
-  for (const t of prevSet) if (!nextSet.has(t)) el.classList.remove(t);
-  for (const t of nextSet) if (!prevSet.has(t)) el.classList.add(t);
-
   (el as any)[KEY] = merged;
+  applyOwnedStyleTokens(el, SETUP_STYLE_SOURCE, merged);
 }
 
 export function applyFeedbackStyleTokensToHost(el: HTMLElement, tokens: string[]): () => void {
-  const pre = new Set<string>();
-  for (const c of Array.from(el.classList)) pre.add(c);
-
-  const addedByAdapter: string[] = [];
-
-  for (const t of tokens) {
-    if (!t) continue;
-    if (!pre.has(t) && !el.classList.contains(t)) {
-      el.classList.add(t);
-      addedByAdapter.push(t);
-    }
-  }
+  const source = Symbol('proto-ui.feedback-style');
+  applyOwnedStyleTokens(el, source, tokens);
 
   return () => {
-    for (const t of addedByAdapter) {
-      el.classList.remove(t);
-    }
+    clearOwnedStyleTokens(el, source);
   };
 }
 
@@ -58,7 +39,7 @@ export type OwnedTokenApplier = {
 };
 
 /**
- * Create an applier that manages adapter-owned Tailwind-style tokens on host element.
+ * Create an applier that manages adapter-owned Proto UI style tokens on host element.
  *
  * Contract:
  * - Only operates on owned tokens it previously applied
@@ -69,40 +50,20 @@ export function createOwnedTwTokenApplier(
   host: HTMLElement,
   hooks: { onChange?: () => void } = {}
 ): OwnedTokenApplier {
+  const source = Symbol('proto-ui.owned-style');
   let owned = new Set<string>();
 
   const apply = (nextTokens: string[]) => {
-    // Normalize input (defensive): remove empties, dedupe but preserve first order
-    const nextList: string[] = [];
-    const nextSet = new Set<string>();
-    for (const t of nextTokens) {
-      const tok = (t ?? '').trim();
-      if (!tok) continue;
-      if (nextSet.has(tok)) continue;
-      nextSet.add(tok);
-      nextList.push(tok);
-    }
+    const nextList = normalizeTokens(nextTokens);
+    const nextSet = new Set<string>(nextList);
 
-    // Remove tokens that are no longer present
-    for (const tok of owned) {
-      if (!nextSet.has(tok)) {
-        host.classList.remove(tok);
-      }
-    }
-
-    // Add new tokens
-    for (const tok of nextList) {
-      if (!owned.has(tok)) {
-        host.classList.add(tok);
-      }
-    }
-
+    applyOwnedStyleTokens(host, source, nextList);
     owned = nextSet;
     hooks.onChange?.();
   };
 
   const clear = () => {
-    for (const tok of owned) host.classList.remove(tok);
+    clearOwnedStyleTokens(host, source);
     owned = new Set<string>();
     hooks.onChange?.();
   };
@@ -110,4 +71,73 @@ export function createOwnedTwTokenApplier(
   const getOwned = () => owned;
 
   return { apply, clear, getOwned };
+}
+
+function normalizeTokens(tokens: readonly string[]) {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const token of tokens) {
+    const normalized = (token ?? '').trim();
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+    out.push(normalized);
+  }
+  return out;
+}
+
+function setStyleAttribute(el: HTMLElement, tokens: readonly string[]) {
+  if (tokens.length > 0) {
+    el.setAttribute(PUI_STYLE_ATTR, tokens.join(' '));
+  } else {
+    el.removeAttribute(PUI_STYLE_ATTR);
+  }
+}
+
+function applyOwnedStyleTokens(el: HTMLElement, source: unknown, tokens: readonly string[]) {
+  const owners = ownedTokensByHost.get(el) ?? new Map<unknown, Set<string>>();
+  const previouslyOwned = collectOwnedTokens(owners);
+  const normalized = new Set(normalizeTokens(tokens));
+  if (normalized.size > 0) owners.set(source, normalized);
+  else owners.delete(source);
+  ownedTokensByHost.set(el, owners);
+  rewriteStyleAttribute(el, owners, previouslyOwned);
+  if (owners.size === 0) ownedTokensByHost.delete(el);
+}
+
+function clearOwnedStyleTokens(el: HTMLElement, source: unknown) {
+  const owners = ownedTokensByHost.get(el);
+  if (!owners) return;
+  const previouslyOwned = collectOwnedTokens(owners);
+  owners.delete(source);
+  rewriteStyleAttribute(el, owners, previouslyOwned);
+  if (owners.size === 0) ownedTokensByHost.delete(el);
+}
+
+function collectOwnedTokens(owners: Map<unknown, Set<string>>) {
+  const out = new Set<string>();
+  for (const tokens of owners.values()) {
+    for (const token of tokens) out.add(token);
+  }
+  return out;
+}
+
+function rewriteStyleAttribute(
+  el: HTMLElement,
+  owners: Map<unknown, Set<string>>,
+  previouslyOwned: ReadonlySet<string>
+) {
+  const current = normalizeTokens((el.getAttribute(PUI_STYLE_ATTR) ?? '').split(/\s+/));
+  const external = current.filter((token) => !previouslyOwned.has(token));
+  const next = [...external];
+  const seen = new Set(next);
+
+  for (const tokens of owners.values()) {
+    for (const token of tokens) {
+      if (seen.has(token)) continue;
+      seen.add(token);
+      next.push(token);
+    }
+  }
+
+  setStyleAttribute(el, next);
 }

@@ -20,13 +20,14 @@ describe('adapter-web-component: feedback.style.apply-to-host v0', () => {
     document.body.appendChild(el);
 
     expect(el.classList.contains('user-a')).toBe(true);
-    expect(el.classList.contains('opacity-50')).toBe(true);
-    expect(el.classList.contains('bg-red-500')).toBe(true);
+    expect(el.classList.contains('opacity-50')).toBe(false);
+    expect(el.classList.contains('bg-red-500')).toBe(false);
+    expect(el.getAttribute('data-pui-root')).toBe('');
+    expect(el.getAttribute('data-pui-style')).toBe('opacity-50 bg-red-500');
 
     // disconnect should clear adapter-owned feedback tokens (but keep user class)
     document.body.removeChild(el);
     expect(el.classList.contains('user-a')).toBe(true);
-    expect(el.classList.contains('opacity-50')).toBe(false);
-    expect(el.classList.contains('bg-red-500')).toBe(false);
+    expect(el.hasAttribute('data-pui-style')).toBe(false);
   });
 });

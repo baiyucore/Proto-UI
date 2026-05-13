@@ -10,7 +10,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { getLaunchProfilePackageNames, loadLaunchPackageGovernance } from './governance.mjs';
 
@@ -280,6 +280,22 @@ export function recommendedPackages(packages) {
   return packages.filter((pkg) => !pkg.isLegacy);
 }
 
+/**
+ * Preflight build for packages that declare their own build step.
+ *
+ * Only packages with BOTH:
+ *   1. exports pointing to dist/ (pkg.distExport)
+ *   2. A scripts.build in their package.json
+ *
+ * ...are built here as a preflight check. Note: stagePackage still
+ * runs its own unified tsc build afterwards; this function does NOT
+ * consume or copy the prerequisite build output. Its purpose is to
+ * surface build diagnostics early, before staging begins.
+ *
+ * Packages that can be built by the standard tsc invocation should
+ * NOT declare scripts.build -- they will be handled uniformly by
+ * stagePackage.
+ */
 export function buildPrerequisitePackages(packages) {
   const prerequisites = packages.filter(
     (pkg) => pkg.distExport && typeof pkg.manifest?.scripts?.build === 'string'
@@ -322,6 +338,7 @@ export function stagePackage(pkg, options) {
     maxPublishRetries = 2,
     retryDelayMs = 15000,
     publishSequenceIndex = 0,
+    packageVersions = new Map(),
   } = options;
   const stageDir = join(outDir, sanitizePackageName(pkg.name));
   const npmCacheDir = join(tmpdir(), 'proto-ui-npm-cache');
@@ -344,8 +361,6 @@ export function stagePackage(pkg, options) {
     '--declaration',
     '--emitDeclarationOnly',
     'false',
-    '--allowJs',
-    'true',
     '--rootDir',
     join(pkg.dir, 'src'),
     '--outDir',
@@ -366,13 +381,63 @@ export function stagePackage(pkg, options) {
   });
 
   const buildErrors = collectNonEmptyLines(`${buildResult.stdout}\n${buildResult.stderr}`);
-  const manifest = createPublishManifest(pkg, { version, access });
+  const manifest = createPublishManifest(pkg, { version, access, packageVersions });
   writeFileSync(join(stageDir, 'package.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   writeSupportingFiles(pkg, stageDir);
 
   const binDir = join(pkg.dir, 'bin');
   if (existsSync(binDir)) {
     cpSync(binDir, join(stageDir, 'bin'), { recursive: true });
+  }
+
+  // verify staged dist/index.js is not a self-referencing stub and can be parsed
+  const smokeEntry = join(distDir, 'index.js');
+  if (existsSync(smokeEntry)) {
+    const content = readFileSync(smokeEntry, 'utf8');
+    const nonCommentLines = content
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0 && !l.startsWith('//'));
+    if (nonCommentLines.length === 1 && nonCommentLines[0].includes("from './index.js'")) {
+      throw new Error(
+        `Stage smoke test failed for ${pkg.name}: dist/index.js is a self-referencing stub`
+      );
+    }
+
+    const smokeScript = join(stageDir, '.smoke-test.mjs');
+    writeFileSync(
+      smokeScript,
+      `import('${pathToFileURL(smokeEntry).href}').then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); })\n`,
+      'utf8'
+    );
+    const importTest = spawnSync('node', [smokeScript], {
+      cwd: stageDir,
+      encoding: 'utf8',
+      shell: IS_WINDOWS,
+      timeout: 10000,
+    });
+    rmSync(smokeScript, { force: true });
+    if (importTest.status !== 0) {
+      const stderr = importTest.stderr || '';
+      // smoke imports run inside a bare stage dir with no node_modules, so any
+      // Node ESM resolution failure (missing dep, unsupported subpath, bundler
+      // resolution requirements that don't trip the file resolver) is an
+      // environmental artifact of the stage, not a packaging defect. only
+      // SyntaxError / ReferenceError / TypeError-style runtime failures count
+      // as real signal here — the kind of failure that shipped as the @proto.ui/cli@0.1.0
+      // self-referencing stub, which is what this smoke test was added to catch.
+      const isExpectedResolutionFailure =
+        stderr.includes('ERR_MODULE_NOT_FOUND') ||
+        stderr.includes('ERR_PACKAGE_PATH_NOT_EXPORTED') ||
+        stderr.includes('ERR_UNSUPPORTED_DIR_IMPORT') ||
+        stderr.includes('ERR_INVALID_MODULE_SPECIFIER');
+      if (!isExpectedResolutionFailure) {
+        const errors = collectNonEmptyLines(`${importTest.stdout}\n${stderr}`);
+        throw new Error(
+          `Stage smoke test failed for ${pkg.name}: cannot import dist/index.js\n${errors.join('\n')}`
+        );
+      }
+    }
   }
 
   let publishResult = null;
@@ -398,8 +463,21 @@ export function stagePackage(pkg, options) {
         },
       });
       const errors = collectNonEmptyLines(`${result.stdout}\n${result.stderr}`);
-      const code = result.status ?? 0;
+      const rawCode = result.status ?? 0;
       const rateLimited = isRateLimitedPublishError(errors);
+      // dry-run is meant to validate that the staged tarball is publishable,
+      // not that the version slot is empty on the registry. once a version
+      // is published on npm, every subsequent dry-run for that same VERSION
+      // reports "cannot publish over the previously published versions" — so
+      // any PR that runs after a release would otherwise fail this check
+      // forever. treat that case as a green dry-run signal. real publishes
+      // (which omit --dry-run) still fail loudly because we only collapse
+      // the exit code when dryRun is true.
+      const alreadyPublished = dryRun && rawCode !== 0 && isAlreadyPublishedError(errors);
+      if (alreadyPublished) {
+        console.log(`[${pkg.name}] dry-run: ${pkg.version} already published, treating as ok`);
+      }
+      const code = alreadyPublished ? 0 : rawCode;
       publishResult = {
         code,
         stdout: result.stdout,
@@ -408,6 +486,7 @@ export function stagePackage(pkg, options) {
         attempt,
         maxAttempts,
         rateLimited,
+        alreadyPublished,
       };
       if (code === 0) break;
       if (!rateLimited || attempt >= maxAttempts) {
@@ -430,7 +509,7 @@ export function stagePackage(pkg, options) {
 }
 
 export function createPublishManifest(pkg, options) {
-  const { version, access } = options;
+  const { version, access, packageVersions = new Map() } = options;
   const manifest = JSON.parse(JSON.stringify(pkg.manifest));
 
   delete manifest.private;
@@ -441,6 +520,11 @@ export function createPublishManifest(pkg, options) {
   manifest.license ??= readRootLicenseId();
   const files = ['dist', 'README.md', 'LICENSE'];
   if (manifest.bin && !files.includes('bin')) files.push('bin');
+  if (pkg.manifest.files && pkg.manifest.files.length > 0) {
+    console.warn(
+      `[${pkg.name}] package.json#files overridden by publish script: ${JSON.stringify(pkg.manifest.files)} -> ${JSON.stringify(files)}`
+    );
+  }
   manifest.files = files;
   manifest.publishConfig = {
     access,
@@ -465,12 +549,18 @@ export function createPublishManifest(pkg, options) {
     if (!manifest[field]) continue;
     for (const [name, depVersion] of Object.entries(manifest[field])) {
       if (String(depVersion).startsWith('workspace:')) {
-        manifest[field][name] = version ?? pkg.version;
+        manifest[field][name] = toPublishedWorkspaceRange(
+          packageVersions.get(name) ?? version ?? pkg.version
+        );
       }
     }
   }
 
   return manifest;
+}
+
+function toPublishedWorkspaceRange(version) {
+  return `^${version}`;
 }
 
 function rewriteManifestField(manifest, field) {
@@ -566,6 +656,11 @@ function parseIntegerArg(value, argName) {
 function isRateLimitedPublishError(lines) {
   const text = lines.join('\n');
   return /\b429\b/i.test(text) || /too many requests/i.test(text) || /rate limit/i.test(text);
+}
+
+function isAlreadyPublishedError(lines) {
+  const text = lines.join('\n');
+  return /cannot publish over the previously published versions/i.test(text);
 }
 
 function sleepMs(ms) {

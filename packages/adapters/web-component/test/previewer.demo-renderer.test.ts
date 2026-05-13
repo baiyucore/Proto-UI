@@ -3,8 +3,12 @@ import { loadPrototypes } from '../../../../apps/www/src/components/PrototypePre
 import { renderDemo } from '../../../../apps/www/src/components/PrototypePreviewer/demo-renderer';
 import demo from '../../../../apps/www/src/content/docs/demo_components/tabs/demo-shadcn-tabs.demo';
 
+function styleContains(el: Element | null, token: string): boolean {
+  return (el?.getAttribute('data-pui-style') ?? '').split(/\s+/).includes(token);
+}
+
 describe('PrototypePreviewer demo-renderer / wc', () => {
-  it('renders shadcn tabs parts with host classes in demo wc mode', async () => {
+  it('renders shadcn tabs parts with host styles in demo wc mode', async () => {
     await loadPrototypes([
       'shadcn-button',
       'shadcn-tabs-root',
@@ -34,11 +38,11 @@ describe('PrototypePreviewer demo-renderer / wc', () => {
     expect(list).not.toBeNull();
     expect(trigger).not.toBeNull();
     expect(content).not.toBeNull();
-    expect(root?.className).toContain('flex');
+    expect(styleContains(root, 'flex')).toBe(true);
     expect(root?.className).toContain('w-[420px]');
-    expect(list?.className).toContain('inline-flex');
-    expect(trigger?.className).toContain('rounded-lg');
-    expect(content?.className).toContain('min-h-28');
+    expect(styleContains(list, 'inline-flex')).toBe(true);
+    expect(styleContains(trigger, 'rounded-lg')).toBe(true);
+    expect(styleContains(content, 'min-h-28')).toBe(true);
 
     await session.destroy();
     host.remove();

@@ -1,6 +1,6 @@
 {
   "name": "@proto.ui/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "type": "module",
   "bin": {
@@ -8,8 +8,7 @@
   },
   "files": [
     "bin/",
-    "src/",
-    "!src/**/*.ts",
+    "dist/",
     "README.md"
   ],
   "dependencies": {
@@ -34,7 +33,14 @@
     "proto-ui",
     "cli",
     "components",
-    "tailwind",
     "tokens"
-  ]
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.2",
+    "@types/prompts": "^2.4.9"
+  }
 }

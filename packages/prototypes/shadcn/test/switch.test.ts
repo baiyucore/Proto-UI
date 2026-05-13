@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { styleContains } from '../../test-utils/style';
 import { AdaptToWebComponent, setElementProps } from '@proto.ui/adapter-web-component';
 import { switchRoot, switchThumb } from '../src/switch';
 
@@ -24,9 +25,9 @@ describe('prototypes/shadcn: switch', () => {
     expect(root.getExposes().checked.get()).toBe(true);
     expect(thumb.getExposes().isChecked()).toBe(true);
     expect(root.getAttribute('aria-checked')).toBe('true');
-    expect(root.className.includes('aria-checked:bg-primary')).toBe(true);
-    expect(root.className.includes('aria-checked:pl-[22px]')).toBe(true);
-    expect(thumb.className.includes('translate-x-0')).toBe(true);
+    expect(styleContains(root, 'aria-checked:bg-primary')).toBe(true);
+    expect(styleContains(root, 'aria-checked:pl-[22px]')).toBe(true);
+    expect(styleContains(thumb, 'translate-x-0')).toBe(true);
 
     root.remove();
     await Promise.resolve();

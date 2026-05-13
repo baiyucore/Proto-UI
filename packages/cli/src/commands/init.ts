@@ -10,17 +10,17 @@ import { runLegacyStyleCommand } from '../services/legacy-styles.js';
 import { ensureDir, relativeToCwd } from '../utils/fs.js';
 import { isInteractiveDisabled, parseArgv, resolveBooleanOption } from '../utils/args.js';
 
-export async function runInitCommand(argv) {
+export async function runInitCommand(argv: string[]): Promise<void> {
   const { options } = parseArgv(argv);
   const cwd = process.cwd();
-  const rootDir = options['root-dir'] ?? DEFAULT_ROOT_DIR;
-  const stylesDir = options['styles-dir'] ?? DEFAULT_STYLES_DIR;
+  const rootDir = (options['root-dir'] as string | undefined) ?? DEFAULT_ROOT_DIR;
+  const stylesDir = (options['styles-dir'] as string | undefined) ?? DEFAULT_STYLES_DIR;
   const interactive =
     !isInteractiveDisabled(options) &&
     process.stdin.isTTY &&
     process.stdout.isTTY &&
-    !options.y &&
-    !options.yes;
+    options.y !== true &&
+    options.yes !== true;
 
   let stylesEnabled = !(
     resolveBooleanOption(options, 'styles', true) === false ||

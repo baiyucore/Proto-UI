@@ -1,3 +1,8 @@
+// @ts-nocheck
+// legacy shadcn-styles generator: ~950 lines of recursive ts.Node AST walking
+// retained verbatim from the original .mjs implementation. the new typed
+// surface (commands, services, registry) has real annotations; precise
+// ts.* narrowings across this entire file would be a separate, larger change.
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -12,10 +17,14 @@ import {
   DEFAULT_THEME_NAME,
   DEFAULT_THEME_IMPORT,
   DEFAULT_TOKENS_IMPORT,
-  SHADCN_TOKENS_CSS,
+  SHADCN_STYLE_TOKENS,
   SHADCN_THEME_CSS,
-  TAILWIND_BASE_TEMPLATE,
 } from './type.js';
+import {
+  renderPrefixedThemeCss,
+  renderProtoStyleEntryCss,
+  renderProtoStyleTokenCss,
+} from '../services/proto-style-css.js';
 
 /** Matches docs: apps/www/src/content/docs/zh-cn/start-here/quick-start.mdx (proto-ui/ tree). */
 const PROTO_UI_LAYOUT_TXT = `your-project/
@@ -51,7 +60,11 @@ export async function run(argv) {
   }
 
   if (command === 'tailwindcss') {
-    await runGenerateTailwindCss(rest);
+    throw new Error('The tailwindcss command has been removed. Use `proto-ui style` instead.');
+  }
+
+  if (command === 'style') {
+    await runGenerateStyleCss(rest);
     return;
   }
 
@@ -69,10 +82,10 @@ function printHelp() {
 Usage:
   proto-ui [--help|-h|-help|help]
   proto-ui init [--help|-h|-help] [...]
-  proto-ui init [--styles-dir <dir>] [--no-tailwind] [--adapter <name>] [--prototypes <name>] [--install] [--no-install] [--no-interactive] [--defaults|-y]
+  proto-ui init [--styles-dir <dir>] [--no-styles] [--adapter <name>] [--prototypes <name>] [--install] [--no-install] [--no-interactive] [--defaults|-y]
   proto-ui <theme> [--styles-dir <dir>]
   proto-ui tokens --input <dir> --out <file>
-  proto-ui tailwindcss [--theme-import <path>] [--tokens-import <path>] --out <file>
+  proto-ui style [--theme-import <path>] [--tokens-import <path>] --out <file>
   proto-ui theme <name> --out <file>
 
 Init layout (same as website Quick Start):
@@ -80,12 +93,12 @@ ${PROTO_UI_LAYOUT_TXT}
 
 Examples:
   proto-ui init --adapter vue --prototypes shadcn --install
-  proto-ui init --defaults --no-tailwind
-  proto-ui init --no-interactive --no-tailwind
-  proto-ui init --no-tailwind
+  proto-ui init --defaults --no-styles
+  proto-ui init --no-interactive --no-styles
+  proto-ui init --no-styles
   proto-ui shadcn --styles-dir ./src/styles
-  proto-ui tokens --input ./packages/prototypes --out ./src/styles/prototype-tokens.generated.css
-  proto-ui tailwindcss --out ./src/styles/tailwindcss.css
+  proto-ui tokens --input ./packages/prototypes --out ./src/styles/proto-ui-tokens.generated.css
+  proto-ui style --out ./src/styles/proto-ui-style.css
   proto-ui theme shadcn --out ./src/styles/shadcn-theme.css
 `);
 }
@@ -99,15 +112,16 @@ Creates ./proto-ui/ at the project root (see Quick Start docs). Typical layout:
 
 ${PROTO_UI_LAYOUT_TXT}
 
-Also writes proto-ui/config.json and (unless --no-tailwind) generates shadcn CSS presets under --styles-dir.
+Also writes proto-ui/config.json and (unless --no-styles) generates Proto UI CSS presets under --styles-dir.
 
 Usage:
   proto-ui init [--help|-h|-help] [...]
-  proto-ui init [--styles-dir <dir>] [--no-tailwind] [--adapter <name>] [--prototypes <name>] [--install] [--no-install] [--no-interactive] [--defaults|-y]
+  proto-ui init [--styles-dir <dir>] [--no-styles] [--adapter <name>] [--prototypes <name>] [--install] [--no-install] [--no-interactive] [--defaults|-y]
 
 Options:
-  --styles-dir <dir>     Where to write CSS presets (default: ./src/styles). Used when Tailwind setup runs.
-  --no-tailwind          Skip generating shadcn tokens + theme + tailwindcss preset files.
+  --styles-dir <dir>     Where to write CSS presets (default: ./src/styles).
+  --no-styles            Skip generating shadcn tokens + theme + Proto UI style preset files.
+  --no-tailwind          Alias of --no-styles.
   --adapter <name>       Host adapter package: vue | react | web-component | wc
   --prototypes <name>    Prototype library: shadcn
   --install              Force running the package manager (also needed in non-interactive mode without TTY prompts).
@@ -120,7 +134,7 @@ When stdin and stdout are both TTYs, omitting --adapter / --prototypes shows int
 Examples:
   proto-ui init
   proto-ui init --adapter vue --prototypes shadcn --install
-  proto-ui init --defaults --no-tailwind
+  proto-ui init --defaults --no-styles
   proto-ui init --styles-dir ./app/styles --adapter react --prototypes shadcn --install
 `);
 }
@@ -203,7 +217,7 @@ async function runInit(args) {
   const options = parseOptions(args);
   const cwd = process.cwd();
   const stylesDir = options['styles-dir'] ?? './src/styles';
-  const skipTailwind = options['no-tailwind'] === 'true';
+  const skipStyles = options['no-styles'] === 'true' || options['no-tailwind'] === 'true';
   let adapterKey = (options['adapter'] ?? '').toLowerCase();
   let prototypesKey = (options['prototypes'] ?? '').toLowerCase();
   let doInstall = options['install'] === 'true';
@@ -252,9 +266,9 @@ async function runInit(args) {
   const config = {
     version: 1,
     stylesDir,
-    tailwind: {
-      enabled: !skipTailwind,
-      preset: !skipTailwind ? DEFAULT_THEME_NAME : null,
+    styles: {
+      enabled: !skipStyles,
+      preset: !skipStyles ? DEFAULT_THEME_NAME : null,
     },
     adapter: adapterPackage,
     prototypeLibraries: prototypePackages,
@@ -267,10 +281,10 @@ async function runInit(args) {
     '[proto-ui] init: created proto-ui/adapters, proto-ui/prototypes, proto-ui/components (matches Quick Start layout)'
   );
 
-  if (!skipTailwind) {
+  if (!skipStyles) {
     await runPreset(DEFAULT_THEME_NAME, ['--styles-dir', stylesDir]);
   } else {
-    console.log('[proto-ui] init: skipped Tailwind preset generation (--no-tailwind)');
+    console.log('[proto-ui] init: skipped style preset generation');
   }
 
   if (doInstall) {
@@ -356,28 +370,28 @@ async function runPreset(themeName, args) {
     );
   }
   const stylesDir = options['styles-dir'] ?? './src/styles';
-  const tokensFileName = options['tokens-file'] ?? 'prototype-tokens.generated.css';
-  const tailwindFileName = options['tailwind-file'] ?? 'tailwindcss.css';
+  const tokensFileName = options['tokens-file'] ?? 'proto-ui-tokens.generated.css';
+  const styleFileName = options['style-file'] ?? options['tailwind-file'] ?? 'proto-ui-style.css';
   const themeFileName = options['theme-file'] ?? `${normalizedTheme}-theme.css`;
 
   const tokensOut = path.join(stylesDir, tokensFileName);
   const themeOut = path.join(stylesDir, themeFileName);
-  const tailwindOut = path.join(stylesDir, tailwindFileName);
+  const styleOut = path.join(stylesDir, styleFileName);
 
   const tokensOutputFile = path.resolve(process.cwd(), tokensOut);
   await ensureDirectory(tokensOutputFile);
-  await fs.writeFile(tokensOutputFile, SHADCN_TOKENS_CSS, 'utf8');
+  await fs.writeFile(tokensOutputFile, renderTokenCss(SHADCN_STYLE_TOKENS), 'utf8');
   console.log(`[proto-ui] tokens(preset): wrote ${relativeToCwd(tokensOutputFile)}`);
 
   await runGenerateTheme([normalizedTheme, '--out', themeOut]);
 
-  const tailwindAbs = path.resolve(process.cwd(), tailwindOut);
-  const themeImport = toCssImportPath(tailwindAbs, path.resolve(process.cwd(), themeOut));
-  const tokensImport = toCssImportPath(tailwindAbs, path.resolve(process.cwd(), tokensOut));
+  const styleAbs = path.resolve(process.cwd(), styleOut);
+  const themeImport = toCssImportPath(styleAbs, path.resolve(process.cwd(), themeOut));
+  const tokensImport = toCssImportPath(styleAbs, path.resolve(process.cwd(), tokensOut));
 
-  await runGenerateTailwindCss([
+  await runGenerateStyleCss([
     '--out',
-    tailwindOut,
+    styleOut,
     '--theme-import',
     themeImport,
     '--tokens-import',
@@ -385,7 +399,7 @@ async function runPreset(themeName, args) {
   ]);
 
   console.log(
-    `[proto-ui] setup(${normalizedTheme}): completed tokens + theme + tailwindcss in ${stylesDir}`
+    `[proto-ui] setup(${normalizedTheme}): completed tokens + theme + proto-ui style in ${stylesDir}`
   );
 }
 
@@ -418,20 +432,17 @@ async function runGenerateTokens(args) {
   console.log(`[proto-ui] tokens: wrote ${tokens.size} tokens -> ${relativeToCwd(outputFile)}`);
 }
 
-async function runGenerateTailwindCss(args) {
+async function runGenerateStyleCss(args) {
   const options = parseOptions(args);
   const outFile = requiredOption(options, 'out');
   const themeImport = options['theme-import'] ?? DEFAULT_THEME_IMPORT;
   const tokensImport = options['tokens-import'] ?? DEFAULT_TOKENS_IMPORT;
   const outputFile = path.resolve(process.cwd(), outFile);
-  const css = TAILWIND_BASE_TEMPLATE.replace('__THEME_IMPORT__', themeImport).replace(
-    '__TOKENS_IMPORT__',
-    tokensImport
-  );
+  const css = renderProtoStyleEntryCss({ themeImport, tokensImport });
 
   await ensureDirectory(outputFile);
   await fs.writeFile(outputFile, css, 'utf8');
-  console.log(`[proto-ui] tailwindcss: wrote ${relativeToCwd(outputFile)}`);
+  console.log(`[proto-ui] style: wrote ${relativeToCwd(outputFile)}`);
 }
 
 async function runGenerateTheme(args) {
@@ -449,7 +460,7 @@ async function runGenerateTheme(args) {
 
   let css = '';
   if (normalizedName === DEFAULT_THEME_NAME) {
-    css = SHADCN_THEME_CSS;
+    css = renderPrefixedThemeCss(SHADCN_THEME_CSS);
   } else {
     throw new Error(`unsupported theme "${name}". currently supported: ${DEFAULT_THEME_NAME}.`);
   }
@@ -556,9 +567,7 @@ function createsScope(node) {
 }
 
 function hasStatements(node) {
-  return (
-    ts.isSourceFile(node) || ts.isBlock(node) || ts.isModuleBlock(node) || ts.isCaseBlock(node)
-  );
+  return ts.isSourceFile(node) || ts.isBlock(node) || ts.isModuleBlock(node);
 }
 
 function registerDeclaration(decl, scope) {
@@ -684,6 +693,7 @@ function resolveSemanticBinding(node) {
     }
   }
 
+  if (!ts.isPropertyAccessExpression(node.expression)) return null;
   const kind = node.expression.name.text === 'fromInteraction' ? 'interaction' : 'accessibility';
   const firstArg = node.arguments[0];
   if (!firstArg || !ts.isStringLiteralLike(firstArg)) return null;
@@ -901,22 +911,7 @@ function asMapValue(map) {
 }
 
 function renderTokenCss(tokens) {
-  const lines = [
-    '/* This file is auto-generated by @proto.ui/cli (proto-ui tokens). */',
-    '/* Do not edit by hand. */',
-    '',
-  ];
-
-  for (const token of tokens) {
-    lines.push(`@source inline("${escapeForCss(token)}");`);
-  }
-
-  lines.push('');
-  return lines.join('\n');
-}
-
-function escapeForCss(token) {
-  return token.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  return renderProtoStyleTokenCss(tokens);
 }
 
 function scriptKindForFile(file) {

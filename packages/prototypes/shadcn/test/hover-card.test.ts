@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { styleContains } from '../../test-utils/style';
 import { AdaptToWebComponent } from '@proto.ui/adapter-web-component';
 import { hoverCardContent, hoverCardRoot, hoverCardTrigger } from '../src/hover-card';
 
@@ -19,16 +20,16 @@ describe('prototypes/shadcn: hover-card', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(trigger.className.includes('rounded-md')).toBe(true);
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(trigger, 'rounded-md')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     trigger.dispatchEvent(new Event('pointerenter'));
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(true);
-    expect(content.className.includes('rounded-xl')).toBe(true);
-    expect(content.className.includes('shadow-lg')).toBe(true);
-    expect(content.classList.contains('hidden')).toBe(false);
+    expect(styleContains(content, 'rounded-xl')).toBe(true);
+    expect(styleContains(content, 'shadow-lg')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(false);
 
     content.dispatchEvent(new Event('pointerleave'));
     trigger.dispatchEvent(new Event('pointerleave'));

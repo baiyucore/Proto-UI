@@ -1,1 +1,1 @@
-pnpm lint-staged
+corepack pnpm@10.32.1 lint-staged

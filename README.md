@@ -67,9 +67,8 @@ The architecture is stable enough to move from v0 to v1 without destructive rewr
 Use the pnpm version declared in `package.json`; it is aligned with `pnpm-lock.yaml` and CI.
 
 ```sh
-corepack enable
-pnpm install --frozen-lockfile
-pnpm docs:dev
+corepack pnpm@10.32.1 install --frozen-lockfile
+corepack pnpm@10.32.1 docs:dev
 ```
 
 ---

@@ -9,10 +9,10 @@ Core commands:
   init              Create ./proto-ui, write config, and optionally generate style preset files
   add               Install adapter/prototype packages and generate component facade exports
 
-Legacy style commands (still supported):
+Style commands:
   proto-ui shadcn --styles-dir ./src/styles
-  proto-ui tokens --input ./packages/prototypes --out ./src/styles/prototype-tokens.generated.css
-  proto-ui tailwindcss --out ./src/styles/tailwindcss.css
+  proto-ui tokens --input ./packages/prototypes --out ./src/styles/proto-ui-tokens.generated.css
+  proto-ui style --out ./src/styles/proto-ui-style.css
   proto-ui theme shadcn --out ./src/styles/shadcn-theme.css
 
 Examples:
@@ -22,7 +22,7 @@ Examples:
   proto-ui add wc shadcn-button --no-install
 `;
 
-const COMMAND_HELP = {
+const COMMAND_HELP: Record<string, string> = {
   init: `proto-ui init
 
 Usage:
@@ -61,11 +61,11 @@ Behavior:
 `,
 };
 
-export function printHelp() {
+export function printHelp(): void {
   console.log(HELP_TEXT);
 }
 
-export function printCommandHelp(command) {
+export function printCommandHelp(command: string): void {
   const text = COMMAND_HELP[command];
   if (!text) {
     printHelp();

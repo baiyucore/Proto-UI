@@ -67,9 +67,8 @@ v0 用 Adapter 验证可行性，v1 将用 Compiler 保证零运行时开销。
 请使用 `package.json` 中声明的 pnpm 版本；该版本已与 `pnpm-lock.yaml` 和 CI 对齐。
 
 ```sh
-corepack enable
-pnpm install --frozen-lockfile
-pnpm docs:dev
+corepack pnpm@10.32.1 install --frozen-lockfile
+corepack pnpm@10.32.1 docs:dev
 ```
 
 ---

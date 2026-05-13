@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { styleContains } from '../../test-utils/style';
 import { AdaptToWebComponent, setElementProps } from '@proto.ui/adapter-web-component';
 import { dropdownContent, dropdownItem, dropdownRoot, dropdownTrigger } from '../src/dropdown';
 
@@ -21,20 +22,20 @@ describe('prototypes/base: dropdown', () => {
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     trigger.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(true);
     expect(content.getExposes().open.get()).toBe(true);
-    expect(content.classList.contains('hidden')).toBe(false);
+    expect(styleContains(content, 'hidden')).toBe(false);
 
     trigger.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     root.remove();
     await Promise.resolve();
@@ -57,14 +58,14 @@ describe('prototypes/base: dropdown', () => {
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(true);
-    expect(content.classList.contains('hidden')).toBe(false);
+    expect(styleContains(content, 'hidden')).toBe(false);
 
     document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
     await Promise.resolve();
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     root.remove();
     await Promise.resolve();
@@ -95,7 +96,7 @@ describe('prototypes/base: dropdown', () => {
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
 
     root.remove();
     await Promise.resolve();
@@ -123,7 +124,7 @@ describe('prototypes/base: dropdown', () => {
     await Promise.resolve();
 
     expect(root.getExposes().open.get()).toBe(false);
-    expect(content.classList.contains('hidden')).toBe(true);
+    expect(styleContains(content, 'hidden')).toBe(true);
     expect(document.activeElement).toBe(trigger);
 
     root.remove();

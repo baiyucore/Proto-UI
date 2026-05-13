@@ -30,10 +30,10 @@ export type VueRuntime = VueRenderRuntime & {
   Teleport?: any;
   ref: <T>(v: T) => { value: T };
   shallowRef: <T>(v: T) => { value: T };
-  watch: (src: unknown, cb: (...args: unknown[]) => void | Promise<void>, opt?: unknown) => void;
+  watch: (source: any, cb: (...args: any[]) => void | Promise<void>, options?: any) => unknown;
   onMounted: (cb: () => void) => void;
   onBeforeUnmount: (cb: () => void) => void;
-  nextTick: () => Promise<void>;
+  nextTick: (fn?: () => void) => Promise<void>;
 };
 
 export type VueAdapterHandle = {
@@ -44,6 +44,7 @@ export type VueAdapterHandle = {
 
 export type VueAdapterProps<Props extends PropsBaseType> = Props &
   PropsBaseType & {
+    class?: string | string[] | Record<string, boolean>;
     hostClass?: string | string[] | Record<string, boolean>;
     hostStyle?: Record<string, string> | string | Array<Record<string, string>>;
     [key: `on${string}`]: unknown;
@@ -66,7 +67,7 @@ export interface VueAdapterOptions<Props extends PropsBaseType> {
 function defaultGetProps<Props extends PropsBaseType>(
   props: VueAdapterProps<Props>
 ): Partial<Props> {
-  const { hostClass, hostStyle, ...rest } = (props ?? {}) as any;
+  const { class: className, hostClass, hostStyle, ...rest } = (props ?? {}) as any;
   const filtered: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(rest)) {
     if (isFrameworkEventProp(key, value)) continue;
@@ -346,7 +347,7 @@ export function createVueAdapter(runtime: VueRuntime) {
 
         runtime.watch(
           () => shouldExist.value,
-          async (val) => {
+          async (val: boolean) => {
             if (val) {
               await runtime.nextTick();
               initSession();
@@ -405,8 +406,10 @@ export function createVueAdapter(runtime: VueRuntime) {
               ref: (el: HTMLElement | null) => {
                 rootRef.value = el;
               },
-              class: mergeHostClass(props.hostClass, hostTokens.value),
+              class: mergeHostClass([props.hostClass, ctx.attrs.class]),
               style: props.hostStyle,
+              'data-pui-root': '',
+              'data-pui-style': serializeStyleTokens(hostTokens.value),
               'data-demo-ref': ctx.attrs['data-demo-ref'] as string | undefined,
             },
             rendered as any
@@ -417,8 +420,8 @@ export function createVueAdapter(runtime: VueRuntime) {
   };
 }
 
-function mergeHostClass(input: unknown, hostTokens: string[]) {
-  const values = [input, hostTokens.join(' ')]
+function mergeHostClass(input: unknown) {
+  const values = (Array.isArray(input) ? input : [input])
     .map((value: any) => value ?? '')
     .filter((value: any) => {
       if (Array.isArray(value)) return value.length > 0;
@@ -450,6 +453,10 @@ function mergeHostClass(input: unknown, hostTokens: string[]) {
   }
 
   return out;
+}
+
+function serializeStyleTokens(tokens: string[]) {
+  return tokens.length > 0 ? tokens.join(' ') : undefined;
 }
 
 function isFrameworkEventProp(key: string, value: unknown) {

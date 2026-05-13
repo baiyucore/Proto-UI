@@ -20,6 +20,7 @@ type HookInstance = {
 
 let CURRENT: HookInstance | null = null;
 const OWNED_STYLE_KEYS = new WeakMap<HTMLElement, Set<string>>();
+const OWNED_ATTR_KEYS = new WeakMap<HTMLElement, Set<string>>();
 
 export function createFakeReactRuntime() {
   const runtime: ReactRuntime = {
@@ -245,6 +246,20 @@ function renderVNode(vnode: any, existing: HTMLElement | null): HTMLElement | nu
 
 function applyProps(el: HTMLElement, props: Record<string, any>) {
   el.className = props.className ?? '';
+  const prevOwnedAttrs = OWNED_ATTR_KEYS.get(el) ?? new Set<string>();
+  const nextOwnedAttrs = new Set<string>();
+
+  for (const attr of prevOwnedAttrs) {
+    const nextValue = props[attr];
+    if (!(attr in props) || nextValue == null || nextValue === false) el.removeAttribute(attr);
+  }
+  for (const [key, value] of Object.entries(props)) {
+    if (!key.startsWith('data-')) continue;
+    if (value == null || value === false) continue;
+    el.setAttribute(key, String(value));
+    nextOwnedAttrs.add(key);
+  }
+  OWNED_ATTR_KEYS.set(el, nextOwnedAttrs);
 
   const prevOwned = OWNED_STYLE_KEYS.get(el) ?? new Set<string>();
   const nextOwned = new Set<string>();

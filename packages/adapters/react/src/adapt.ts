@@ -44,6 +44,7 @@ export type ReactAdapterHandle = {
 export type ReactAdapterProps<Props extends PropsBaseType> = Props &
   PropsBaseType & {
     children?: any;
+    className?: string;
     hostClassName?: string;
     hostStyle?: any;
     [key: `on${string}`]: unknown;
@@ -68,7 +69,7 @@ type ReactRuntimeInput = ReactRuntime | { React: ReactRuntime };
 function defaultGetProps<Props extends PropsBaseType>(
   props: ReactAdapterProps<Props>
 ): Partial<Props> {
-  const { children, hostClassName, hostStyle, ...rest } = (props ?? {}) as any;
+  const { children, className, hostClassName, hostStyle, ...rest } = (props ?? {}) as any;
   const filtered: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(rest)) {
     if (isFrameworkEventProp(key, value)) continue;
@@ -384,8 +385,10 @@ export function createReactAdapter(runtimeInput: ReactRuntimeInput) {
         rootTag,
         {
           ref: rootRef as { current: HTMLElement | null },
-          className: mergeHostClassName(props.hostClassName, hostTokens),
+          className: mergeHostClassName([props.hostClassName, props.className]),
           style: props.hostStyle,
+          'data-pui-root': '',
+          'data-pui-style': serializeStyleTokens(hostTokens),
           'data-demo-ref': props['data-demo-ref' as keyof typeof props] as string | undefined,
         },
         rendered
@@ -401,8 +404,8 @@ function normalizeRuntime(input: ReactRuntimeInput): ReactRuntime {
   return (input as any).React ?? (input as ReactRuntime);
 }
 
-function mergeHostClassName(input: unknown, hostTokens: string[]) {
-  const values = [input, hostTokens.join(' ')]
+function mergeHostClassName(input: unknown) {
+  const values = (Array.isArray(input) ? input : [input])
     .map((value: any) => (typeof value === 'string' ? value.trim() : value))
     .filter((value: any) => {
       if (typeof value === 'string') return value.length > 0;
@@ -422,6 +425,10 @@ function mergeHostClassName(input: unknown, hostTokens: string[]) {
   }
 
   return out.length > 0 ? out.join(' ') : undefined;
+}
+
+function serializeStyleTokens(tokens: string[]) {
+  return tokens.length > 0 ? tokens.join(' ') : undefined;
 }
 
 function collectEventCallbacks(

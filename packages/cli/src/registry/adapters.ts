@@ -1,4 +1,16 @@
-export const ADAPTER_REGISTRY = {
+export interface Adapter {
+  id: string;
+  label: string;
+  aliases: string[];
+  packageName: string;
+  runtimePackages: string[];
+  createImport: string;
+  runtimeImport: string | null;
+  adapterStatement: string | null;
+  rootAliasPrefix: string | null;
+}
+
+export const ADAPTER_REGISTRY: Record<string, Adapter> = {
   react: {
     id: 'react',
     label: 'React',
@@ -34,23 +46,23 @@ export const ADAPTER_REGISTRY = {
   },
 };
 
-const ALIAS_TO_ADAPTER = new Map();
+const ALIAS_TO_ADAPTER = new Map<string, Adapter>();
 for (const adapter of Object.values(ADAPTER_REGISTRY)) {
   for (const alias of adapter.aliases) {
     ALIAS_TO_ADAPTER.set(alias, adapter);
   }
 }
 
-export function normalizeHost(input) {
+export function normalizeHost(input: string | undefined): string | null {
   if (!input) return null;
   return ALIAS_TO_ADAPTER.get(String(input).toLowerCase())?.id ?? null;
 }
 
-export function getAdapter(host) {
+export function getAdapter(host: string): Adapter | null {
   return ADAPTER_REGISTRY[host] ?? null;
 }
 
-export function listAdapterChoices() {
+export function listAdapterChoices(): { title: string; value: string }[] {
   return Object.values(ADAPTER_REGISTRY).map((adapter) => ({
     title: adapter.label,
     value: adapter.id,

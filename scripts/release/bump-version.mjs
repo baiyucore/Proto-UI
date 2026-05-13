@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { findProtoPackages, getRoot } from './version-utils.mjs';
 
@@ -9,8 +10,25 @@ import { findProtoPackages, getRoot } from './version-utils.mjs';
 // from this script, which it intentionally is not.
 const args = process.argv.slice(2);
 const targets = [];
-for (const arg of args) {
+let preferPublished = false;
+let registry = '';
+let publishedVersionsFile = '';
+for (let i = 0; i < args.length; i += 1) {
+  const arg = args[i];
   if (arg === '--') continue;
+  if (arg === '--prefer-published') {
+    preferPublished = true;
+    continue;
+  }
+  if (arg === '--registry') {
+    registry = args[++i] ?? '';
+    continue;
+  }
+  if (arg === '--published-versions-file') {
+    publishedVersionsFile = args[++i] ?? '';
+    preferPublished = true;
+    continue;
+  }
   targets.push(arg);
 }
 
@@ -39,7 +57,12 @@ for (const name of targets) {
     process.exit(1);
   }
   const [, major, minor, patch] = match;
-  const next = `${major}.${minor}.${Number(patch) + 1}`;
+  const localPatch = Number(patch);
+  const publishedPatch = preferPublished
+    ? highestPublishedPatch(name, major, minor, { registry, publishedVersionsFile })
+    : null;
+  const basePatch = Math.max(localPatch, publishedPatch ?? -1);
+  const next = `${major}.${minor}.${basePatch + 1}`;
   plan.push({ pkg, name, current, next });
 }
 
@@ -55,3 +78,41 @@ for (const entry of plan) {
 const summaryPath = join(getRoot(), 'release-bump.json');
 writeFileSync(summaryPath, `${JSON.stringify({ bumped }, null, 2)}\n`);
 console.log(`bump-version: wrote summary to ${summaryPath}`);
+
+function highestPublishedPatch(name, major, minor, options) {
+  const versions = loadPublishedVersions(name, options);
+  let highest = null;
+  for (const version of versions) {
+    const match = String(version).match(/^(\d+)\.(\d+)\.(\d+)$/);
+    if (!match) continue;
+    if (match[1] !== major || match[2] !== minor) continue;
+    const patch = Number(match[3]);
+    highest = highest == null ? patch : Math.max(highest, patch);
+  }
+  return highest;
+}
+
+function loadPublishedVersions(name, options) {
+  if (options.publishedVersionsFile) {
+    const data = JSON.parse(readFileSync(options.publishedVersionsFile, 'utf8'));
+    return data[name] ?? [];
+  }
+
+  const viewArgs = ['view', name, 'versions', '--json'];
+  if (options.registry) viewArgs.push('--registry', options.registry);
+  const result = spawnSync('npm', viewArgs, {
+    encoding: 'utf8',
+    shell: process.platform === 'win32',
+  });
+
+  if (result.status !== 0) {
+    const output = `${result.stderr}\n${result.stdout}`;
+    if (/E404|404 Not Found|not found/i.test(output)) return [];
+    console.error(`bump-version: failed to read published versions for ${name}`);
+    console.error(output.trim());
+    process.exit(1);
+  }
+
+  const parsed = JSON.parse(result.stdout || '[]');
+  return Array.isArray(parsed) ? parsed : [parsed];
+}

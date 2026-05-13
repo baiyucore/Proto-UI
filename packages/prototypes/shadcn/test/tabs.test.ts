@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { styleContains } from '../../test-utils/style';
 import { AdaptToWebComponent, setElementProps } from '@proto.ui/adapter-web-component';
 import { tabsContent, tabsList, tabsRoot, tabsTrigger } from '../src/tabs';
 
@@ -37,9 +38,9 @@ describe('prototypes/shadcn: tabs', () => {
     expect(contentA.getExposes().current.get()).toBe(true);
     expect(triggerA.hasAttribute('data-selected')).toBe(true);
     expect(triggerA.getAttribute('aria-selected')).toBe('true');
-    expect(triggerA.className.includes('aria-selected:bg-background')).toBe(true);
-    expect(contentA.className.includes('block')).toBe(true);
-    expect(contentB.classList.contains('hidden')).toBe(true);
+    expect(styleContains(triggerA, 'aria-selected:bg-background')).toBe(true);
+    expect(styleContains(contentA, 'block')).toBe(true);
+    expect(styleContains(contentB, 'hidden')).toBe(true);
 
     triggerB.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 
@@ -48,8 +49,8 @@ describe('prototypes/shadcn: tabs', () => {
     expect(contentB.getExposes().current.get()).toBe(true);
     expect(triggerB.hasAttribute('data-selected')).toBe(true);
     expect(triggerB.getAttribute('aria-selected')).toBe('true');
-    expect(triggerB.className.includes('aria-selected:bg-background')).toBe(true);
-    expect(contentA.classList.contains('hidden')).toBe(true);
+    expect(styleContains(triggerB, 'aria-selected:bg-background')).toBe(true);
+    expect(styleContains(contentA, 'hidden')).toBe(true);
 
     root.remove();
     await Promise.resolve();

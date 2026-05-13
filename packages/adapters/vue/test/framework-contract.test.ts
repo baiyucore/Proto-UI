@@ -46,6 +46,41 @@ function createFakeVueRuntime() {
 }
 
 describe('adapter-vue: framework contract', () => {
+  it('accepts Vue-style overloaded watch and ref signatures as adapter runtime', () => {
+    type WatchSource<T> = { value: T };
+    type VueStyleWatch = {
+      <T>(source: WatchSource<T>, cb: (value: T) => void, options?: unknown): () => void;
+      <T extends readonly WatchSource<unknown>[]>(
+        source: T,
+        cb: (value: T) => void,
+        options?: unknown
+      ): () => void;
+    };
+
+    const runtime = {
+      defineComponent(opt: any) {
+        return opt;
+      },
+      h(type: any, props?: any, children?: any) {
+        return { type, props, children };
+      },
+      ref<T>(value: T) {
+        return { value };
+      },
+      shallowRef<T>(value: T) {
+        return { value };
+      },
+      watch: (() => () => {}) as VueStyleWatch,
+      onMounted() {},
+      onBeforeUnmount() {},
+      nextTick() {
+        return Promise.resolve();
+      },
+    };
+
+    expect(typeof createVueAdapter(runtime)).toBe('function');
+  });
+
   it('registers Vue component options with host props and inheritAttrs disabled', () => {
     const fake = createFakeVueRuntime();
 

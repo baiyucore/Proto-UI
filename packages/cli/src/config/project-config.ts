@@ -8,11 +8,36 @@ import {
 } from './defaults.js';
 import { ensureDir, fileExists, readJsonFile, writeJsonFile } from '../utils/fs.js';
 
+export interface CliConfig {
+  version: number;
+  rootDir: string;
+  stylesDir: string;
+  styles: {
+    enabled: boolean;
+    preset: string | null;
+  };
+  adapters: Record<string, { package: string }>;
+  components: Record<string, string[]>;
+}
+
+export interface ConfigPaths {
+  rootDir: string;
+  rootAbs: string;
+  configPath: string;
+  componentsDir: string;
+  adaptersDir: string;
+  prototypesDir: string;
+}
+
 export function createDefaultConfig({
   rootDir = DEFAULT_ROOT_DIR,
   stylesDir = DEFAULT_STYLES_DIR,
   stylesEnabled = true,
-} = {}) {
+}: {
+  rootDir?: string;
+  stylesDir?: string;
+  stylesEnabled?: boolean;
+} = {}): CliConfig {
   return {
     version: CONFIG_VERSION,
     rootDir,
@@ -26,13 +51,13 @@ export function createDefaultConfig({
   };
 }
 
-export function mergeConfig(baseConfig, nextConfig) {
-  const merged = {
+export function mergeConfig(baseConfig: CliConfig, nextConfig: Partial<CliConfig>): CliConfig {
+  const merged: CliConfig = {
     ...baseConfig,
     ...nextConfig,
     styles: {
-      ...(baseConfig.styles ?? {}),
-      ...(nextConfig.styles ?? {}),
+      ...baseConfig.styles,
+      ...nextConfig.styles,
     },
     adapters: {
       ...(baseConfig.adapters ?? {}),
@@ -60,7 +85,7 @@ export function mergeConfig(baseConfig, nextConfig) {
   return merged;
 }
 
-export function resolveConfigPaths(cwd, rootDir = DEFAULT_ROOT_DIR) {
+export function resolveConfigPaths(cwd: string, rootDir = DEFAULT_ROOT_DIR): ConfigPaths {
   const rootAbs = path.resolve(cwd, rootDir);
   return {
     rootDir,
@@ -72,23 +97,31 @@ export function resolveConfigPaths(cwd, rootDir = DEFAULT_ROOT_DIR) {
   };
 }
 
-export async function loadCliConfig(cwd, rootDir = DEFAULT_ROOT_DIR) {
+export async function loadCliConfig(
+  cwd: string,
+  rootDir = DEFAULT_ROOT_DIR
+): Promise<{ config: CliConfig | null; paths: ConfigPaths }> {
   const paths = resolveConfigPaths(cwd, rootDir);
   if (!(await fileExists(paths.configPath))) {
     return { config: null, paths };
   }
-  const config = await readJsonFile(paths.configPath);
+  const config = (await readJsonFile(paths.configPath)) as CliConfig;
   return { config, paths };
 }
 
-export async function saveCliConfig(cwd, config) {
+export async function saveCliConfig(cwd: string, config: CliConfig): Promise<ConfigPaths> {
   const paths = resolveConfigPaths(cwd, config.rootDir ?? DEFAULT_ROOT_DIR);
   await ensureDir(paths.rootAbs);
   await writeJsonFile(paths.configPath, config);
   return paths;
 }
 
-export function addComponentToConfig(config, host, componentId, adapterPackage) {
+export function addComponentToConfig(
+  config: CliConfig,
+  host: string,
+  componentId: string,
+  adapterPackage: string
+): CliConfig {
   const next = structuredClone(config);
   next.adapters = next.adapters ?? {};
   next.components = next.components ?? {};
