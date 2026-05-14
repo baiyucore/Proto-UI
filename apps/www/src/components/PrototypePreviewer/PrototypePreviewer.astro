@@ -41,6 +41,7 @@ interface Props {
   /** 可选：展示的代码片段，提供后显示 Preview | Code 标签页 */
   code?: string;
   hasCode?: boolean;
+  codePanel?: boolean;
 }
 
 function assertJsonLike(value: unknown, path: string[] = []) {
@@ -111,10 +112,11 @@ const {
   loader,
   code: codeSnippet,
   hasCode = false,
+  codePanel = true,
 } = Astro.props;
 
 const autoCodeMap = demoId ? findCodeMapForDemo(demoId) : undefined;
-const effectiveHasCode = hasCode || !!autoCodeMap || !!codeSnippet;
+const effectiveHasCode = codePanel && (hasCode || !!autoCodeMap || !!codeSnippet);
 const effectiveCode = autoCodeMap ? autoCodeMap[initialRuntime] : codeSnippet;
 
 const highlights: Record<string, string> = {};

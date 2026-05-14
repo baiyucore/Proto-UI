@@ -263,11 +263,21 @@ jobs:
           # @proto.ui/* manifest stamped by stamp-version.mjs). Anything else
           # in the worktree is an unintended side effect and should not ride
           # along on the release commit.
-          git add VERSION packages/*/package.json
-          git commit -m "chore(release): publish ${VERSION_VALUE}"
-          git tag "release/${VERSION_VALUE}"
-          git push origin HEAD
-          git push origin "release/${VERSION_VALUE}"
+          git add VERSION ':(glob)packages/**/package.json'
+          if git diff --cached --quiet; then
+            echo "No VERSION or package manifest changes to commit."
+          else
+            git commit -m "chore(release): publish ${VERSION_VALUE}"
+            git push origin HEAD
+          fi
+
+          TAG_NAME="release/${VERSION_VALUE}"
+          if git ls-remote --exit-code --tags origin "refs/tags/${TAG_NAME}" >/dev/null 2>&1; then
+            echo "Tag ${TAG_NAME} already exists on origin."
+          else
+            git tag "${TAG_NAME}"
+            git push origin "${TAG_NAME}"
+          fi
 
       - name: Commit + tag (publish-single)
         if: ${{ inputs.mode == 'publish-single' }}

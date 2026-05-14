@@ -5,6 +5,9 @@ description: 'Transition base prototype'
 ---
 
 import PrototypePreviewer from '@/components/PrototypePreviewer/PrototypePreviewer.astro';
+import TransitionDemoStyles from '@/components/PrototypePreviewer/TransitionDemoStyles.astro';
+
+<TransitionDemoStyles />
 
 ### Imperative Control
 
@@ -54,42 +57,6 @@ Toggle Open (show) → Toggle Open (hide)
 ```
 
 In this demo the CSS transition is set to 0.3s, so `entering` and `leaving` will auto-`complete` after that duration.
-
-<style>{`
-  .transition-demo-container {
-    --transition-duration: 0.3s;
-  }
-
-  .transition-demo-container .transition-wrapper[data-transition-state="closed"] .transition-box {
-    opacity: 0;
-    transform: scale(0.95) translateY(-10px);
-    background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
-  }
-
-  .transition-demo-container .transition-wrapper[data-transition-state="entering"] .transition-box {
-    opacity: 0.7;
-    transform: scale(0.98) translateY(-2px);
-    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .transition-demo-container .transition-wrapper[data-transition-state="entered"] .transition-box {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-  }
-
-  .transition-demo-container .transition-wrapper[data-transition-state="leaving"] .transition-box {
-    opacity: 0.5;
-    transform: scale(0.98) translateY(2px);
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .transition-demo-container .transition-box {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-`}</style>
 
 Transition is a **low-level foundational component** for managing the presence lifecycle of elements. It does not render visible content itself; instead, it provides state machine governance, allowing the host platform (CSS, React, Vue, etc.) to drive actual animations based on the state.
 
