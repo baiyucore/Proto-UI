@@ -66,7 +66,8 @@ implementations:
       - Shared fixture consumed by module, adapter, and runtime test implementations.
   - id: module-props-define-json-value-boundary
     kind: module-test
-    status: missing
+    status: passing
+    path: packages/modules/props/test/contract/define-json-value-boundary.v0.contract.test.ts
     required: true
     consumesCases:
       - T-PROPS-0001-CASE-JSON-PRIMITIVES
@@ -76,7 +77,7 @@ implementations:
     exercises:
       - C-PROPS-0006
     notes:
-      - Should test setup-time declaration/default value paths once the module test entrypoint is selected.
+      - Tests setup-time define().default and setDefaults() paths with the shared JSON props value boundary fixture.
   - id: module-props-resolved-json-value-boundary
     kind: module-test
     status: missing
