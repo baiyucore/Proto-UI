@@ -304,6 +304,8 @@ export class PropsKernel<P extends PropsBaseType> {
   }
 
   private validateNonEmptyValue(v: any, decl: PropSpec): { ok: true; value: any } | { ok: false } {
+    if (!isJsonPropsValue(v)) return { ok: false };
+
     switch ((decl as any).type) {
       case 'boolean':
         if (typeof v !== 'boolean') return { ok: false };

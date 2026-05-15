@@ -80,7 +80,8 @@ implementations:
       - Tests setup-time define().default and setDefaults() paths with the shared JSON props value boundary fixture.
   - id: module-props-resolved-json-value-boundary
     kind: module-test
-    status: missing
+    status: passing
+    path: packages/modules/props/test/contract/resolved-json-value-boundary.v0.contract.test.ts
     required: true
     consumesCases:
       - T-PROPS-0001-CASE-JSON-PRIMITIVES
@@ -92,7 +93,7 @@ implementations:
       - C-PROPS-0008
       - C-PROPS-0009
     notes:
-      - Should verify that resolved portable props do not expose non-JSON raw input as accepted JSON values.
+      - Tests runtime applyRaw() to get() resolution with the shared JSON props value boundary fixture.
   - id: adapter-props-json-value-boundary
     kind: adapter-test
     status: missing
