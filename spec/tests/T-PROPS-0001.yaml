@@ -94,7 +94,55 @@ implementations:
       - C-PROPS-0009
     notes:
       - Tests runtime applyRaw() to get() resolution with the shared JSON props value boundary fixture.
-  - id: adapter-props-json-value-boundary
+  - id: adapter-props-json-value-boundary-conformance
+    kind: adapter-test
+    status: active
+    path: packages/adapters/base/test-utils/props-json-value-boundary.ts
+    required: true
+    consumesCases:
+      - T-PROPS-0001-CASE-JSON-PRIMITIVES
+      - T-PROPS-0001-CASE-JSON-CONTAINERS
+      - T-PROPS-0001-CASE-NON-JSON-TOP-LEVEL
+      - T-PROPS-0001-CASE-NON-JSON-NESTED
+      - T-PROPS-0001-CASE-RAW-ESCAPE-HATCH
+    exercises:
+      - C-PROPS-0008
+      - C-PROPS-0009
+    notes:
+      - Shared adapter conformance harness; each adapter supplies mount/update wiring for its host-specific props path.
+  - id: adapter-react-props-json-value-boundary
+    kind: adapter-test
+    status: passing
+    path: packages/adapters/react/test/contract/props-json-value-boundary.v0.contract.test.ts
+    required: true
+    consumesCases:
+      - T-PROPS-0001-CASE-JSON-PRIMITIVES
+      - T-PROPS-0001-CASE-JSON-CONTAINERS
+      - T-PROPS-0001-CASE-NON-JSON-TOP-LEVEL
+      - T-PROPS-0001-CASE-NON-JSON-NESTED
+      - T-PROPS-0001-CASE-RAW-ESCAPE-HATCH
+    exercises:
+      - C-PROPS-0008
+      - C-PROPS-0009
+    notes:
+      - React adapter conformance coverage for mount and props update paths.
+  - id: adapter-vue-props-json-value-boundary
+    kind: adapter-test
+    status: passing
+    path: packages/adapters/vue/test/contract/props-json-value-boundary.v0.contract.test.ts
+    required: true
+    consumesCases:
+      - T-PROPS-0001-CASE-JSON-PRIMITIVES
+      - T-PROPS-0001-CASE-JSON-CONTAINERS
+      - T-PROPS-0001-CASE-NON-JSON-TOP-LEVEL
+      - T-PROPS-0001-CASE-NON-JSON-NESTED
+      - T-PROPS-0001-CASE-RAW-ESCAPE-HATCH
+    exercises:
+      - C-PROPS-0008
+      - C-PROPS-0009
+    notes:
+      - Vue adapter conformance coverage for mount and props update paths.
+  - id: adapter-web-component-props-json-value-boundary
     kind: adapter-test
     status: missing
     required: true
@@ -108,7 +156,7 @@ implementations:
       - C-PROPS-0008
       - C-PROPS-0009
     notes:
-      - Adapter-specific tests may differ in raw input tolerance, but must not expand portable resolved props semantics beyond JSON values.
+      - Pending Web Component adapter harness wiring; should account for property and attribute input differences.
 verifies:
   contracts:
     - id: C-PROPS-0003
