@@ -94,6 +94,10 @@ function lastObservation(
   return undefined;
 }
 
+function latestObservation(observations: BoundaryObservation[]): BoundaryObservation | undefined {
+  return observations[observations.length - 1];
+}
+
 export function describeAdapterPropsJsonValueBoundaryConformance(
   harness: AdapterPropsBoundaryHarness
 ) {
@@ -111,7 +115,7 @@ export function describeAdapterPropsJsonValueBoundaryConformance(
         const mounted = await harness.mount(proto, { value });
 
         try {
-          expectBoundaryObservation(observations.at(-1), value, testCase);
+          expectBoundaryObservation(latestObservation(observations), value, testCase);
         } finally {
           await mounted.unmount();
         }
