@@ -19,6 +19,8 @@ Options:
   --include-legacy             Include packages under packages/legacy (workspace profile only)
   --include-test               Include test-only packages such as module-test-sys
   --only <list>                Comma-separated package names or package paths
+
+Packages with package.json#protoUi.release.scan=false are excluded from release scans.
 `);
 }
 
@@ -114,6 +116,7 @@ function toSummary(pkg) {
     version: pkg.version,
     isLegacy: pkg.isLegacy,
     isTestOnly: pkg.isTestOnly,
+    isReleaseExcluded: pkg.isReleaseExcluded,
     sourceExport: pkg.sourceExport,
     internalDeps: pkg.internalDeps,
     issues: pkg.issues,

@@ -146,16 +146,19 @@ export function getAllPackages() {
     );
     const isLegacy = relDir.startsWith('packages/legacy/');
     const isTestOnly = relDir.includes('/test-sys');
+    const isReleaseExcluded = manifest.protoUi?.release?.scan === false;
     const issues = [];
 
-    if (manifest.private) issues.push('private=true');
-    if (!manifest.version || manifest.version === '0.0.0')
-      issues.push(`version=${manifest.version ?? 'missing'}`);
-    if (!hasSrcIndex && !hasDistIndex) issues.push('missing index entry');
-    if (!manifest.license) issues.push('missing license field');
-    if (!localReadme) issues.push('missing package README');
-    if (workspaceDeps.length > 0) issues.push(`workspace deps: ${workspaceDeps.length}`);
-    if (sourceExport && !hasSrcIndex) issues.push('exports point to src/*.ts');
+    if (!isReleaseExcluded) {
+      if (manifest.private) issues.push('private=true');
+      if (!manifest.version || manifest.version === '0.0.0')
+        issues.push(`version=${manifest.version ?? 'missing'}`);
+      if (!hasSrcIndex && !hasDistIndex) issues.push('missing index entry');
+      if (!manifest.license) issues.push('missing license field');
+      if (!localReadme) issues.push('missing package README');
+      if (workspaceDeps.length > 0) issues.push(`workspace deps: ${workspaceDeps.length}`);
+      if (sourceExport && !hasSrcIndex) issues.push('exports point to src/*.ts');
+    }
 
     return {
       dir,
@@ -171,6 +174,7 @@ export function getAllPackages() {
       distExport,
       isLegacy,
       isTestOnly,
+      isReleaseExcluded,
       workspaceDeps,
       issues,
     };
@@ -230,6 +234,7 @@ export function selectPackages(packages, options = {}) {
 
   return packages.filter((pkg) => {
     if (onlySet.size > 0 && !onlySet.has(pkg.name) && !onlySet.has(pkg.relDir)) return false;
+    if (pkg.isReleaseExcluded) return false;
     if (!includeLegacy && DEFAULT_EXCLUDES.legacy && pkg.isLegacy) return false;
     if (!includeTest && DEFAULT_EXCLUDES.test && pkg.isTestOnly) return false;
     return true;
@@ -277,7 +282,7 @@ export function topoSortPackages(packages) {
 }
 
 export function recommendedPackages(packages) {
-  return packages.filter((pkg) => !pkg.isLegacy);
+  return packages.filter((pkg) => !pkg.isLegacy && !pkg.isReleaseExcluded);
 }
 
 /**
