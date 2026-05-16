@@ -1,0 +1,32 @@
+id: C-PROPS-0012
+type: contract
+title: Raw props APIs expose raw input as an escape hatch
+status: draft
+since: 0.1.0
+summary: Raw props APIs may observe undeclared keys and non-normalized values, but remain an escape hatch rather than the preferred props surface.
+sources:
+  - path: internal/contracts/props/base-text/04.watch-raw.v0.zh-CN.md
+    sections:
+      - '1. 定义'
+      - '3. watchRawAll(cb)'
+      - '4. watchRaw(keys, cb)'
+      - '6. Warning 约束（escape hatch）'
+  - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
+    sections:
+      - '2. 公共运行时 API'
+dependsOn:
+  contracts:
+    - C-PROPS-0008
+refines:
+  contracts:
+    - C-PROPS-0002
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Drafted a placeholder for raw props escape-hatch semantics.
+tags:
+  - props
+  - raw
+  - escape-hatch
+  - draft
+  - deferred

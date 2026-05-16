@@ -130,3 +130,6 @@ dist
 .pnp.*
 .codex/
 .worktrees/
+
+# Generated workspace spec dataset
+apps/workspace/public/spec-workspace.json

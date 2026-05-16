@@ -1,0 +1,48 @@
+id: C-CORE-SYNTAX-0002
+type: contract
+title: Runtime capabilities are exposed through the run handle
+status: draft
+since: 0.1.0
+summary: Core syntax exposes runtime execution capabilities through a run handle bound to the current execution.
+statement:
+  zh-CN: Core 语法通过 run 句柄向原型作者暴露 runtime 阶段可用的当前调用能力。
+  en: Core syntax exposes runtime capabilities for the current invocation through the run handle.
+criteria:
+  - id: C-CORE-SYNTAX-0002-A
+    text:
+      zh-CN: runtime 阶段 API 必须由 run handle 承载。
+      en: Runtime APIs must be carried by the run handle.
+  - id: C-CORE-SYNTAX-0002-B
+    text:
+      zh-CN: run handle 仅在 runtime 阶段执行的函数或回调中提供。
+      en: The run handle is provided only to functions or callbacks executed during runtime.
+  - id: C-CORE-SYNTAX-0002-C
+    text:
+      zh-CN: runtime 阶段上下文中不提供 definition handle。
+      en: The definition handle is not provided in runtime contexts.
+  - id: C-CORE-SYNTAX-0002-D
+    text:
+      zh-CN: runtime API 作用于当前具体调用，而不是 setup 阶段的计划。
+      en: Runtime APIs operate on the current concrete invocation rather than the setup-time plan.
+    rationale:
+      zh-CN: run handle 使 runtime 回调中能够访问当前输入与状态，同时避免 runtime 阶段动态调用 setup-only API。
+      en: The run handle provides access to current input and state in runtime callbacks while avoiding dynamic calls to setup-only APIs.
+sources:
+  - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
+    sections:
+      - '2. 公共运行时 API'
+  - path: internal/contracts/props/base-text/05.runtime-integration.v0.zh-CN.md
+    sections:
+      - '3. Watcher 回调的 RunHandle 绑定（PROP-V0-2110）'
+dependsOn:
+  contracts:
+    - C-LIFECYCLE-0001
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Drafted the core syntax contract for runtime run handles.
+tags:
+  - core
+  - syntax
+  - runtime
+  - run-handle

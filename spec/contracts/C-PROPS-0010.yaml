@@ -1,0 +1,24 @@
+id: C-PROPS-0010
+type: contract
+title: Failed declaration merge must not partially apply
+status: draft
+since: 0.1.0
+summary: Blocking diagnostics during setup-time prop declaration merge should reject the merge transaction without partially applying changes.
+sources:
+  - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
+    sections:
+      - '4. 合并结果与原子性'
+dependsOn:
+  contracts:
+    - C-PROPS-0005
+    - C-PROPS-0007
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Drafted a placeholder for declaration merge atomicity pending implementation and test review.
+tags:
+  - props
+  - define
+  - merge
+  - draft
+  - deferred

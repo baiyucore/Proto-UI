@@ -1,0 +1,71 @@
+id: C-PROPS-0002
+type: contract
+title: Props defines setup-time declaration and runtime access surfaces
+status: draft
+since: 0.1.0
+summary: Props provides setup-time declaration and watcher-registration surfaces, plus runtime access surfaces.
+statement:
+  zh-CN: Props 通路必须回应 setup/runtime 分离，分别提供 setup 阶段的声明与监听注册能力，以及 runtime 阶段的只读访问能力。
+  en: The Props channel must reflect setup/runtime separation by providing setup-time declaration and watcher-registration surfaces and runtime read-only access surfaces.
+criteria:
+  - id: C-PROPS-0002-A
+    text:
+      zh-CN: Props 必须提供 setup-only 的声明 surface，用于声明 app maker 在 runtime 期间允许传入哪些 props 以及相关默认值、兜底或空值策略。
+      en: Props must provide a setup-only declaration surface for declaring which props app makers may provide at runtime and the associated default, fallback, or empty-value policies.
+  - id: C-PROPS-0002-B
+    text:
+      zh-CN: Props 必须提供 setup-only 的 watcher registration surface，用于声明 runtime 期间 props 重新传入或变化时应执行的动作。
+      en: Props must provide a setup-only watcher registration surface for declaring actions to run when props are re-applied or changed during runtime.
+  - id: C-PROPS-0002-C
+    text:
+      zh-CN: Props 必须提供 runtime-only 的访问 surface，用于读取当前调用的 props 值。
+      en: Props must provide a runtime-only access surface for reading prop values for the current invocation.
+  - id: C-PROPS-0002-D
+    text:
+      zh-CN: runtime props value 对原型作者而言必须表现为只读快照；修改该快照不应被视为修改 props 通路。
+      en: Runtime prop values must behave as read-only snapshots from the prototype author's perspective; mutating the snapshot must not be treated as mutating the Props channel.
+  - id: C-PROPS-0002-E
+    text:
+      zh-CN: Props 变化或 watcher callback 执行本身不得隐含视图更新。
+      en: Props changes or watcher callback execution must not imply a view update by itself.
+    rationale:
+      zh-CN: Proto UI 的视图更新应由更基础的 runtime 更新契约约束；Props 只负责传递、解析与监听配置输入。
+      en: Proto UI view updates should be governed by a lower-level runtime update contract; Props only carries, resolves, and observes configuration input.
+openQuestions:
+  - id: C-PROPS-0002-Q1
+    question:
+      zh-CN: 应建立哪条 core/runtime 契约来承接 run.update() 与“Props 变化不隐含视图更新”的语义？
+      en: Which core/runtime contract should own run.update() and the rule that Props changes do not imply view updates?
+    context:
+      zh-CN: 当前 C-PROPS-0002-E 暂时记录了该规则，但其基础不属于 Props 通路本身。
+      en: C-PROPS-0002-E currently records this rule, but its foundation is outside the Props channel itself.
+    blocks:
+      - C-PROPS-0002-E
+sources:
+  - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
+    sections:
+      - '1. 范围与术语'
+  - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
+    sections:
+      - '2. 公共运行时 API'
+  - path: internal/contracts/props/base-text/03.watch-resolved.v0.zh-CN.md
+    sections:
+      - '3. watchAll(cb)'
+      - '4. watch(keys, cb)'
+dependsOn:
+  contracts:
+    - C-LIFECYCLE-0001
+    - C-CORE-SYNTAX-0001
+    - C-CORE-SYNTAX-0002
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Drafted a placeholder for setup/runtime props surface semantics.
+tags:
+  - props
+  - api
+  - surface
+  - setup
+  - runtime
+  - draft
+  - deferred

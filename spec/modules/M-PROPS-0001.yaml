@@ -1,0 +1,28 @@
+id: M-PROPS-0001
+type: module
+title: Props module
+status: active
+since: 0.1.0
+summary: Owns the semantic model for host-facing props.
+satisfies:
+  contracts:
+    - C-PROPS-0001
+    - C-PROPS-0002
+    - C-PROPS-0003
+    - C-PROPS-0004
+    - C-PROPS-0005
+    - C-PROPS-0006
+    - C-PROPS-0007
+    - C-PROPS-0008
+    - C-PROPS-0009
+    - C-PROPS-0010
+    - C-PROPS-0011
+    - C-PROPS-0012
+    - C-PROPS-0013
+    - C-PROPS-0014
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Initial module identity for props semantics.
+tags:
+  - props

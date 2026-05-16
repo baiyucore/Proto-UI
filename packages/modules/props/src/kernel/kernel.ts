@@ -4,6 +4,7 @@ import { mergeSpecs } from './merge';
 import type { PropsDefaults, PropsSnapshot } from '@proto.ui/core';
 import type { PropsKernelDiag } from '../types';
 import type { PropsResolveMeta } from './types';
+import { isJsonPropsValue } from './json-value';
 
 const hasOwn = (obj: object, key: PropertyKey) => Object.prototype.hasOwnProperty.call(obj, key);
 
@@ -98,6 +99,9 @@ export class PropsKernel<P extends PropsBaseType> {
       for (const k of Object.keys(partial as any)) {
         if (!hasOwn(this.specs, k)) {
           throw new Error(`[Props] setDefaults() rejects key not in specs: ${k}`);
+        }
+        if (!isJsonPropsValue((partial as any)[k])) {
+          throw new Error(`[Props] setDefaults() rejects non-JSON props value for key: ${k}`);
         }
       }
     }
@@ -300,6 +304,8 @@ export class PropsKernel<P extends PropsBaseType> {
   }
 
   private validateNonEmptyValue(v: any, decl: PropSpec): { ok: true; value: any } | { ok: false } {
+    if (!isJsonPropsValue(v)) return { ok: false };
+
     switch ((decl as any).type) {
       case 'boolean':
         if (typeof v !== 'boolean') return { ok: false };

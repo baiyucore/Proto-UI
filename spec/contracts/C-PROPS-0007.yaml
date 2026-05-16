@@ -1,0 +1,26 @@
+id: C-PROPS-0007
+type: contract
+title: Prop declaration merge preserves evolution safety
+status: active
+since: 0.1.0
+summary: Prop declaration merging must reject breaking narrowing and keep widening changes traceable.
+sources:
+  - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
+    sections:
+      - '4.2 合并规则（同 key）'
+  - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
+    sections:
+      - '3. 合并规则（同 key）'
+      - '4. 合并结果与原子性'
+dependsOn:
+  contracts:
+    - C-PROPS-0005
+    - C-PROPS-0006
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Captured the v0 evolution-safety merge policy for prop declarations.
+tags:
+  - props
+  - define
+  - merge

@@ -1,0 +1,17 @@
+{
+  "name": "@proto.ui/spec-fixtures",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./props/json-value-boundary": {
+      "types": "./src/props/json-value-boundary.ts",
+      "default": "./src/props/json-value-boundary.ts"
+    }
+  },
+  "description": "Shared semantic test fixtures for Proto UI spec contracts."
+}

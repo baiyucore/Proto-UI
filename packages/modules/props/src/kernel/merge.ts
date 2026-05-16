@@ -6,6 +6,7 @@ import type {
   PropsSpecMap,
   PropType,
 } from '@proto.ui/types';
+import { isJsonPropsValue } from './json-value';
 
 export type MergeDiagLevel = 'warning' | 'error';
 
@@ -133,6 +134,15 @@ export function mergeSpecs<A extends PropsBaseType, B extends PropsBaseType>(
         });
         continue;
       }
+    }
+
+    if (hasOwn(next as any, 'default') && !isJsonPropsValue((next as any).default)) {
+      diags.push({
+        level: 'error',
+        key,
+        message: `default must be a JSON props value`,
+      });
+      continue;
     }
 
     // new key => just copy

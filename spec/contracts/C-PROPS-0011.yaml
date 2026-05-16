@@ -1,0 +1,34 @@
+id: C-PROPS-0011
+type: contract
+title: Resolved props watchers observe resolved snapshot changes
+status: draft
+since: 0.1.0
+summary: Resolved props watchers should fire from resolved snapshot diffs, skip hydration, and preserve watchAll/watch(keys) ordering.
+sources:
+  - path: internal/contracts/props/base-text/03.watch-resolved.v0.zh-CN.md
+    sections:
+      - '1. 定义'
+      - '2. Hydration 规则'
+      - '3. watchAll(cb)'
+      - '4. watch(keys, cb)'
+      - '5. 调用顺序'
+dependsOn:
+  contracts:
+    - id: C-PROPS-0003
+      role: value-boundary
+      coverageImpact: expands-test-surface
+      note: Resolved watchers are another observation surface for resolved props values and must not propagate non-JSON values as portable resolved values.
+    - C-PROPS-0008
+refines:
+  contracts:
+    - C-PROPS-0002
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Drafted a placeholder for resolved watcher semantics pending test mapping.
+tags:
+  - props
+  - watch
+  - resolved
+  - draft
+  - deferred

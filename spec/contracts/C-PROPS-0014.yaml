@@ -1,0 +1,26 @@
+id: C-PROPS-0014
+type: contract
+title: applyRawProps updates the props channel without implicit render commit
+status: draft
+since: 0.1.0
+summary: Applying raw props through the controller may update props state and trigger watchers, but should not itself imply render commit.
+sources:
+  - path: internal/contracts/props/base-text/05.runtime-integration.v0.zh-CN.md
+    sections:
+      - '5. applyRawProps 不触发渲染'
+dependsOn:
+  contracts:
+    - id: C-PROPS-0002
+      anchors:
+        - C-PROPS-0002-E
+      note: applyRawProps inherits the rule that Props changes do not imply view updates.
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Drafted a placeholder for applyRawProps scheduling semantics pending runtime and host-cap analysis.
+tags:
+  - props
+  - runtime
+  - scheduling
+  - draft
+  - deferred
