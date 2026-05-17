@@ -145,7 +145,7 @@ implementations:
       - Supporting runtime integration coverage for watcher-time `run.props.get()` behavior and non-`undefined` resolved values.
   - id: adapter-resolved-snapshot-shape-conformance
     kind: adapter-test
-    status: planned
+    status: active
     path: packages/adapters/base/test-utils/resolved-snapshot-shape.ts
     required: true
     consumesCases:
@@ -159,7 +159,55 @@ implementations:
       - C-PROPS-0009
     notes:
       - Shared adapter harness should verify mount and update props paths without assuming a host-specific props transport.
-      - React, Vue, and Web Component adapters should consume this harness once it exists.
+      - React, Vue, and Web Component adapters should consume this harness.
+  - id: adapter-react-resolved-snapshot-shape
+    kind: adapter-test
+    status: passing
+    path: packages/adapters/react/test/contract/resolved-snapshot-shape.v0.contract.test.ts
+    required: true
+    consumesCases:
+      - T-PROPS-0005-CASE-RUNTIME-CURRENT-SNAPSHOT
+      - T-PROPS-0005-CASE-DECLARED-KEYS-PRESENT
+      - T-PROPS-0005-CASE-UNDECLARED-KEYS-EXCLUDED
+      - T-PROPS-0005-CASE-KEY-GRANULARITY
+      - T-PROPS-0005-CASE-UNDEFINED-EMPTY-NORMALIZATION
+    exercises:
+      - C-PROPS-0002
+      - C-PROPS-0009
+    notes:
+      - React adapter coverage for mount and update paths using the shared resolved snapshot shape conformance harness.
+  - id: adapter-vue-resolved-snapshot-shape
+    kind: adapter-test
+    status: passing
+    path: packages/adapters/vue/test/contract/resolved-snapshot-shape.v0.contract.test.ts
+    required: true
+    consumesCases:
+      - T-PROPS-0005-CASE-RUNTIME-CURRENT-SNAPSHOT
+      - T-PROPS-0005-CASE-DECLARED-KEYS-PRESENT
+      - T-PROPS-0005-CASE-UNDECLARED-KEYS-EXCLUDED
+      - T-PROPS-0005-CASE-KEY-GRANULARITY
+      - T-PROPS-0005-CASE-UNDEFINED-EMPTY-NORMALIZATION
+    exercises:
+      - C-PROPS-0002
+      - C-PROPS-0009
+    notes:
+      - Vue adapter coverage for mount and update paths using the shared resolved snapshot shape conformance harness.
+  - id: adapter-web-component-resolved-snapshot-shape
+    kind: adapter-test
+    status: passing
+    path: packages/adapters/web-component/test/contract/resolved-snapshot-shape.v0.contract.test.ts
+    required: true
+    consumesCases:
+      - T-PROPS-0005-CASE-RUNTIME-CURRENT-SNAPSHOT
+      - T-PROPS-0005-CASE-DECLARED-KEYS-PRESENT
+      - T-PROPS-0005-CASE-UNDECLARED-KEYS-EXCLUDED
+      - T-PROPS-0005-CASE-KEY-GRANULARITY
+      - T-PROPS-0005-CASE-UNDEFINED-EMPTY-NORMALIZATION
+    exercises:
+      - C-PROPS-0002
+      - C-PROPS-0009
+    notes:
+      - Web Component adapter coverage uses `setElementProps()`/`update()` as the canonical props channel; arbitrary attributes are intentionally not treated as props.
 verifies:
   contracts:
     - id: C-PROPS-0008
@@ -202,6 +250,15 @@ revisions:
   - version: 0.1.0
     change: revised
     summary: Marked focused module-level resolved snapshot shape coverage as passing.
+  - version: 0.1.0
+    change: revised
+    summary: Added shared adapter conformance harness and React adapter coverage for resolved snapshot shape.
+  - version: 0.1.0
+    change: revised
+    summary: Added Vue adapter coverage for resolved snapshot shape.
+  - version: 0.1.0
+    change: revised
+    summary: Added Web Component adapter coverage for resolved snapshot shape.
 tags:
   - props
   - contract-test
