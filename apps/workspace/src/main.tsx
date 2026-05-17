@@ -42,6 +42,9 @@ const UI_TEXT = {
     exercises: 'Exercises',
     expectation: 'Expectation',
     implementationStatus: 'Implementation Status',
+    primary: 'Primary',
+    supporting: 'Supporting',
+    coveredBy: 'Covered By',
     note: 'Note',
     notes: 'Notes',
     path: 'Path',
@@ -124,6 +127,9 @@ const UI_TEXT = {
     exercises: '演练',
     expectation: '预期',
     implementationStatus: '落点状态',
+    primary: '主落点',
+    supporting: '辅助落点',
+    coveredBy: '覆盖落点',
     note: '备注',
     notes: '备注',
     path: '路径',
@@ -426,6 +432,11 @@ function EntityInspector(props: { entity: SpecEntity | null; locale: Locale; t: 
   }
 
   const entity = props.entity;
+  const caseImplementations = getCaseImplementations(entity);
+  const sortedImplementations = [...entity.implementations].sort((a, b) => {
+    if (a.required !== b.required) return a.required ? -1 : 1;
+    return a.id.localeCompare(b.id);
+  });
 
   return (
     <section className="panel entity-panel">
@@ -503,16 +514,30 @@ function EntityInspector(props: { entity: SpecEntity | null; locale: Locale; t: 
             {entity.cases.map((testCase) => (
               <article className="criterion-row" key={testCase.id}>
                 <strong>{testCase.id}</strong>
-                <p>{testCase.title}</p>
+                <p>{renderInlineText(testCase.title)}</p>
                 <p className="rationale">
                   <span>{props.t.expectation}: </span>
-                  {testCase.expectation}
+                  {renderInlineText(testCase.expectation)}
                 </p>
                 {testCase.covers.length > 0 ? (
                   <p className="rationale">
                     <span>{props.t.covers}: </span>
                     {testCase.covers.join(', ')}
                   </p>
+                ) : null}
+                {(caseImplementations.get(testCase.id) ?? []).length > 0 ? (
+                  <CaseCoverageList
+                    label={props.t.coveredBy}
+                    implementations={caseImplementations.get(testCase.id) ?? []}
+                    t={props.t}
+                  />
+                ) : null}
+                {testCase.notes.length > 0 ? (
+                  <ul className="case-notes">
+                    {testCase.notes.map((note) => (
+                      <li key={note}>{renderInlineText(note)}</li>
+                    ))}
+                  </ul>
                 ) : null}
               </article>
             ))}
@@ -523,9 +548,11 @@ function EntityInspector(props: { entity: SpecEntity | null; locale: Locale; t: 
         <section className="detail-section">
           <h3>{props.t.implementations}</h3>
           <div className="implementation-list">
-            {entity.implementations.map((implementation) => (
+            {sortedImplementations.map((implementation) => (
               <article
-                className={`implementation-card status-${implementation.status}`}
+                className={`implementation-card status-${implementation.status} ${
+                  implementation.required ? 'is-primary' : 'is-supporting'
+                }`}
                 key={implementation.id}
               >
                 <div className="implementation-header">
@@ -537,8 +564,10 @@ function EntityInspector(props: { entity: SpecEntity | null; locale: Locale; t: 
                     <span className={`status-badge status-${implementation.status}`}>
                       {props.t.implementationStatuses[implementation.status]}
                     </span>
-                    <span className={implementation.required ? 'required-badge' : 'optional-badge'}>
-                      {implementation.required ? props.t.required : props.t.optional}
+                    <span
+                      className={implementation.required ? 'primary-badge' : 'supporting-badge'}
+                    >
+                      {implementation.required ? props.t.primary : props.t.supporting}
                     </span>
                   </div>
                 </div>
@@ -561,7 +590,7 @@ function EntityInspector(props: { entity: SpecEntity | null; locale: Locale; t: 
                     <span>{props.t.notes}</span>
                     <ul>
                       {implementation.notes.map((note) => (
-                        <li key={note}>{note}</li>
+                        <li key={note}>{renderInlineText(note)}</li>
                       ))}
                     </ul>
                   </div>
@@ -585,6 +614,30 @@ function EntityInspector(props: { entity: SpecEntity | null; locale: Locale; t: 
   );
 }
 
+function CaseCoverageList(props: {
+  label: string;
+  implementations: SpecEntity['implementations'];
+  t: UiText;
+}) {
+  return (
+    <div className="case-coverage">
+      <span>{props.label}</span>
+      <div>
+        {props.implementations.map((implementation) => (
+          <span
+            className={`coverage-chip ${implementation.required ? 'is-primary' : 'is-supporting'}`}
+            key={implementation.id}
+          >
+            <code>{implementation.id}</code>
+            <small>{props.t.implementationStatuses[implementation.status]}</small>
+            <small>{implementation.required ? props.t.primary : props.t.supporting}</small>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ImplementationChipGroup(props: { label: string; values: string[] }) {
   if (props.values.length === 0) return null;
 
@@ -598,6 +651,28 @@ function ImplementationChipGroup(props: { label: string; values: string[] }) {
       </div>
     </div>
   );
+}
+
+function getCaseImplementations(entity: SpecEntity): Map<string, SpecEntity['implementations']> {
+  const caseImplementations = new Map<string, SpecEntity['implementations']>();
+
+  for (const implementation of entity.implementations) {
+    for (const caseId of implementation.consumesCases) {
+      const implementations = caseImplementations.get(caseId) ?? [];
+      implementations.push(implementation);
+      caseImplementations.set(caseId, implementations);
+    }
+  }
+
+  for (const [caseId, implementations] of caseImplementations) {
+    implementations.sort((a, b) => {
+      if (a.required !== b.required) return a.required ? -1 : 1;
+      return a.id.localeCompare(b.id);
+    });
+    caseImplementations.set(caseId, implementations);
+  }
+
+  return caseImplementations;
 }
 
 function RelationList(props: { title: string; relations: SpecEntity['relates'] }) {
