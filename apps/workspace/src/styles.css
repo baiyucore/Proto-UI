@@ -138,17 +138,57 @@ h1 {
   padding: 8px 10px;
 }
 
+.entity-jumpbar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.entity-jumpbar button {
+  display: grid;
+  min-width: 0;
+  border: 1px solid #d0dad4;
+  border-radius: 6px;
+  background: #f7faf8;
+  color: #4b5a53;
+  cursor: pointer;
+  padding: 6px 4px;
+  text-align: center;
+}
+
+.entity-jumpbar button:hover,
+.entity-jumpbar button.active {
+  border-color: #8ba99a;
+  background: #eef6f1;
+  color: #1e3f31;
+}
+
+.entity-jumpbar span {
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.entity-jumpbar small {
+  margin-top: 3px;
+  color: #75857d;
+  font-size: 10px;
+  font-weight: 800;
+}
+
 .entity-nav {
   display: grid;
-  gap: 22px;
+  gap: 18px;
   min-height: 0;
   overflow: auto;
   padding-right: 4px;
+  scroll-behavior: smooth;
 }
 
 .entity-nav section {
   display: grid;
   gap: 8px;
+  scroll-margin-top: 16px;
 }
 
 .entity-nav h2 {
@@ -165,6 +205,65 @@ h1 {
   color: #7b8982;
 }
 
+.entity-scope {
+  display: grid;
+  gap: 6px;
+}
+
+.scope-toggle {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid #dde5e0;
+  border-radius: 6px;
+  background: #f7faf8;
+  color: #4a5a52;
+  cursor: pointer;
+  padding: 7px 9px;
+  text-align: left;
+}
+
+.scope-toggle:hover,
+.scope-toggle.active {
+  border-color: #b8c9c0;
+  background: #eef4f0;
+}
+
+.scope-toggle span {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scope-toggle span::before {
+  content: '▸';
+  margin-right: 6px;
+  color: #7a8c83;
+}
+
+.scope-toggle[aria-expanded='true'] span::before {
+  content: '▾';
+}
+
+.scope-toggle small {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #e8efeb;
+  color: #617069;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.scope-entities {
+  display: grid;
+  gap: 6px;
+}
+
 .entity-link {
   position: relative;
   display: grid;
@@ -174,7 +273,7 @@ h1 {
   border-radius: 8px;
   background: transparent;
   color: #1e2924;
-  padding: 10px;
+  padding: 9px 10px;
   text-align: left;
 }
 
@@ -185,13 +284,13 @@ h1 {
 }
 
 .entity-link strong {
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .entity-link span {
   padding-right: 24px;
   color: #5b6862;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .entity-link em {
@@ -697,8 +796,9 @@ h1 {
 }
 
 .graph-canvas {
+  position: relative;
   margin-top: 18px;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid #e1e5e1;
   border-radius: 6px;
   background: #f8faf8;
@@ -707,7 +807,7 @@ h1 {
 .graph-canvas svg {
   display: block;
   width: 100%;
-  min-height: 360px;
+  min-height: 380px;
 }
 
 .graph-canvas marker path {
@@ -716,7 +816,7 @@ h1 {
 
 .graph-edges line {
   stroke: #c8d2cc;
-  stroke-width: 1.3;
+  stroke-width: 1.5;
 }
 
 .graph-edges text {
@@ -728,13 +828,22 @@ h1 {
   stroke-width: 4px;
 }
 
-.graph-edges .active line {
+.graph-edges .direct line {
   stroke: #517564;
-  stroke-width: 1.8;
+  stroke-width: 2;
 }
 
-.graph-edges .active text {
+.graph-edges .direct text {
   opacity: 1;
+}
+
+.graph-edges .context {
+  opacity: 0.28;
+}
+
+.graph-edges .context line {
+  stroke: #7c8b84;
+  stroke-width: 1.2;
 }
 
 .graph-node {
@@ -775,6 +884,64 @@ h1 {
 
 .graph-node.type-decision circle {
   stroke: #3f6f9b;
+}
+
+.graph-hover-card {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  width: min(280px, calc(100% - 24px));
+  gap: 8px;
+  border: 1px solid #b9c9c1;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgb(28 44 36 / 18%);
+  color: #21302a;
+  padding: 12px;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 16px));
+}
+
+.graph-hover-card.is-below {
+  transform: translate(-50%, 34px);
+}
+
+.graph-hover-card strong {
+  color: #1f3029;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.graph-hover-card p {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  color: #4b5b53;
+  font-size: 12px;
+  -webkit-line-clamp: 3;
+  line-height: 1.45;
+}
+
+.graph-hover-card .graph-hover-title {
+  color: #718077;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.graph-hover-card div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.graph-hover-card span {
+  border-radius: 999px;
+  background: #edf4f0;
+  color: #456155;
+  padding: 3px 7px;
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .work-panel,
@@ -845,6 +1012,10 @@ h1 {
 
   .entity-nav {
     max-height: 420px;
+  }
+
+  .entity-jumpbar {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .topbar,
