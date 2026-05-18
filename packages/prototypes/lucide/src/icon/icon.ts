@@ -11,7 +11,7 @@ const DEFAULT_FILL = 'none';
 
 function setupLucideIcon(def: DefHandle<LucideIconProps, LucideIconExposes>): void {
   def.props.define({
-    name: { type: 'string', empty: 'fallback', enum: [...LUCIDE_ICON_NAMES] },
+    name: { type: 'enum', empty: 'fallback', options: [...LUCIDE_ICON_NAMES] },
     size: { type: 'number', empty: 'fallback' },
     strokeWidth: { type: 'number', empty: 'fallback' },
     stroke: { type: 'string', empty: 'fallback' },

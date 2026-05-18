@@ -20,6 +20,24 @@ describe('props: define merge semantics (v0)', () => {
         a: { type: 'number', range: { min: 'bad' } },
       } as any)
     ).toThrow();
+
+    expect(() =>
+      pm.define({
+        mode: { type: 'enum' },
+      } as any)
+    ).toThrow(/options/i);
+
+    expect(() =>
+      pm.define({
+        label: { type: 'string', options: ['a'] },
+      } as any)
+    ).toThrow(/options/i);
+
+    expect(() =>
+      pm.define({
+        legacy: { type: 'string', enum: ['a'] },
+      } as any)
+    ).toThrow(/enum descriptor field/i);
   });
 
   it('PROP-V0-1100: merge type mismatch MUST throw', () => {
@@ -68,26 +86,26 @@ describe('props: define merge semantics (v0)', () => {
     expect(pm3.get().x).toBe(7);
   });
 
-  it('PROP-V0-1300: merge enum: intersect; widening warns; incompatible throws', () => {
+  it('PROP-V0-1300: merge enum options: intersect; widening warns; incompatible throws', () => {
     type P = { mode: string };
     const pm = new PropsKernel<P>();
 
     pm.define({
-      mode: { type: 'string', enum: ['a', 'b', 'c'] as const, default: 'a' },
+      mode: { type: 'enum', options: ['a', 'b', 'c'] as const, default: 'a' },
     } satisfies PropsSpecMap<P>);
 
     // widening => warn (intersection stays the same, but we can't read spec; just check warning exists)
     pm.define({
-      mode: { type: 'string', enum: ['a', 'b', 'c', 'd'] as const },
+      mode: { type: 'enum', options: ['a', 'b', 'c', 'd'] as const },
     } satisfies PropsSpecMap<P>);
     expect(warnings(pm).length).toBeGreaterThan(0);
 
     // incompatible => throw (no intersection)
     const pm2 = new PropsKernel<P>();
     pm2.define({
-      mode: { type: 'string', enum: ['a', 'b'] as const },
+      mode: { type: 'enum', options: ['a', 'b'] as const },
     } satisfies PropsSpecMap<P>);
-    expect(() => pm2.define({ mode: { type: 'string', enum: ['c'] as const } } as any)).toThrow(
+    expect(() => pm2.define({ mode: { type: 'enum', options: ['c'] as const } } as any)).toThrow(
       /define merge error/i
     );
   });
@@ -174,11 +192,11 @@ describe('props: define merge semantics (v0)', () => {
       a: { type: 'number', range: { min: 0, max: 10 }, default: 1 },
     } as any);
     k1.define({
-      b: { type: 'string', enum: ['x', 'y'] as const, default: 'x' },
+      b: { type: 'enum', options: ['x', 'y'] as const, default: 'x' },
     } as any);
 
     k2.define({
-      b: { type: 'string', enum: ['x', 'y'] as const, default: 'x' },
+      b: { type: 'enum', options: ['x', 'y'] as const, default: 'x' },
     } as any);
     k2.define({
       a: { type: 'number', range: { min: 0, max: 10 }, default: 1 },

@@ -54,11 +54,11 @@ const button = definePrototype<ShadcnButtonProps, ShadcnButtonExposes>({
   setup(def) {
     def.props.define({
       variant: {
-        type: 'string',
+        type: 'enum',
         empty: 'fallback',
-        enum: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'],
+        options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'],
       },
-      size: { type: 'string', empty: 'fallback', enum: ['default', 'sm', 'lg', 'icon'] },
+      size: { type: 'enum', empty: 'fallback', options: ['default', 'sm', 'lg', 'icon'] },
       disabled: { type: 'boolean', empty: 'fallback' },
     });
     def.props.setDefaults({

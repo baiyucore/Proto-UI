@@ -44,9 +44,9 @@ const dialogTrigger = definePrototype<ShadcnDialogTriggerProps, ShadcnDialogTrig
   setup(def) {
     def.props.define({
       variant: {
-        type: 'string',
+        type: 'enum',
         empty: 'fallback',
-        enum: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'],
+        options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'],
       },
       disabled: { type: 'boolean', empty: 'fallback' },
     });

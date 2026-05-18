@@ -49,17 +49,28 @@ describe('@proto.ui/module-props PropsKernel (EmptyBehavior)', () => {
     expect(() => pm.define({ disabled: { type: 'string' } as any })).toThrow();
   });
 
-  it('PROP-0013/0014: enum widen allowed (warning), tighten error', () => {
+  it('PROP-0013/0014: enum options widen allowed (warning), tighten error', () => {
     const pm = new PropsKernel<any>();
-    pm.define({ mode: { type: 'string', enum: ['a', 'b'] } });
+    pm.define({ mode: { type: 'enum', options: ['a', 'b'] } });
 
-    pm.define({ mode: { type: 'string', enum: ['a', 'b', 'c'] } });
+    pm.define({ mode: { type: 'enum', options: ['a', 'b', 'c'] } });
     expect(pm.getDiagnostics().some((d: any) => d.level === 'warning')).toBe(true);
 
     // tightening from current superset to subset would be an error:
     const pm2 = new PropsKernel<any>();
-    pm2.define({ mode: { type: 'string', enum: ['a', 'b', 'c'] } });
-    expect(() => pm2.define({ mode: { type: 'string', enum: ['a', 'b'] } })).toThrow();
+    pm2.define({ mode: { type: 'enum', options: ['a', 'b', 'c'] } });
+    expect(() => pm2.define({ mode: { type: 'enum', options: ['a', 'b'] } })).toThrow();
+  });
+
+  it('PROP-0015: enum options validate string values', () => {
+    const pm = new PropsKernel<any>();
+    pm.define({ mode: { type: 'enum', options: ['a', 'b'], default: 'a' } });
+
+    pm.applyRaw({ mode: 'b' });
+    expect((pm.get() as any).mode).toBe('b');
+
+    pm.applyRaw({ mode: 'c' });
+    expect((pm.get() as any).mode).toBe('b');
   });
 
   it('PROP-0020/0021: validator invalid falls back previous-valid > default', () => {
