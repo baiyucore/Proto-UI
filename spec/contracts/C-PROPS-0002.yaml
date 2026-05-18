@@ -1,46 +1,46 @@
 id: C-PROPS-0002
 type: contract
 title: Props defines setup-time declaration and runtime access surfaces
-status: draft
+status: active
 since: 0.1.0
-summary: Props provides setup-time declaration and watcher-registration surfaces, plus runtime access surfaces.
+summary: Props exposes declaration and watcher registration through `def.props`, and runtime read access through `run.props`.
 statement:
-  zh-CN: Props 通路必须回应 `setup`/`runtime` 分离，分别提供 `setup` 阶段的声明与监听注册能力，以及 `runtime` 阶段的只读访问能力。
-  en: The Props channel must reflect `setup`/`runtime` separation by providing `setup`-time declaration and watcher-registration surfaces and `runtime` read-only access surfaces.
+  zh-CN: >-
+    Props 通路必须回应 `setup`/`runtime` 分离：setup 阶段的声明、默认值计划与 watcher registration surface 由 `def.props` 暴露；runtime 阶段读取本次调用 props state 的 surface 由 `run.props` 暴露。`C-PROPS-0002` 只约束 Props API surface 的阶段归属与最小入口，不承接 declaration shape、fallback、watch diff、raw escape hatch 或 render commit 调度等具体语义。
+
+
+  en: >-
+    The Props channel must reflect `setup`/`runtime` separation: setup-time declaration, default planning, and watcher-registration surfaces are exposed through `def.props`; runtime read access to the current props state is exposed through `run.props`. `C-PROPS-0002` only constrains the phase ownership and minimum entries of the Props API surface; concrete declaration shape, fallback, watch diff, raw escape hatch, and render-commit scheduling semantics are owned by narrower contracts.
+
+
 criteria:
   - id: C-PROPS-0002-A
     text:
-      zh-CN: Props 必须提供 `setup-only` 的声明 surface，用于声明 app maker 在 `runtime` 期间允许传入哪些 props 以及相关默认值、兜底或空值策略。
-      en: Props must provide a `setup-only` declaration surface for declaring which props app makers may provide at `runtime` and the associated `default`, `fallback`, or empty-value policies.
+      zh-CN: Props 的 setup-time declaration surface 必须通过 `def.props.define(decl)` 暴露。
+      en: The setup-time Props declaration surface must be exposed through `def.props.define(decl)`.
   - id: C-PROPS-0002-B
     text:
-      zh-CN: Props 必须提供 `setup-only` 的 watcher registration surface，用于声明 `runtime` 期间 props 重新传入或变化时应执行的动作。
-      en: Props must provide a `setup-only` watcher registration surface for declaring actions to run when props are re-applied or changed during `runtime`.
+      zh-CN: Props 的 setup-time defaults planning surface 必须通过 `def.props.setDefaults(partialDefaults)` 暴露。
+      en: The setup-time Props defaults-planning surface must be exposed through `def.props.setDefaults(partialDefaults)`.
   - id: C-PROPS-0002-C
     text:
-      zh-CN: Props 必须提供 `runtime-only` 的访问 surface，用于读取当前调用的 props 值。
-      en: Props must provide a `runtime-only` access surface for reading prop values for the current invocation.
+      zh-CN: Props 的 resolved watcher registration surface 必须通过 `def.props.watch(keys, cb)` 与 `def.props.watchAll(cb)` 暴露。
+      en: The resolved Props watcher-registration surface must be exposed through `def.props.watch(keys, cb)` and `def.props.watchAll(cb)`.
   - id: C-PROPS-0002-D
     text:
-      zh-CN: '`runtime props value` 对原型作者而言必须表现为只读快照；修改该快照不应被视为修改 Props 通路。'
-      en: "`Runtime prop values` must behave as read-only snapshots from the prototype author's perspective; mutating the snapshot must not be treated as mutating the Props channel."
+      zh-CN: Props 的 raw escape-hatch watcher registration surface 必须通过 `def.props.watchRaw(keys, cb)` 与 `def.props.watchRawAll(cb)` 暴露。
+      en: The raw Props escape-hatch watcher-registration surface must be exposed through `def.props.watchRaw(keys, cb)` and `def.props.watchRawAll(cb)`.
   - id: C-PROPS-0002-E
     text:
-      zh-CN: Props 变化或 `watcher callback` 执行本身不得隐含视图更新。
-      en: Props changes or `watcher callback` execution must not imply a view update by itself.
+      zh-CN: Props 的 runtime read surface 必须通过 `run.props.get()`、`run.props.getRaw()` 与 `run.props.isProvided(key)` 暴露。
+      en: The runtime Props read surface must be exposed through `run.props.get()`, `run.props.getRaw()`, and `run.props.isProvided(key)`.
+  - id: C-PROPS-0002-F
+    text:
+      zh-CN: '`def.props.*` API 必须是 setup-only；`run.props.*` API 不得暴露 declaration、default planning 或 watcher registration 能力。'
+      en: '`def.props.*` APIs must be setup-only; `run.props.*` APIs must not expose declaration, default-planning, or watcher-registration capabilities.'
     rationale:
-      zh-CN: Proto UI 的视图更新应由更基础的 `runtime update` 契约约束；Props 只负责传递、解析与监听配置输入。
-      en: Proto UI view updates should be governed by a lower-level `runtime update` contract; Props only carries, resolves, and observes configuration input.
-openQuestions:
-  - id: C-PROPS-0002-Q1
-    question:
-      zh-CN: 应建立哪条 core/runtime 契约来承接 `run.update()` 与“Props 变化不隐含视图更新”的语义？
-      en: Which core/runtime contract should own `run.update()` and the rule that Props changes do not imply view updates?
-    context:
-      zh-CN: 当前 C-PROPS-0002-E 暂时记录了该规则，但其基础不属于 Props 通路本身。
-      en: C-PROPS-0002-E currently records this rule, but its foundation is outside the Props channel itself.
-    blocks:
-      - C-PROPS-0002-E
+      zh-CN: Props API surface 的核心职责是让 `setup` 计划和 `runtime` 调用在句柄形状上可见。具体行为细节由子契约承接。
+      en: The core responsibility of the Props API surface is to make `setup` planning and `runtime` invocation boundaries visible in handle shape. Narrower contracts own concrete behavior details.
 sources:
   - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
     sections:
@@ -52,6 +52,13 @@ sources:
     sections:
       - '3. watchAll(cb)'
       - '4. watch(keys, cb)'
+  - path: internal/contracts/props/base-text/04.watch-raw.v0.zh-CN.md
+    sections:
+      - '3. watchRawAll(cb)'
+      - '4. watchRaw(keys, cb)'
+  - path: internal/contracts/props/base-text/05.runtime-integration.v0.zh-CN.md
+    sections:
+      - '2. RunHandle.props surface'
 dependsOn:
   contracts:
     - C-LIFECYCLE-0001
@@ -61,11 +68,12 @@ revisions:
   - version: 0.1.0
     change: introduced
     summary: Drafted a placeholder for setup/runtime props surface semantics.
+  - version: 0.1.0
+    change: revised
+    summary: Promoted Props API surface ownership to active criteria and moved render-commit scheduling out to narrower runtime/update contracts.
 tags:
   - props
   - api
   - surface
   - setup
   - runtime
-  - draft
-  - deferred

@@ -41,6 +41,9 @@ Workspace 的近期目标不是完整录入 Proto UI 的全部哲学、契约和
 - `C-PROPS-0006` / `C-PROPS-0007` / `C-PROPS-0010`：declaration descriptor shape、merge safety 与 failed merge atomicity
   - 已通过 `T-PROPS-0003`、`T-PROPS-0004` 映射到 define merge module tests。
   - 保留断口：`validator` 作为函数型 descriptor 字段是否属于 portable Props declaration 仍需后续讨论。
+- `C-PROPS-0002`：Props API surface
+  - 已通过 `T-PROPS-0010` 固定 `def.props` / `run.props` 的最小 API surface 与阶段边界。
+  - 不再承接 render commit 调度语义；该断口转移到 `C-PROPS-0014` 与未来 core runtime/update 契约。
 
 这个阶段证明了 Workspace 的核心链路可以工作：
 
@@ -89,7 +92,6 @@ Contract -> Criteria -> T entity -> shared fixture / conformance harness -> modu
 
 | 优先级 | 契约 | 判断 | 计划 |
 | --- | --- | --- | --- |
-| P0 | `C-PROPS-0002` Props defines setup-time declaration and runtime access surfaces | API surface 总契约仍是 draft；其子契约已经补齐不少，可以开始回收边界。 | 回看 `0005/0008/0011/0012/0013/0014` 后，决定哪些 API shape 写入 `0002`，哪些只作为子契约细化。 |
 | P0 | `C-PROPS-0014` applyRawProps updates the props channel without implicit render commit | 当前仍是 draft/deferred，且牵涉 runtime update / render commit 的上游契约。 | 先判断是否需要拆出 `C-CORE-RUNTIME-*` 或 `C-CORE-UPDATE-*`，再决定 0014 是否保留为 Props-specific refinement。 |
 | P1 | `C-PROPS-0005` Setup-time prop declarations are mergeable plans | 高层 mergeable plan 契约仍需要与 `0006/0007/0010` 对齐。 | 回扫 criteria，确保它只表达“可合并计划”的上层语义，不重复写具体 merge rules。 |
 | P1 | `C-CORE-SYNTAX-0001` / `C-CORE-SYNTAX-0002` | `def handle` 与 `run handle` 仍为 draft，但 Props 已经大量依赖它们。 | 后续应补核心语法测试或至少补 cross-reference，避免 Props 契约承担过多 core 语义。 |
@@ -97,7 +99,7 @@ Contract -> Criteria -> T entity -> shared fixture / conformance harness -> modu
 暂缓推进或需要回收的项：
 
 - `C-PROPS-0001`：偏哲学/通路身份，更多作为上游引用，不适合作为测试链路主线。
-- `C-PROPS-0003/0004/0006/0007/0008/0009/0010/0011/0012/0013`：已进入 active，但后续仍需要跟随实现变更回扫 wording 与 coverage。
+- `C-PROPS-0002/0003/0004/0006/0007/0008/0009/0010/0011/0012/0013`：已进入 active，但后续仍需要跟随实现变更回扫 wording 与 coverage。
 - `C-CORE-VALUE-0001`：`null` canonical empty value 仍为 draft；它是 Props 多条契约的上游，应在 Props 回扫后补强。
 
 交付物：
@@ -149,5 +151,5 @@ Contract -> Criteria -> T entity -> shared fixture / conformance harness -> modu
 - 回看所有 `C-PROPS-*` 的边界是否仍然合理。
 - 将“范围过大”的 `C-PROPS` 拆分或降级为上游/总契约。
 - 将暂缓项保留为明确 open question 或 deferred tag，避免 draft 堆积后遗失上下文。
-- 优先处理 `C-PROPS-0002` 与 `C-PROPS-0014`：前者决定 Props API surface 的总边界，后者决定 props update 与 render commit 的 runtime/core 边界。
+- 优先处理 `C-PROPS-0014`：它决定 props update 与 render commit 的 runtime/core 边界。
 - 同步补强 `C-CORE-SYNTAX-0001/0002` 与 `C-CORE-VALUE-0001`，避免 Props 契约继续承载过多核心语法和核心 value 语义。

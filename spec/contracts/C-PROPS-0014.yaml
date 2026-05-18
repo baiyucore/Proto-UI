@@ -10,10 +10,17 @@ sources:
       - '5. applyRawProps 不触发渲染'
 dependsOn:
   contracts:
-    - id: C-PROPS-0002
-      anchors:
-        - C-PROPS-0002-E
-      note: '`applyRawProps` inherits the rule that Props changes do not imply view updates.'
+    - C-PROPS-0002
+openQuestions:
+  - id: C-PROPS-0014-Q-CORE-UPDATE-OWNER
+    question:
+      zh-CN: 应建立哪条 core/runtime 契约来承接 `run.update()` 与“Props 变化不隐含视图更新”的语义？
+      en: Which core/runtime contract should own `run.update()` and the rule that Props changes do not imply view updates?
+    context:
+      zh-CN: '`applyRawProps` 的 props state update 和 watcher dispatch 属于 Props 通路；render commit 调度是否发生则属于更上游的 runtime update 语义。'
+      en: '`applyRawProps` state updates and watcher dispatch belong to the Props channel; whether render commit scheduling happens belongs to higher-level runtime update semantics.'
+    blocks:
+      - C-PROPS-0014
 revisions:
   - version: 0.1.0
     change: introduced
