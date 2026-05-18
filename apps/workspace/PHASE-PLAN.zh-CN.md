@@ -44,6 +44,9 @@ Workspace 的近期目标不是完整录入 Proto UI 的全部哲学、契约和
 - `C-PROPS-0002`：Props API surface
   - 已通过 `T-PROPS-0010` 固定 `def.props` / `run.props` 的最小 API surface 与阶段边界。
   - 不再承接 render commit 调度语义；该断口转移到 `C-PROPS-0014` 与未来 core runtime/update 契约。
+- `C-PROPS-0014`：runtime `applyRawProps` boundary
+  - 已通过 `T-PROPS-0011` 映射到 runtime props integration 与 run props wiring 测试。
+  - 只声明 `applyRawProps` 可以更新 Props channel、触发 watcher，但不得隐式 render commit；`run.update()` 与 render commit 的正向调度规则保留为 core runtime/update 断口。
 
 这个阶段证明了 Workspace 的核心链路可以工作：
 
@@ -92,14 +95,14 @@ Contract -> Criteria -> T entity -> shared fixture / conformance harness -> modu
 
 | 优先级 | 契约 | 判断 | 计划 |
 | --- | --- | --- | --- |
-| P0 | `C-PROPS-0014` applyRawProps updates the props channel without implicit render commit | 当前仍是 draft/deferred，且牵涉 runtime update / render commit 的上游契约。 | 先判断是否需要拆出 `C-CORE-RUNTIME-*` 或 `C-CORE-UPDATE-*`，再决定 0014 是否保留为 Props-specific refinement。 |
 | P1 | `C-PROPS-0005` Setup-time prop declarations are mergeable plans | 高层 mergeable plan 契约仍需要与 `0006/0007/0010` 对齐。 | 回扫 criteria，确保它只表达“可合并计划”的上层语义，不重复写具体 merge rules。 |
 | P1 | `C-CORE-SYNTAX-0001` / `C-CORE-SYNTAX-0002` | `def handle` 与 `run handle` 仍为 draft，但 Props 已经大量依赖它们。 | 后续应补核心语法测试或至少补 cross-reference，避免 Props 契约承担过多 core 语义。 |
+| P1 | Core runtime/update contract | `run.update()` 与 render commit 是不同层级的 API，目前只在 Props 0014 留了断口。 | 后续新建 core runtime/update 契约，承接主动更新与 commit 调度的正向语义。 |
 
 暂缓推进或需要回收的项：
 
 - `C-PROPS-0001`：偏哲学/通路身份，更多作为上游引用，不适合作为测试链路主线。
-- `C-PROPS-0002/0003/0004/0006/0007/0008/0009/0010/0011/0012/0013`：已进入 active，但后续仍需要跟随实现变更回扫 wording 与 coverage。
+- `C-PROPS-0002/0003/0004/0006/0007/0008/0009/0010/0011/0012/0013/0014`：已进入 active，但后续仍需要跟随实现变更回扫 wording 与 coverage。
 - `C-CORE-VALUE-0001`：`null` canonical empty value 仍为 draft；它是 Props 多条契约的上游，应在 Props 回扫后补强。
 
 交付物：
@@ -151,5 +154,5 @@ Contract -> Criteria -> T entity -> shared fixture / conformance harness -> modu
 - 回看所有 `C-PROPS-*` 的边界是否仍然合理。
 - 将“范围过大”的 `C-PROPS` 拆分或降级为上游/总契约。
 - 将暂缓项保留为明确 open question 或 deferred tag，避免 draft 堆积后遗失上下文。
-- 优先处理 `C-PROPS-0014`：它决定 props update 与 render commit 的 runtime/core 边界。
+- 优先处理 `C-PROPS-0005` 与 core syntax/update 断口：`0005` 是 Props declaration mergeable plans 的高层语义，core update contract 则承接 `run.update()` 与 render commit 的正向规则。
 - 同步补强 `C-CORE-SYNTAX-0001/0002` 与 `C-CORE-VALUE-0001`，避免 Props 契约继续承载过多核心语法和核心 value 语义。
