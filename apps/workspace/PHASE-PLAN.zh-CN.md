@@ -1,6 +1,6 @@
 # Proto UI Workspace 阶段性目标
 
-> 当前版本：2026-05-17 更新
+> 当前版本：2026-05-18 更新
 
 Workspace 的近期目标不是完整录入 Proto UI 的全部哲学、契约和测试，而是先打通一条真实可用的治理链路：
 
@@ -23,7 +23,7 @@ Workspace 的近期目标不是完整录入 Proto UI 的全部哲学、契约和
 
 ## 当前进展
 
-截至 2026-05-17，第一条 Props 契约测试链路已经跑通：
+截至 2026-05-18，Props 契约测试链路已经从单契约闭环扩展到几个小域：
 
 - `C-PROPS-0003`：Props values must be JSON values
   - 已通过 `T-PROPS-0001` 建立 JSON value boundary fixture。
@@ -32,6 +32,15 @@ Workspace 的近期目标不是完整录入 Proto UI 的全部哲学、契约和
   - 已通过 `T-PROPS-0005` 拆出 criteria-level cases。
   - 已落到 module focused test、runtime props wiring/integration，以及 React、Vue、Web Component adapter conformance 测试。
   - 保留断口：`resolved snapshot` 的深层语义只读更适合未来静态分析检查，v0 runtime 目前只验证浅层不可变。
+- `C-PROPS-0004` / `C-PROPS-0009`：per-key state classification 与 fallback resolution
+  - 已通过 `T-PROPS-0002`、`T-PROPS-0006` 建立 criteria-level mapping。
+  - 已落到 focused module tests，并保留历史测试作为 supporting coverage。
+- `C-PROPS-0011` / `C-PROPS-0012` / `C-PROPS-0013`：resolved watcher、raw escape hatch 与 watcher-time `run handle` binding
+  - 已通过 `T-PROPS-0007`、`T-PROPS-0008`、`T-PROPS-0009` 映射到 module/runtime 测试。
+  - `C-PROPS-0013` 已被重新定位为 `C-CORE-SYNTAX-0002` 的 Props-specific refinement。
+- `C-PROPS-0006` / `C-PROPS-0007` / `C-PROPS-0010`：declaration descriptor shape、merge safety 与 failed merge atomicity
+  - 已通过 `T-PROPS-0003`、`T-PROPS-0004` 映射到 define merge module tests。
+  - 保留断口：`validator` 作为函数型 descriptor 字段是否属于 portable Props declaration 仍需后续讨论。
 
 这个阶段证明了 Workspace 的核心链路可以工作：
 
@@ -61,7 +70,7 @@ Contract -> Criteria -> T entity -> shared fixture / conformance harness -> modu
 - 至少 1 个 `T-*` 不再只是占位，而是指向真实测试
 - Workspace 能看出哪些 criteria 已覆盖、哪些未覆盖
 
-当前判断：Phase 1 已完成，可以进入小域闭环。
+当前判断：Phase 1 已完成；Phase 2 已经覆盖 value boundary、resolution/fallback、watch/raw 和 define/merge 的主要可测链路。
 
 ## Phase 2：Props 小域闭环
 
@@ -80,21 +89,16 @@ Contract -> Criteria -> T entity -> shared fixture / conformance harness -> modu
 
 | 优先级 | 契约 | 判断 | 计划 |
 | --- | --- | --- | --- |
-| P0 | `C-PROPS-0009` Empty and invalid prop values resolve through deterministic fallback | 边界清晰，已有 `T-PROPS-0006` 占位和 `resolve-fallback` module 测试；与 `C-PROPS-0008` 已形成测试链路衔接。 | 下一条主线。先补 statement/criteria，再写实 `T-PROPS-0006`，最后补 module focused coverage 与必要 adapter/runtime exercises。 |
-| P0.5 | `C-PROPS-0004` Prop semantic state is classified per key | 是 `0009` 的前置语义，边界清晰，但独立测试价值主要体现在 `0009` 的输入分类中。 | 可在推进 `0009` 时顺手补 criteria，并让 `T-PROPS-0002` 记录分类覆盖；不必单独拉成一条长主线。 |
-| P1 | `C-PROPS-0011` Resolved props watchers observe resolved snapshot changes | watch 行为边界相对清晰，已有 `watch-resolved` 与 runtime integration 测试基础。 | 在 fallback 小域后推进。需要先补 criteria，再整理 `T-*`，尤其明确 hydration、Object.is、watchAll/watch(keys)、调用顺序。 |
-| P1 | `C-PROPS-0006` Prop declaration descriptors have constrained shape | setup-time descriptor 边界清晰，已有 define JSON boundary 和 shape/merge 相关测试基础。 | 适合作为 define 小域起点。需要把 descriptor shape 细节补进 criteria。 |
-| P2 | `C-PROPS-0007` Prop declaration merge preserves evolution safety | 可测试，但具体“breaking narrowing / widening traceable”的边界需要再次确认。 | 等 `0006` criteria 稳定后推进。 |
-| P2 | `C-PROPS-0010` Failed declaration merge must not partially apply | 边界清晰，适合测试 atomicity，但依赖 `0007` 的冲突定义。 | 跟随 `0007`，不单独提前。 |
+| P0 | `C-PROPS-0002` Props defines setup-time declaration and runtime access surfaces | API surface 总契约仍是 draft；其子契约已经补齐不少，可以开始回收边界。 | 回看 `0005/0008/0011/0012/0013/0014` 后，决定哪些 API shape 写入 `0002`，哪些只作为子契约细化。 |
+| P0 | `C-PROPS-0014` applyRawProps updates the props channel without implicit render commit | 当前仍是 draft/deferred，且牵涉 runtime update / render commit 的上游契约。 | 先判断是否需要拆出 `C-CORE-RUNTIME-*` 或 `C-CORE-UPDATE-*`，再决定 0014 是否保留为 Props-specific refinement。 |
+| P1 | `C-PROPS-0005` Setup-time prop declarations are mergeable plans | 高层 mergeable plan 契约仍需要与 `0006/0007/0010` 对齐。 | 回扫 criteria，确保它只表达“可合并计划”的上层语义，不重复写具体 merge rules。 |
+| P1 | `C-CORE-SYNTAX-0001` / `C-CORE-SYNTAX-0002` | `def handle` 与 `run handle` 仍为 draft，但 Props 已经大量依赖它们。 | 后续应补核心语法测试或至少补 cross-reference，避免 Props 契约承担过多 core 语义。 |
 
-暂缓推进：
+暂缓推进或需要回收的项：
 
 - `C-PROPS-0001`：偏哲学/通路身份，更多作为上游引用，不适合作为测试链路主线。
-- `C-PROPS-0002`：API surface 总契约，范围较大，应由 `0005`、`0008`、`0011`、`0012`、`0014` 等子契约反向收敛后再回修。
-- `C-PROPS-0005`：mergeable plans 的高层判断，需要和 `0006/0007/0010` 一起过。
-- `C-PROPS-0012`：raw escape hatch 可测，但属于非推荐 API，优先级低于 resolved/fallback/watch 主链路。
-- `C-PROPS-0013`：watcher callback `run handle` 绑定已有 runtime 测试基础，但依赖 `0011/0012` 的 watcher 语义稳定。
-- `C-PROPS-0014`：`applyRawProps` 与 render commit 的关系更接近 runtime/core update 契约，需要先明确是否拆出更上游的 runtime contract。
+- `C-PROPS-0003/0004/0006/0007/0008/0009/0010/0011/0012/0013`：已进入 active，但后续仍需要跟随实现变更回扫 wording 与 coverage。
+- `C-CORE-VALUE-0001`：`null` canonical empty value 仍为 draft；它是 Props 多条契约的上游，应在 Props 回扫后补强。
 
 交付物：
 
@@ -140,17 +144,10 @@ Contract -> Criteria -> T entity -> shared fixture / conformance harness -> modu
 
 ## 下一步
 
-从 `C-PROPS-0009` 开始：
-
-1. 补全 `C-PROPS-0009` 的 `statement` 和 criteria。
-2. 同步补一份轻量的 `C-PROPS-0004` criteria，作为 `0009` 的输入分类前置。
-3. 将 `T-PROPS-0006` 写实，拆出 missing、provided-empty、invalid、fallback order、prevValid、`empty="error"` 等 cases。
-4. 对照现有 `packages/modules/props/test/contract/resolve-fallback.v0.contract.test.ts`，将可确认的实现状态标为 passing。
-5. 检查是否需要新的 focused module test，避免历史测试过宽导致 coverage 难以阅读。
-6. 再判断 adapter/runtime 是否只作为 exercises，还是需要建立独立 conformance harness。
-
-完成 `0009` 后，进入一次回扫：
+进入一次 Props 回扫：
 
 - 回看所有 `C-PROPS-*` 的边界是否仍然合理。
 - 将“范围过大”的 `C-PROPS` 拆分或降级为上游/总契约。
 - 将暂缓项保留为明确 open question 或 deferred tag，避免 draft 堆积后遗失上下文。
+- 优先处理 `C-PROPS-0002` 与 `C-PROPS-0014`：前者决定 Props API surface 的总边界，后者决定 props update 与 render commit 的 runtime/core 边界。
+- 同步补强 `C-CORE-SYNTAX-0001/0002` 与 `C-CORE-VALUE-0001`，避免 Props 契约继续承载过多核心语法和核心 value 语义。
