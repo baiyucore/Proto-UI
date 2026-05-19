@@ -10,8 +10,8 @@ function setupTabsRoot(def: DefHandle<TabsRootProps, TabsRootExposes>): void {
   def.props.define({
     value: { type: 'string', empty: 'fallback' },
     defaultValue: { type: 'string', empty: 'fallback' },
-    orientation: { type: 'string', empty: 'fallback', enum: ['horizontal', 'vertical'] },
-    activationMode: { type: 'string', empty: 'fallback', enum: ['automatic', 'manual'] },
+    orientation: { type: 'enum', empty: 'fallback', options: ['horizontal', 'vertical'] },
+    activationMode: { type: 'enum', empty: 'fallback', options: ['automatic', 'manual'] },
   });
   def.props.setDefaults({
     defaultValue: '',

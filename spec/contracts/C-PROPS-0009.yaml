@@ -3,15 +3,52 @@ type: contract
 title: Empty and invalid prop values resolve through deterministic fallback
 status: active
 since: 0.1.0
-summary: Missing, empty, and invalid prop values resolve through the configured empty behavior and fallback chain.
-openQuestions:
-  - id: C-PROPS-0009-Q1
-    question:
-      zh-CN: 当 fallback 链最终落到 null 时，resolved props 是否允许 typed prop（例如 number）获得 null 值，还是应视 empty behavior 配置决定？
-      en: When the fallback chain reaches null, may a typed prop such as number resolve to null, or must this depend on the configured empty behavior?
-    context:
-      zh-CN: 现有底本允许 empty 非 error 时 fallback 链末尾为 null；但这可能与“typed prop 默认不应得到 null resolved value”的直觉冲突，需要回看实现与测试。
-      en: The current base text allows null at the end of the fallback chain when empty is not error; this may conflict with the intuition that typed props should not resolve to null by default, so implementation and tests need review.
+summary: '`Missing`, `empty`, and `invalid` prop values resolve through the configured `empty` behavior and fallback chain.'
+statement:
+  zh-CN: >-
+    当某个 prop key 的输入为 `missing`、`provided-empty` 或 `invalid` 时，Props resolution 必须根据该 key 的 `empty` 行为与 fallback 链产生确定的 resolved value。默认 `empty: "fallback"` 行为允许 fallback 链在没有可用非空候选值时最终产出 `null`；这表示 canonical empty result，而不是 typed prop 接受了 `null` 作为非空合法值。只有 `empty: "error"` 要求在没有非空 fallback 时失败。
+
+
+  en: >-
+    When a prop key is `missing`, `provided-empty`, or `invalid`, Props resolution must produce a deterministic resolved value according to that key's `empty` behavior and fallback chain. The default `empty: "fallback"` behavior permits the fallback chain to produce `null` when no usable non-empty candidate exists; this is a canonical empty result, not typed acceptance of `null` as a non-empty valid value. Only `empty: "error"` requires failure when no non-empty fallback exists.
+
+
+criteria:
+  - id: C-PROPS-0009-A
+    text:
+      zh-CN: '`missing` 输入必须进入 fallback 链，而不是让该 key 从 `resolved snapshot` 中消失。'
+      en: '`Missing` input must enter the fallback chain instead of removing that key from the `resolved snapshot`.'
+  - id: C-PROPS-0009-B
+    text:
+      zh-CN: '`provided-empty` 输入在 `empty: "accept"` 时必须 resolve 为 `null`，且不得写入 `prevValid`。'
+      en: '`Provided-empty` input with `empty: "accept"` must resolve to `null` and must not write `prevValid`.'
+  - id: C-PROPS-0009-C
+    text:
+      zh-CN: '`provided-empty` 输入在默认 `empty: "fallback"` 时必须进入 fallback 链。'
+      en: '`Provided-empty` input with the default `empty: "fallback"` behavior must enter the fallback chain.'
+  - id: C-PROPS-0009-D
+    text:
+      zh-CN: '`provided-non-empty invalid` 输入必须进入 fallback 链；它不是 `provided-empty`，也不得被 `empty: "accept"` 直接接受为 `null`。'
+      en: '`Provided-non-empty invalid` input must enter the fallback chain; it is not `provided-empty` and must not be directly accepted as `null` by `empty: "accept"`.'
+  - id: C-PROPS-0009-E
+    text:
+      zh-CN: 'fallback 链的候选顺序必须是 `prevValid`、`setDefaults`、声明中的 `default`、最后的 `null`。'
+      en: 'The fallback candidate order must be `prevValid`, `setDefaults`, declaration `default`, then final `null`.'
+  - id: C-PROPS-0009-F
+    text:
+      zh-CN: 'fallback 链最终落到 `null` 是允许的 canonical empty result；它不表示该 key 的声明类型把 `null` 视为非空合法输入。'
+      en: "A fallback chain that ends in `null` is an allowed canonical empty result; it does not mean that the key's declared type treats `null` as a non-empty valid input."
+    rationale:
+      zh-CN: '这让 `resolved snapshot` 保持稳定 key 集合，同时避免把 `undefined` 或缺失 key 暴露给原型。'
+      en: 'This keeps the `resolved snapshot` key set stable while avoiding exposure of `undefined` or absent keys to prototypes.'
+  - id: C-PROPS-0009-G
+    text:
+      zh-CN: '`empty: "error"` 要求 fallback 结果必须是非空合法值；若不存在这样的候选值，resolution 必须失败。'
+      en: '`empty: "error"` requires the fallback result to be a non-empty valid value; if no such candidate exists, resolution must fail.'
+  - id: C-PROPS-0009-H
+    text:
+      zh-CN: '`prevValid` 只记录非空且通过该 key 声明校验的值；`null` 不得成为 `prevValid`。'
+      en: "`prevValid` records only non-empty values that pass that key's declaration validation; `null` must not become `prevValid`."
 sources:
   - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
     sections:
@@ -29,12 +66,16 @@ dependsOn:
     - id: C-PROPS-0003
       role: value-boundary
       coverageImpact: expands-test-surface
-      note: The fallback chain selects or produces props values, so accepted fallback results must satisfy the JSON value boundary.
+      note: The fallback chain selects or produces props values, so accepted fallback results must satisfy the `JSON value` boundary.
     - C-PROPS-0008
+    - C-CORE-VALUE-0001
 revisions:
   - version: 0.1.0
     change: introduced
-    summary: Captured deterministic empty, invalid, fallback, and prevValid behavior.
+    summary: Captured deterministic `empty`, `invalid`, `fallback`, and `prevValid` behavior.
+  - version: 0.1.0
+    change: revised
+    summary: 'Clarified that default fallback may end in `null` as a canonical empty result, while `empty: "error"` requires a non-empty fallback.'
 tags:
   - props
   - fallback

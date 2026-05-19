@@ -4,6 +4,16 @@ title: JSON props value boundary tests
 status: draft
 since: 0.1.0
 summary: Placeholder mapping for tests that verify the JSON value boundary for props values.
+openQuestions:
+  - id: T-PROPS-0001-Q-WC-INITIAL-PROPS-HELPER
+    question:
+      zh-CN: Web Component adapter 是否需要提供一个通过 tag name 与 props 一次性创建元素的 helper？
+      en: Should the Web Component adapter provide a helper that creates an element from a tag name and initial props in one step?
+    context:
+      zh-CN: 当前 WC props 的 canonical 通道是 setElementProps()/setProps，而不是 attribute。现有 API 可以在 append 前手动 setElementProps，但缺少一个便于测试与使用的创建 helper。本断口不改变本轮测试范围。
+      en: The canonical WC props channel is setElementProps()/setProps rather than attributes. Existing APIs can call setElementProps before append, but there is no convenience helper for tests and consumers. This gap does not change the current test scope.
+    blocks:
+      - WC props creation helper ergonomics
 cases:
   - id: T-PROPS-0001-CASE-JSON-PRIMITIVES
     title: JSON primitive values are portable props values
@@ -94,9 +104,10 @@ implementations:
       - C-PROPS-0009
     notes:
       - Tests runtime applyRaw() to get() resolution with the shared JSON props value boundary fixture.
-  - id: adapter-props-json-value-boundary
+  - id: adapter-props-json-value-boundary-conformance
     kind: adapter-test
-    status: missing
+    status: active
+    path: packages/adapters/base/test-utils/props-json-value-boundary.ts
     required: true
     consumesCases:
       - T-PROPS-0001-CASE-JSON-PRIMITIVES
@@ -108,7 +119,55 @@ implementations:
       - C-PROPS-0008
       - C-PROPS-0009
     notes:
-      - Adapter-specific tests may differ in raw input tolerance, but must not expand portable resolved props semantics beyond JSON values.
+      - Shared adapter conformance harness; each adapter supplies mount/update wiring for its host-specific props path.
+  - id: adapter-react-props-json-value-boundary
+    kind: adapter-test
+    status: passing
+    path: packages/adapters/react/test/contract/props-json-value-boundary.v0.contract.test.ts
+    required: true
+    consumesCases:
+      - T-PROPS-0001-CASE-JSON-PRIMITIVES
+      - T-PROPS-0001-CASE-JSON-CONTAINERS
+      - T-PROPS-0001-CASE-NON-JSON-TOP-LEVEL
+      - T-PROPS-0001-CASE-NON-JSON-NESTED
+      - T-PROPS-0001-CASE-RAW-ESCAPE-HATCH
+    exercises:
+      - C-PROPS-0008
+      - C-PROPS-0009
+    notes:
+      - React adapter conformance coverage for mount and props update paths.
+  - id: adapter-vue-props-json-value-boundary
+    kind: adapter-test
+    status: passing
+    path: packages/adapters/vue/test/contract/props-json-value-boundary.v0.contract.test.ts
+    required: true
+    consumesCases:
+      - T-PROPS-0001-CASE-JSON-PRIMITIVES
+      - T-PROPS-0001-CASE-JSON-CONTAINERS
+      - T-PROPS-0001-CASE-NON-JSON-TOP-LEVEL
+      - T-PROPS-0001-CASE-NON-JSON-NESTED
+      - T-PROPS-0001-CASE-RAW-ESCAPE-HATCH
+    exercises:
+      - C-PROPS-0008
+      - C-PROPS-0009
+    notes:
+      - Vue adapter conformance coverage for mount and props update paths.
+  - id: adapter-web-component-props-json-value-boundary
+    kind: adapter-test
+    status: passing
+    path: packages/adapters/web-component/test/contract/props-json-value-boundary.v0.contract.test.ts
+    required: true
+    consumesCases:
+      - T-PROPS-0001-CASE-JSON-PRIMITIVES
+      - T-PROPS-0001-CASE-JSON-CONTAINERS
+      - T-PROPS-0001-CASE-NON-JSON-TOP-LEVEL
+      - T-PROPS-0001-CASE-NON-JSON-NESTED
+      - T-PROPS-0001-CASE-RAW-ESCAPE-HATCH
+    exercises:
+      - C-PROPS-0008
+      - C-PROPS-0009
+    notes:
+      - Web Component adapter conformance coverage uses setElementProps()/update() as the canonical props channel; arbitrary attributes are intentionally not treated as props.
 verifies:
   contracts:
     - id: C-PROPS-0003

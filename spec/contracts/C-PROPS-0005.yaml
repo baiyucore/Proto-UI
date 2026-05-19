@@ -3,7 +3,7 @@ type: contract
 title: Setup-time prop declarations are mergeable plans
 status: active
 since: 0.1.0
-summary: Setup-time props define calls contribute to a planned configurable prop surface and can be merged before runtime execution.
+summary: '`Setup`-time props `define` calls contribute to a planned configurable prop surface and can be merged before `runtime` execution.'
 sources:
   - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
     sections:

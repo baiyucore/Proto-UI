@@ -32,8 +32,8 @@ const toggle = definePrototype<ShadcnToggleProps, ShadcnToggleExposes>({
   name: 'shadcn-toggle',
   setup(def) {
     def.props.define({
-      variant: { type: 'string', empty: 'fallback', enum: ['default', 'outline'] },
-      size: { type: 'string', empty: 'fallback', enum: ['default', 'sm', 'lg'] },
+      variant: { type: 'enum', empty: 'fallback', options: ['default', 'outline'] },
+      size: { type: 'enum', empty: 'fallback', options: ['default', 'sm', 'lg'] },
       checked: { type: 'boolean', empty: 'fallback' },
       defaultChecked: { type: 'boolean', empty: 'fallback' },
       disabled: { type: 'boolean', empty: 'fallback' },

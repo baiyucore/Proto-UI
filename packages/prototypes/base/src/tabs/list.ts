@@ -10,7 +10,7 @@ function setupTabsList(def: DefHandle<TabsListProps, TabsListExposes>): void {
   let selectedValue = '';
 
   def.props.define({
-    orientation: { type: 'string', empty: 'fallback', enum: ['horizontal', 'vertical'] },
+    orientation: { type: 'enum', empty: 'fallback', options: ['horizontal', 'vertical'] },
     loop: { type: 'boolean', empty: 'fallback' },
   });
   def.props.setDefaults({

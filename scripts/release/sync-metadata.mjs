@@ -93,7 +93,9 @@ const PACKAGE_RULES = {
 };
 
 const rootPackage = JSON.parse(readFileSync(join(ROOT_DIR, 'package.json'), 'utf8'));
-const packages = getAllPackages().filter((pkg) => pkg.relDir !== 'packages/legacy/rule');
+const packages = getAllPackages().filter(
+  (pkg) => pkg.relDir !== 'packages/legacy/rule' && !pkg.isReleaseExcluded
+);
 
 for (const pkg of packages) {
   const rule = PACKAGE_RULES[pkg.name];

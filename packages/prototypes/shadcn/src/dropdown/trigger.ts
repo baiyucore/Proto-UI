@@ -75,9 +75,9 @@ const dropdownTrigger = definePrototype<ShadcnDropdownTriggerProps, ShadcnDropdo
       disabled: { type: 'boolean', empty: 'fallback' },
       indicator: { type: 'boolean', empty: 'fallback' },
       indicatorIcon: {
-        type: 'string',
+        type: 'enum',
         empty: 'fallback',
-        enum: ['chevron-down', 'chevrons-up-down'],
+        options: ['chevron-down', 'chevrons-up-down'],
       },
       indicatorSize: { type: 'number', empty: 'fallback' },
       indicatorStrokeWidth: { type: 'number', empty: 'fallback' },

@@ -298,7 +298,7 @@ describe('runtime: props integration (v0)', () => {
     expect(resRec.isProvided).toBe(true);
   });
 
-  it('PROP-RT-0300: dispatch order is raw(all->keys) then resolved(all->keys), registration order preserved', () => {
+  it('PROP-RT-0300: dispatch order is raw(all->keys) then resolved registration order', () => {
     type P = { a: number } & PropsBaseType;
 
     const specs = {
@@ -316,10 +316,10 @@ describe('runtime: props integration (v0)', () => {
         def.props.watchRaw(['a'], () => order.push('rawKey-1'));
         def.props.watchRaw(['a'], () => order.push('rawKey-2'));
 
-        def.props.watchAll(() => order.push('resAll-1'));
-        def.props.watchAll(() => order.push('resAll-2'));
         def.props.watch(['a'], () => order.push('resKey-1'));
+        def.props.watchAll(() => order.push('resAll-1'));
         def.props.watch(['a'], () => order.push('resKey-2'));
+        def.props.watchAll(() => order.push('resAll-2'));
 
         return (r) => r.el('div', {}, []);
       },
@@ -339,10 +339,10 @@ describe('runtime: props integration (v0)', () => {
       'rawAll-2',
       'rawKey-1',
       'rawKey-2',
-      'resAll-1',
-      'resAll-2',
       'resKey-1',
+      'resAll-1',
       'resKey-2',
+      'resAll-2',
     ]);
   });
 

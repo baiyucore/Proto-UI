@@ -1,14 +1,14 @@
 // packages/types/src/props.ts
 export type PropsBaseType = Record<string, any>;
 
-export type PropType = 'any' | 'boolean' | 'string' | 'number' | 'object';
+export type PropType = 'any' | 'boolean' | 'string' | 'number' | 'object' | 'enum';
 export type EmptyBehavior = 'fallback' | 'accept' | 'error';
 
 export type PropSpec = {
   type: PropType;
   empty?: EmptyBehavior;
 
-  enum?: readonly (string | number | boolean)[];
+  options?: readonly string[];
   range?: { min?: number; max?: number };
   validator?: (v: any) => boolean;
   default?: any;
@@ -29,7 +29,7 @@ type HasNull<V> = Extends<null, V>;
 type AllowedTypesFor<V> = V extends boolean
   ? 'boolean' | 'any'
   : V extends string
-    ? 'string' | 'any'
+    ? 'string' | 'enum' | 'any'
     : V extends number
       ? 'number' | 'any'
       : V extends object
@@ -49,9 +49,15 @@ type SpecShape<K extends PropType, V> = Omit<PropSpec, 'type' | 'empty'> & {
   empty?: AllowedEmptyFor<V>;
 };
 
+type EnumSpecShape<V> = Omit<PropSpec, 'type' | 'empty' | 'options'> & {
+  type: 'enum';
+  options: readonly Extract<V, string>[];
+  empty?: AllowedEmptyFor<V>;
+};
+
 // 最终：对某个值类型 V，允许的 spec（联合）
 export type SpecForValue<V> = {
-  [K in AllowedTypesFor<V>]: SpecShape<K, V>;
+  [K in AllowedTypesFor<V>]: K extends 'enum' ? EnumSpecShape<V> : SpecShape<K, V>;
 }[AllowedTypesFor<V>];
 
 export type PropsSpecMap<P extends Record<string, any>> = {

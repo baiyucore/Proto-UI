@@ -1,4 +1,4 @@
-import { StrictMode, useEffect, useMemo, useState } from 'react';
+import { StrictMode, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import {
@@ -22,6 +22,8 @@ const UI_TEXT = {
     from: 'From',
     to: 'To',
     navLabel: 'Spec entities',
+    quickJump: 'Jump',
+    scope: 'Scope',
     entities: 'Entities',
     graphNodes: 'Graph Nodes',
     graphEdges: 'Graph Edges',
@@ -39,9 +41,33 @@ const UI_TEXT = {
     blocks: 'Blocks',
     covers: 'Covers',
     consumes: 'Consumes',
+    exercises: 'Exercises',
     expectation: 'Expectation',
     implementationStatus: 'Implementation Status',
+    primary: 'Primary',
+    supporting: 'Supporting',
+    coveredBy: 'Covered By',
     note: 'Note',
+    notes: 'Notes',
+    path: 'Path',
+    required: 'Required',
+    optional: 'Optional',
+    implementationKinds: {
+      fixture: 'Fixture',
+      'module-test': 'Module Test',
+      'adapter-test': 'Adapter Test',
+      'runtime-test': 'Runtime Test',
+      'workspace-check': 'Workspace Check',
+    },
+    implementationStatuses: {
+      missing: 'Missing',
+      planned: 'Planned',
+      active: 'Active',
+      passing: 'Passing',
+      failing: 'Failing',
+      'needs-review': 'Needs Review',
+      skipped: 'Skipped',
+    },
     relationships: 'Relationships',
     relationKinds: {
       relates: 'Relates',
@@ -83,6 +109,8 @@ const UI_TEXT = {
     from: '起始版本',
     to: '目标版本',
     navLabel: 'Spec 实体',
+    quickJump: '跳转',
+    scope: '族',
     entities: '实体',
     graphNodes: '图节点',
     graphEdges: '图关系',
@@ -100,9 +128,33 @@ const UI_TEXT = {
     blocks: '阻塞项',
     covers: '覆盖',
     consumes: '消费',
+    exercises: '演练',
     expectation: '预期',
     implementationStatus: '落点状态',
+    primary: '主落点',
+    supporting: '辅助落点',
+    coveredBy: '覆盖落点',
     note: '备注',
+    notes: '备注',
+    path: '路径',
+    required: '必需',
+    optional: '可选',
+    implementationKinds: {
+      fixture: '共享 Fixture',
+      'module-test': 'Module 测试',
+      'adapter-test': 'Adapter 测试',
+      'runtime-test': 'Runtime 测试',
+      'workspace-check': 'Workspace 校验',
+    },
+    implementationStatuses: {
+      missing: '缺失',
+      planned: '计划中',
+      active: '已启用',
+      passing: '通过',
+      failing: '失败',
+      'needs-review': '待复核',
+      skipped: '跳过',
+    },
     relationships: '实体关系',
     relationKinds: {
       relates: '关联',
@@ -175,7 +227,7 @@ function App() {
         if (!active) return;
 
         setLoadState({ status: 'ready', dataset });
-        setSelectedId(dataset.entities[0]?.id ?? null);
+        setSelectedId(getEntityIdFromLocation(dataset.entities) ?? dataset.entities[0]?.id ?? null);
         setFromVersion(dataset.versions[0] ?? dataset.latestVersion);
         setToVersion(dataset.latestVersion);
       })
@@ -190,6 +242,29 @@ function App() {
     return () => {
       active = false;
     };
+  }, []);
+
+  useEffect(() => {
+    if (loadState.status !== 'ready') return;
+
+    const syncSelectedIdFromLocation = () => {
+      const routeId = getEntityIdFromLocation(loadState.dataset.entities);
+      if (routeId) setSelectedId(routeId);
+    };
+
+    window.addEventListener('hashchange', syncSelectedIdFromLocation);
+    window.addEventListener('popstate', syncSelectedIdFromLocation);
+    syncSelectedIdFromLocation();
+
+    return () => {
+      window.removeEventListener('hashchange', syncSelectedIdFromLocation);
+      window.removeEventListener('popstate', syncSelectedIdFromLocation);
+    };
+  }, [loadState]);
+
+  const handleSelectEntity = useCallback((id: string) => {
+    setSelectedId(id);
+    writeEntityRoute(id);
   }, []);
 
   if (loadState.status === 'loading') return <main className="status-page">{t.loading}</main>;
@@ -215,7 +290,7 @@ function App() {
       t={t}
       fromVersion={fromVersion}
       toVersion={toVersion}
-      onSelectEntity={setSelectedId}
+      onSelectEntity={handleSelectEntity}
       onSelectLocale={setLocale}
       onSelectFromVersion={setFromVersion}
       onSelectToVersion={setToVersion}
@@ -243,6 +318,29 @@ function WorkspaceView(props: {
     () => groupEntitiesByType(props.snapshot.entities),
     [props.snapshot.entities]
   );
+  const typeSummaries = useMemo(
+    () =>
+      getOrderedEntityTypes(entityGroups).map((type) => ({
+        type,
+        entities: entityGroups[type] ?? [],
+      })),
+    [entityGroups]
+  );
+  const [expandedScopes, setExpandedScopes] = useState<Set<string>>(new Set());
+  const selectedEntity = props.selectedEntity;
+
+  useEffect(() => {
+    if (!selectedEntity) return;
+
+    const scopeKey = getEntityScopeKey(selectedEntity);
+    setExpandedScopes((previous) => {
+      if (previous.has(scopeKey)) return previous;
+      const next = new Set(previous);
+      next.add(scopeKey);
+      return next;
+    });
+  }, [selectedEntity]);
+
   const criteriaCount = props.snapshot.entities.reduce(
     (count, entity) => count + entity.criteria.length,
     0
@@ -251,6 +349,14 @@ function WorkspaceView(props: {
     (count, entity) => count + entity.openQuestions.length,
     0
   );
+  const toggleScope = (scopeKey: string) => {
+    setExpandedScopes((previous) => {
+      const next = new Set(previous);
+      if (next.has(scopeKey)) next.delete(scopeKey);
+      else next.add(scopeKey);
+      return next;
+    });
+  };
 
   return (
     <main className="workspace-shell">
@@ -305,25 +411,69 @@ function WorkspaceView(props: {
           </label>
         </div>
 
+        <div className="entity-jumpbar" aria-label={props.t.quickJump}>
+          {typeSummaries.map(({ type, entities }) => (
+            <button
+              className={selectedEntity?.type === type ? 'active' : ''}
+              key={type}
+              title={props.t.entityTypes[type] ?? type}
+              type="button"
+              onClick={() => scrollEntityTypeIntoView(type)}
+            >
+              <span>{getEntityTypePrefix(type)}</span>
+              <small>{entities.length}</small>
+            </button>
+          ))}
+        </div>
+
         <nav className="entity-nav" aria-label={props.t.navLabel}>
-          {Object.entries(entityGroups).map(([type, entities]) => (
-            <section key={type}>
+          {typeSummaries.map(({ type, entities }) => (
+            <section id={getEntityTypeSectionId(type)} key={type}>
               <h2>
-                {props.t.entityTypes[type as SpecEntity['type']] ?? type}
+                {props.t.entityTypes[type] ?? type}
                 <span>{entities.length}</span>
               </h2>
-              {entities.map((entity) => (
-                <button
-                  className={entity.id === props.selectedId ? 'entity-link active' : 'entity-link'}
-                  key={entity.id}
-                  type="button"
-                  onClick={() => props.onSelectEntity(entity.id)}
-                >
-                  <strong>{entity.id}</strong>
-                  <span>{entity.title}</span>
-                  {entity.openQuestions.length > 0 ? <em>{entity.openQuestions.length}</em> : null}
-                </button>
-              ))}
+              {groupEntitiesByScope(entities).map((scope) => {
+                const scopeKey = getScopeKey(type, scope.name);
+                const expanded = expandedScopes.has(scopeKey);
+                const selectedInScope = scope.entities.some(
+                  (entity) => entity.id === props.selectedId
+                );
+
+                return (
+                  <div className="entity-scope" key={scopeKey}>
+                    <button
+                      aria-expanded={expanded}
+                      className={`scope-toggle ${selectedInScope ? 'active' : ''}`}
+                      type="button"
+                      onClick={() => toggleScope(scopeKey)}
+                    >
+                      <span>{scope.name}</span>
+                      <small>{scope.entities.length}</small>
+                    </button>
+                    {expanded ? (
+                      <div className="scope-entities">
+                        {scope.entities.map((entity) => (
+                          <button
+                            className={
+                              entity.id === props.selectedId ? 'entity-link active' : 'entity-link'
+                            }
+                            key={entity.id}
+                            type="button"
+                            onClick={() => props.onSelectEntity(entity.id)}
+                          >
+                            <strong>{entity.id}</strong>
+                            <span>{renderInlineText(entity.title)}</span>
+                            {entity.openQuestions.length > 0 ? (
+                              <em>{entity.openQuestions.length}</em>
+                            ) : null}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
             </section>
           ))}
         </nav>
@@ -351,7 +501,9 @@ function WorkspaceView(props: {
           <EntityInspector entity={props.selectedEntity} locale={props.locale} t={props.t} />
           <DiffPanel diff={props.diff} t={props.t} />
           <GraphPanel
+            entities={props.snapshot.entities}
             graph={props.graph}
+            locale={props.locale}
             selectedId={props.selectedId}
             t={props.t}
             onSelectEntity={props.onSelectEntity}
@@ -384,12 +536,17 @@ function EntityInspector(props: { entity: SpecEntity | null; locale: Locale; t: 
   }
 
   const entity = props.entity;
+  const caseImplementations = getCaseImplementations(entity);
+  const sortedImplementations = [...entity.implementations].sort((a, b) => {
+    if (a.required !== b.required) return a.required ? -1 : 1;
+    return a.id.localeCompare(b.id);
+  });
 
   return (
     <section className="panel entity-panel">
       <div className="panel-heading">
         <p className="eyebrow">{entity.type}</p>
-        <h2>{entity.title}</h2>
+        <h2>{renderInlineText(entity.title)}</h2>
       </div>
       <dl className="entity-meta">
         <div>
@@ -405,11 +562,11 @@ function EntityInspector(props: { entity: SpecEntity | null; locale: Locale; t: 
           <dd>{entity.since}</dd>
         </div>
       </dl>
-      {entity.summary ? <p className="summary">{entity.summary}</p> : null}
+      {entity.summary ? <p className="summary">{renderInlineText(entity.summary)}</p> : null}
       {entity.statement ? (
         <section className="detail-section">
           <h3>{props.t.statement}</h3>
-          <p>{formatLocalizedText(entity.statement, props.locale)}</p>
+          <p>{renderLocalizedText(entity.statement, props.locale)}</p>
         </section>
       ) : null}
       {entity.criteria.length > 0 ? (
@@ -419,11 +576,11 @@ function EntityInspector(props: { entity: SpecEntity | null; locale: Locale; t: 
             {entity.criteria.map((criterion) => (
               <article className="criterion-row" key={criterion.id}>
                 <strong>{criterion.id}</strong>
-                <p>{formatLocalizedText(criterion.text, props.locale)}</p>
+                <p>{renderLocalizedText(criterion.text, props.locale)}</p>
                 {criterion.rationale ? (
                   <p className="rationale">
                     <span>{props.t.rationale}: </span>
-                    {formatLocalizedText(criterion.rationale, props.locale)}
+                    {renderLocalizedText(criterion.rationale, props.locale)}
                   </p>
                 ) : null}
               </article>
@@ -438,10 +595,10 @@ function EntityInspector(props: { entity: SpecEntity | null; locale: Locale; t: 
             {entity.openQuestions.map((question) => (
               <article className="issue-row" key={question.id}>
                 <p className="issue-file">{question.id}</p>
-                <p>{formatLocalizedText(question.question, props.locale)}</p>
+                <p>{renderLocalizedText(question.question, props.locale)}</p>
                 {question.context ? (
                   <p className="issue-context">
-                    {formatLocalizedText(question.context, props.locale)}
+                    {renderLocalizedText(question.context, props.locale)}
                   </p>
                 ) : null}
                 {question.blocks.length > 0 ? (
@@ -461,16 +618,30 @@ function EntityInspector(props: { entity: SpecEntity | null; locale: Locale; t: 
             {entity.cases.map((testCase) => (
               <article className="criterion-row" key={testCase.id}>
                 <strong>{testCase.id}</strong>
-                <p>{testCase.title}</p>
+                <p>{renderInlineText(testCase.title)}</p>
                 <p className="rationale">
                   <span>{props.t.expectation}: </span>
-                  {testCase.expectation}
+                  {renderInlineText(testCase.expectation)}
                 </p>
                 {testCase.covers.length > 0 ? (
                   <p className="rationale">
                     <span>{props.t.covers}: </span>
                     {testCase.covers.join(', ')}
                   </p>
+                ) : null}
+                {(caseImplementations.get(testCase.id) ?? []).length > 0 ? (
+                  <CaseCoverageList
+                    label={props.t.coveredBy}
+                    implementations={caseImplementations.get(testCase.id) ?? []}
+                    t={props.t}
+                  />
+                ) : null}
+                {testCase.notes.length > 0 ? (
+                  <ul className="case-notes">
+                    {testCase.notes.map((note) => (
+                      <li key={note}>{renderInlineText(note)}</li>
+                    ))}
+                  </ul>
                 ) : null}
               </article>
             ))}
@@ -480,18 +651,53 @@ function EntityInspector(props: { entity: SpecEntity | null; locale: Locale; t: 
       {entity.implementations.length > 0 ? (
         <section className="detail-section">
           <h3>{props.t.implementations}</h3>
-          <div className="issue-list compact">
-            {entity.implementations.map((implementation) => (
-              <article className="issue-row" key={implementation.id}>
-                <p className="issue-file">{implementation.id}</p>
-                <p>
-                  {implementation.kind} / {props.t.implementationStatus}: {implementation.status}
-                </p>
-                {implementation.path ? <p>{implementation.path}</p> : null}
-                {implementation.consumesCases.length > 0 ? (
-                  <p className="blocked-items">
-                    {props.t.consumes}: {implementation.consumesCases.join(', ')}
+          <div className="implementation-list">
+            {sortedImplementations.map((implementation) => (
+              <article
+                className={`implementation-card status-${implementation.status} ${
+                  implementation.required ? 'is-primary' : 'is-supporting'
+                }`}
+                key={implementation.id}
+              >
+                <div className="implementation-header">
+                  <strong>{implementation.id}</strong>
+                  <div className="implementation-tags">
+                    <span className="kind-badge">
+                      {props.t.implementationKinds[implementation.kind]}
+                    </span>
+                    <span className={`status-badge status-${implementation.status}`}>
+                      {props.t.implementationStatuses[implementation.status]}
+                    </span>
+                    <span
+                      className={implementation.required ? 'primary-badge' : 'supporting-badge'}
+                    >
+                      {implementation.required ? props.t.primary : props.t.supporting}
+                    </span>
+                  </div>
+                </div>
+                {implementation.path ? (
+                  <p className="implementation-path">
+                    <span>{props.t.path}</span>
+                    <code>{implementation.path}</code>
                   </p>
+                ) : null}
+                <ImplementationChipGroup
+                  label={props.t.consumes}
+                  values={implementation.consumesCases}
+                />
+                <ImplementationChipGroup
+                  label={props.t.exercises}
+                  values={implementation.exercises}
+                />
+                {implementation.notes.length > 0 ? (
+                  <div className="implementation-notes">
+                    <span>{props.t.notes}</span>
+                    <ul>
+                      {implementation.notes.map((note) => (
+                        <li key={note}>{renderInlineText(note)}</li>
+                      ))}
+                    </ul>
+                  </div>
                 ) : null}
               </article>
             ))}
@@ -510,6 +716,67 @@ function EntityInspector(props: { entity: SpecEntity | null; locale: Locale; t: 
       </section>
     </section>
   );
+}
+
+function CaseCoverageList(props: {
+  label: string;
+  implementations: SpecEntity['implementations'];
+  t: UiText;
+}) {
+  return (
+    <div className="case-coverage">
+      <span>{props.label}</span>
+      <div>
+        {props.implementations.map((implementation) => (
+          <span
+            className={`coverage-chip ${implementation.required ? 'is-primary' : 'is-supporting'}`}
+            key={implementation.id}
+          >
+            <code>{implementation.id}</code>
+            <small>{props.t.implementationStatuses[implementation.status]}</small>
+            <small>{implementation.required ? props.t.primary : props.t.supporting}</small>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ImplementationChipGroup(props: { label: string; values: string[] }) {
+  if (props.values.length === 0) return null;
+
+  return (
+    <div className="implementation-chip-group">
+      <span>{props.label}</span>
+      <div>
+        {props.values.map((value) => (
+          <code key={value}>{value}</code>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function getCaseImplementations(entity: SpecEntity): Map<string, SpecEntity['implementations']> {
+  const caseImplementations = new Map<string, SpecEntity['implementations']>();
+
+  for (const implementation of entity.implementations) {
+    for (const caseId of implementation.consumesCases) {
+      const implementations = caseImplementations.get(caseId) ?? [];
+      implementations.push(implementation);
+      caseImplementations.set(caseId, implementations);
+    }
+  }
+
+  for (const [caseId, implementations] of caseImplementations) {
+    implementations.sort((a, b) => {
+      if (a.required !== b.required) return a.required ? -1 : 1;
+      return a.id.localeCompare(b.id);
+    });
+    caseImplementations.set(caseId, implementations);
+  }
+
+  return caseImplementations;
 }
 
 function RelationList(props: { title: string; relations: SpecEntity['relates'] }) {
@@ -583,13 +850,28 @@ function DiffColumn(props: { title: string; entities: SpecEntity[]; emptyLabel: 
 }
 
 function GraphPanel(props: {
+  entities: SpecEntity[];
   graph: SpecGraph;
+  locale: Locale;
   selectedId: string | null;
   t: UiText;
   onSelectEntity(id: string): void;
 }) {
-  const layout = useMemo(() => createGraphLayout(props.graph), [props.graph]);
-  const highlightedIds = getHighlightedGraphIds(props.graph, props.selectedId);
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  const visibleGraph = useMemo(
+    () => getVisibleGraphProjection(props.graph, props.selectedId),
+    [props.graph, props.selectedId]
+  );
+  const layout = useMemo(
+    () => createGraphLayout(visibleGraph, props.selectedId),
+    [visibleGraph, props.selectedId]
+  );
+  const entityById = useMemo(
+    () => new Map(props.entities.map((entity) => [entity.id, entity])),
+    [props.entities]
+  );
+  const hoveredEntity = hoveredNodeId ? (entityById.get(hoveredNodeId) ?? null) : null;
+  const hoveredPoint = hoveredNodeId ? (layout.get(hoveredNodeId) ?? null) : null;
 
   return (
     <section className="panel graph-panel">
@@ -598,14 +880,15 @@ function GraphPanel(props: {
         <h2>{props.t.graphProjection}</h2>
       </div>
       <div className="graph-canvas" aria-label={props.t.graphProjection}>
-        {props.graph.edges.length === 0 ? (
+        {visibleGraph.edges.length === 0 ? (
           <p className="empty">{props.t.noActiveEdges}</p>
         ) : (
-          <svg role="img" viewBox="0 0 720 520">
+          <svg role="img" viewBox="0 0 820 580">
             <defs>
               <marker
                 id="arrowhead"
                 markerHeight="6"
+                markerUnits="userSpaceOnUse"
                 markerWidth="8"
                 orient="auto"
                 refX="7"
@@ -615,39 +898,54 @@ function GraphPanel(props: {
               </marker>
             </defs>
             <g className="graph-edges">
-              {props.graph.edges.map((edge) => {
+              {visibleGraph.edges.map((edge) => {
                 const from = layout.get(edge.from);
                 const to = layout.get(edge.to);
                 if (!from || !to) return null;
-                const active =
+                const clipped = getClippedEdge(
+                  from,
+                  to,
+                  getGraphNodeRadius(edge.from, props.selectedId),
+                  getGraphNodeRadius(edge.to, props.selectedId)
+                );
+                const direct =
                   props.selectedId === null ||
                   edge.from === props.selectedId ||
                   edge.to === props.selectedId;
 
                 return (
-                  <g className={active ? 'active' : ''} key={edge.id}>
-                    <line markerEnd="url(#arrowhead)" x1={from.x} y1={from.y} x2={to.x} y2={to.y} />
-                    <text x={(from.x + to.x) / 2} y={(from.y + to.y) / 2}>
-                      {edge.kind}
+                  <g className={direct ? 'direct' : 'context'} key={edge.id}>
+                    <line
+                      markerEnd="url(#arrowhead)"
+                      x1={clipped.x1}
+                      y1={clipped.y1}
+                      x2={clipped.x2}
+                      y2={clipped.y2}
+                    />
+                    <text x={(clipped.x1 + clipped.x2) / 2} y={(clipped.y1 + clipped.y2) / 2}>
+                      {props.t.relationKinds[edge.kind]}
                     </text>
                   </g>
                 );
               })}
             </g>
             <g className="graph-nodes">
-              {props.graph.nodes.map((node) => {
+              {visibleGraph.nodes.map((node) => {
                 const point = layout.get(node.id);
                 if (!point) return null;
-                const active = highlightedIds.has(node.id);
 
                 return (
                   <g
-                    className={`graph-node type-${node.type} ${active ? 'active' : ''}`}
+                    className={`graph-node type-${node.type} active`}
                     key={node.id}
                     role="button"
                     tabIndex={0}
                     transform={`translate(${point.x} ${point.y})`}
                     onClick={() => props.onSelectEntity(node.id)}
+                    onFocus={() => setHoveredNodeId(node.id)}
+                    onBlur={() => setHoveredNodeId(null)}
+                    onMouseEnter={() => setHoveredNodeId(node.id)}
+                    onMouseLeave={() => setHoveredNodeId(null)}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
@@ -655,7 +953,7 @@ function GraphPanel(props: {
                       }
                     }}
                   >
-                    <circle r={node.id === props.selectedId ? 28 : 22} />
+                    <circle r={getGraphNodeRadius(node.id, props.selectedId)} />
                     <title>{node.id}</title>
                     <text>{compactSpecId(node.id)}</text>
                   </g>
@@ -664,18 +962,69 @@ function GraphPanel(props: {
             </g>
           </svg>
         )}
+        {hoveredEntity && hoveredPoint ? (
+          <GraphHoverCard
+            entity={hoveredEntity}
+            locale={props.locale}
+            point={hoveredPoint}
+            t={props.t}
+          />
+        ) : null}
       </div>
       <div className="edge-list">
-        {props.graph.edges.slice(0, 12).map((edge) => (
+        {visibleGraph.edges.slice(0, 12).map((edge) => (
           <div className="edge-row" key={edge.id}>
             <span>{edge.from}</span>
-            <strong>{edge.kind}</strong>
+            <strong>{props.t.relationKinds[edge.kind]}</strong>
             <span>{edge.to}</span>
           </div>
         ))}
       </div>
     </section>
   );
+}
+
+function GraphHoverCard(props: {
+  entity: SpecEntity;
+  locale: Locale;
+  point: { x: number; y: number };
+  t: UiText;
+}) {
+  const placement = props.point.y < 140 ? 'below' : 'above';
+  const description = getGraphHoverDescription(props.entity, props.locale);
+
+  return (
+    <div
+      className={`graph-hover-card is-${placement}`}
+      style={{
+        left: `${(props.point.x / 820) * 100}%`,
+        top: `${(props.point.y / 580) * 100}%`,
+      }}
+    >
+      <strong>{props.entity.id}</strong>
+      <p className="graph-hover-title">{renderInlineText(props.entity.title)}</p>
+      {description ? <p>{renderInlineText(description)}</p> : null}
+      <div>
+        <span>
+          {props.t.criteria}: {props.entity.criteria.length}
+        </span>
+        <span>
+          {props.t.cases}: {props.entity.cases.length}
+        </span>
+        <span>
+          {props.t.openQuestions}: {props.entity.openQuestions.length}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function getGraphHoverDescription(entity: SpecEntity, locale: Locale): string {
+  if (entity.statement) {
+    return formatLocalizedText(entity.statement, locale);
+  }
+
+  return entity.summary ?? '';
 }
 
 function OpenQuestionsPanel(props: {
@@ -707,7 +1056,7 @@ function OpenQuestionsPanel(props: {
                 {entity.id}
               </button>
               <p className="issue-file">{question.id}</p>
-              <p>{formatLocalizedText(question.question, props.locale)}</p>
+              <p>{renderLocalizedText(question.question, props.locale)}</p>
               {question.blocks.length > 0 ? (
                 <p className="blocked-items">
                   {props.t.blocks}: {question.blocks.join(', ')}
@@ -759,6 +1108,39 @@ function groupEntitiesByType(entities: SpecEntity[]): Record<string, SpecEntity[
   }, {});
 }
 
+function getVisibleGraphProjection(graph: SpecGraph, selectedId: string | null): SpecGraph {
+  if (!selectedId) return graph;
+
+  const visibleIds = getHighlightedGraphIds(graph, selectedId);
+  const visibleNodes = graph.nodes.filter((node) => visibleIds.has(node.id));
+  const visibleEdges = graph.edges.filter(
+    (edge) => visibleIds.has(edge.from) && visibleIds.has(edge.to)
+  );
+
+  return {
+    nodes: visibleNodes,
+    edges: visibleEdges,
+  };
+}
+
+function groupEntitiesByScope(
+  entities: SpecEntity[]
+): Array<{ name: string; entities: SpecEntity[] }> {
+  const groups = entities.reduce<Record<string, SpecEntity[]>>((result, entity) => {
+    const scope = getSpecScope(entity.id);
+    result[scope] ??= [];
+    result[scope].push(entity);
+    return result;
+  }, {});
+
+  return Object.entries(groups)
+    .map(([name, scopeEntities]) => ({
+      name,
+      entities: [...scopeEntities].sort((a, b) => a.id.localeCompare(b.id)),
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
 function formatLocalizedText(
   value: string | { en?: string | undefined; 'zh-CN'?: string | undefined },
   locale: Locale
@@ -772,12 +1154,30 @@ function formatLocalizedText(
   return value.en ?? value['zh-CN'] ?? '';
 }
 
-function createGraphLayout(graph: SpecGraph): Map<string, { x: number; y: number }> {
-  const center = { x: 360, y: 260 };
-  const radiusX = 270;
-  const radiusY = 185;
-  const byType = groupGraphNodesByType(graph.nodes);
-  const typeOrder = Object.keys(byType).sort();
+function renderLocalizedText(
+  value: string | { en?: string | undefined; 'zh-CN'?: string | undefined },
+  locale: Locale
+): ReactNode {
+  return renderInlineText(formatLocalizedText(value, locale));
+}
+
+function renderInlineText(value: string): ReactNode {
+  const parts = value.split(/(`[^`]+`)/g);
+
+  return parts.map((part, index) => {
+    if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
+      return <code key={index}>{part.slice(1, -1)}</code>;
+    }
+
+    return part;
+  });
+}
+
+function createGraphLayout(
+  graph: SpecGraph,
+  selectedId: string | null
+): Map<string, { x: number; y: number }> {
+  const center = { x: 410, y: 280 };
   const layout = new Map<string, { x: number; y: number }>();
 
   if (graph.nodes.length === 1) {
@@ -785,30 +1185,149 @@ function createGraphLayout(graph: SpecGraph): Map<string, { x: number; y: number
     return layout;
   }
 
-  let cursor = 0;
+  const nodeIds = new Set(graph.nodes.map((node) => node.id));
 
-  for (const type of typeOrder) {
-    const nodes = byType[type];
+  if (selectedId && nodeIds.has(selectedId)) {
+    const incoming = new Set<string>();
+    const outgoing = new Set<string>();
 
-    for (const node of nodes) {
-      const angle = (cursor / graph.nodes.length) * Math.PI * 2 - Math.PI / 2;
-      layout.set(node.id, {
-        x: center.x + Math.cos(angle) * radiusX,
-        y: center.y + Math.sin(angle) * radiusY,
-      });
-      cursor += 1;
+    for (const edge of graph.edges) {
+      if (edge.to === selectedId && edge.from !== selectedId) incoming.add(edge.from);
+      if (edge.from === selectedId && edge.to !== selectedId) outgoing.add(edge.to);
     }
+
+    const bidirectional = [...incoming].filter((id) => outgoing.has(id)).sort();
+    const left = [...incoming].filter((id) => !outgoing.has(id)).sort();
+    const right = [...outgoing].filter((id) => !incoming.has(id)).sort();
+
+    layout.set(selectedId, center);
+    placeVerticalGraphGroup(layout, left, 140, 110, 450);
+    placeVerticalGraphGroup(layout, right, 680, 110, 450);
+    placeHorizontalGraphGroup(layout, bidirectional, 250, 570, 84);
+
+    const placed = new Set(layout.keys());
+    const context = graph.nodes
+      .filter((node) => !placed.has(node.id))
+      .sort((a, b) => compareGraphNodes(a, b));
+    placeContextGraphNodes(layout, context, placed);
+
+    return layout;
   }
+
+  const levels = createRelationLevels(graph);
+  const levelsByValue = new Map<number, SpecGraph['nodes']>();
+
+  for (const node of [...graph.nodes].sort(compareGraphNodes)) {
+    const level = levels.get(node.id) ?? 0;
+    const nodes = levelsByValue.get(level) ?? [];
+    nodes.push(node);
+    levelsByValue.set(level, nodes);
+  }
+
+  const orderedLevels = [...levelsByValue.keys()].sort((a, b) => a - b);
+  const maxLevelIndex = Math.max(orderedLevels.length - 1, 1);
+
+  orderedLevels.forEach((level, levelIndex) => {
+    const nodes = levelsByValue.get(level) ?? [];
+    const x = 90 + (levelIndex / maxLevelIndex) * 640;
+    placeVerticalGraphGroup(
+      layout,
+      nodes.map((node) => node.id),
+      x,
+      70,
+      510
+    );
+  });
 
   return layout;
 }
 
-function groupGraphNodesByType(nodes: SpecGraph['nodes']): Record<string, SpecGraph['nodes']> {
-  return nodes.reduce<Record<string, SpecGraph['nodes']>>((groups, node) => {
-    groups[node.type] ??= [];
-    groups[node.type].push(node);
-    return groups;
-  }, {});
+function createRelationLevels(graph: SpecGraph): Map<string, number> {
+  const levels = new Map(graph.nodes.map((node) => [node.id, 0]));
+  const ids = new Set(graph.nodes.map((node) => node.id));
+
+  for (let index = 0; index < graph.nodes.length; index += 1) {
+    let changed = false;
+
+    for (const edge of graph.edges) {
+      if (!ids.has(edge.from) || !ids.has(edge.to)) continue;
+      const nextLevel = Math.min((levels.get(edge.from) ?? 0) + 1, 6);
+      if (nextLevel > (levels.get(edge.to) ?? 0)) {
+        levels.set(edge.to, nextLevel);
+        changed = true;
+      }
+    }
+
+    if (!changed) break;
+  }
+
+  return levels;
+}
+
+function placeVerticalGraphGroup(
+  layout: Map<string, { x: number; y: number }>,
+  ids: string[],
+  x: number,
+  minY: number,
+  maxY: number
+) {
+  if (ids.length === 0) return;
+  if (ids.length === 1) {
+    layout.set(ids[0], { x, y: (minY + maxY) / 2 });
+    return;
+  }
+
+  const step = (maxY - minY) / (ids.length - 1);
+  ids.forEach((id, index) => {
+    layout.set(id, { x, y: minY + step * index });
+  });
+}
+
+function placeHorizontalGraphGroup(
+  layout: Map<string, { x: number; y: number }>,
+  ids: string[],
+  minX: number,
+  maxX: number,
+  y: number
+) {
+  if (ids.length === 0) return;
+  if (ids.length === 1) {
+    layout.set(ids[0], { x: (minX + maxX) / 2, y });
+    return;
+  }
+
+  const step = (maxX - minX) / (ids.length - 1);
+  ids.forEach((id, index) => {
+    layout.set(id, { x: minX + step * index, y });
+  });
+}
+
+function placeContextGraphNodes(
+  layout: Map<string, { x: number; y: number }>,
+  nodes: SpecGraph['nodes'],
+  placed: Set<string>
+) {
+  const columns = 9;
+  const startX = 70;
+  const gapX = 85;
+  const startY = 520;
+  const gapY = 32;
+
+  nodes.forEach((node, index) => {
+    if (placed.has(node.id)) return;
+    const column = index % columns;
+    const row = Math.floor(index / columns);
+    layout.set(node.id, {
+      x: startX + column * gapX,
+      y: startY + row * gapY,
+    });
+  });
+}
+
+function compareGraphNodes(a: SpecGraph['nodes'][number], b: SpecGraph['nodes'][number]) {
+  const typeDiff = getEntityTypeOrder(a.type) - getEntityTypeOrder(b.type);
+  if (typeDiff !== 0) return typeDiff;
+  return a.id.localeCompare(b.id);
 }
 
 function getHighlightedGraphIds(graph: SpecGraph, selectedId: string | null): Set<string> {
@@ -829,6 +1348,107 @@ function compactSpecId(id: string): string {
   if (parts.length <= 3) return id;
 
   return `${parts[0]}-${parts.at(-2)}-${parts.at(-1)}`;
+}
+
+function getClippedEdge(
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  fromRadius: number,
+  toRadius: number
+): { x1: number; y1: number; x2: number; y2: number } {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const length = Math.hypot(dx, dy);
+
+  if (length === 0) return { x1: from.x, y1: from.y, x2: to.x, y2: to.y };
+
+  const ux = dx / length;
+  const uy = dy / length;
+  const endPadding = toRadius + 8;
+
+  return {
+    x1: from.x + ux * fromRadius,
+    y1: from.y + uy * fromRadius,
+    x2: to.x - ux * endPadding,
+    y2: to.y - uy * endPadding,
+  };
+}
+
+function getGraphNodeRadius(id: string, selectedId: string | null): number {
+  return id === selectedId ? 28 : 22;
+}
+
+function getEntityTypePrefix(type: SpecEntity['type']): string {
+  const prefixes: Record<SpecEntity['type'], string> = {
+    contract: 'C',
+    module: 'M',
+    decision: 'D',
+    'host-cap': 'HC',
+    test: 'T',
+    version: 'V',
+    knowledge: 'K',
+  };
+
+  return prefixes[type];
+}
+
+function getOrderedEntityTypes(groups: Record<string, SpecEntity[]>): Array<SpecEntity['type']> {
+  return (Object.keys(groups) as Array<SpecEntity['type']>).sort(
+    (a, b) => getEntityTypeOrder(a) - getEntityTypeOrder(b)
+  );
+}
+
+function getEntityTypeOrder(type: SpecEntity['type']): number {
+  const order: Record<SpecEntity['type'], number> = {
+    contract: 0,
+    test: 1,
+    module: 2,
+    knowledge: 3,
+    decision: 4,
+    'host-cap': 5,
+    version: 6,
+  };
+
+  return order[type] ?? 99;
+}
+
+function getSpecScope(id: string): string {
+  const parts = id.split('-');
+  if (parts.length <= 2) return id;
+  return parts.slice(0, -1).join('-');
+}
+
+function getScopeKey(type: SpecEntity['type'], scope: string): string {
+  return `${type}:${scope}`;
+}
+
+function getEntityScopeKey(entity: SpecEntity): string {
+  return getScopeKey(entity.type, getSpecScope(entity.id));
+}
+
+function getEntityTypeSectionId(type: SpecEntity['type']): string {
+  return `entity-section-${type}`;
+}
+
+function scrollEntityTypeIntoView(type: SpecEntity['type']) {
+  document.getElementById(getEntityTypeSectionId(type))?.scrollIntoView({
+    block: 'start',
+    behavior: 'smooth',
+  });
+}
+
+function getEntityIdFromLocation(entities: SpecEntity[]): string | null {
+  const match = window.location.hash.match(/^#\/entities\/([^/?#]+)$/);
+  if (!match) return null;
+
+  const id = decodeURIComponent(match[1]);
+  return entities.some((entity) => entity.id === id) ? id : null;
+}
+
+function writeEntityRoute(id: string) {
+  const nextHash = `#/entities/${encodeURIComponent(id)}`;
+  if (window.location.hash === nextHash) return;
+  window.history.pushState(null, '', nextHash);
 }
 
 createRoot(document.getElementById('root')!).render(

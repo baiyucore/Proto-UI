@@ -29,7 +29,8 @@ export function getLaunchProfilePackageNames(governance, options = {}) {
 }
 
 export function collectLaunchGovernanceDiagnostics(packages, governance) {
-  const workspaceNames = new Set(packages.map((pkg) => pkg.name));
+  const releaseManagedPackages = packages.filter((pkg) => !pkg.isReleaseExcluded);
+  const workspaceNames = new Set(releaseManagedPackages.map((pkg) => pkg.name));
   const registrationOrder = [];
   const duplicateEntries = [];
   const unknownCandidateStatuses = [];
@@ -66,7 +67,7 @@ export function collectLaunchGovernanceDiagnostics(packages, governance) {
 
   const knownNames = new Set(registrationOrder.map((item) => item.name));
   const unclassifiedWorkspacePackages = packages
-    .filter((pkg) => !knownNames.has(pkg.name))
+    .filter((pkg) => !pkg.isReleaseExcluded && !knownNames.has(pkg.name))
     .map((pkg) => pkg.name)
     .sort();
 

@@ -46,9 +46,9 @@ export function asTransition(options?: TransitionOptions): TransitionHandles {
     enterDuration: { type: 'number', empty: 'fallback' },
     leaveDuration: { type: 'number', empty: 'fallback' },
     interrupt: {
-      type: 'string',
+      type: 'enum',
       empty: 'fallback',
-      enum: ['reverse', 'wait', 'immediate'],
+      options: ['reverse', 'wait', 'immediate'],
     },
   });
 

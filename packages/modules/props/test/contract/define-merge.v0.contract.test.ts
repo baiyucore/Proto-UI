@@ -20,6 +20,24 @@ describe('props: define merge semantics (v0)', () => {
         a: { type: 'number', range: { min: 'bad' } },
       } as any)
     ).toThrow();
+
+    expect(() =>
+      pm.define({
+        mode: { type: 'enum' },
+      } as any)
+    ).toThrow(/options/i);
+
+    expect(() =>
+      pm.define({
+        label: { type: 'string', options: ['a'] },
+      } as any)
+    ).toThrow(/options/i);
+
+    expect(() =>
+      pm.define({
+        legacy: { type: 'string', enum: ['a'] },
+      } as any)
+    ).toThrow(/enum descriptor field/i);
   });
 
   it('PROP-V0-1100: merge type mismatch MUST throw', () => {
@@ -68,26 +86,26 @@ describe('props: define merge semantics (v0)', () => {
     expect(pm3.get().x).toBe(7);
   });
 
-  it('PROP-V0-1300: merge enum: intersect; widening warns; incompatible throws', () => {
+  it('PROP-V0-1300: merge enum options: intersect; widening warns; incompatible throws', () => {
     type P = { mode: string };
     const pm = new PropsKernel<P>();
 
     pm.define({
-      mode: { type: 'string', enum: ['a', 'b', 'c'] as const, default: 'a' },
+      mode: { type: 'enum', options: ['a', 'b', 'c'] as const, default: 'a' },
     } satisfies PropsSpecMap<P>);
 
     // widening => warn (intersection stays the same, but we can't read spec; just check warning exists)
     pm.define({
-      mode: { type: 'string', enum: ['a', 'b', 'c', 'd'] as const },
+      mode: { type: 'enum', options: ['a', 'b', 'c', 'd'] as const },
     } satisfies PropsSpecMap<P>);
     expect(warnings(pm).length).toBeGreaterThan(0);
 
     // incompatible => throw (no intersection)
     const pm2 = new PropsKernel<P>();
     pm2.define({
-      mode: { type: 'string', enum: ['a', 'b'] as const },
+      mode: { type: 'enum', options: ['a', 'b'] as const },
     } satisfies PropsSpecMap<P>);
-    expect(() => pm2.define({ mode: { type: 'string', enum: ['c'] as const } } as any)).toThrow(
+    expect(() => pm2.define({ mode: { type: 'enum', options: ['c'] as const } } as any)).toThrow(
       /define merge error/i
     );
   });
@@ -174,11 +192,11 @@ describe('props: define merge semantics (v0)', () => {
       a: { type: 'number', range: { min: 0, max: 10 }, default: 1 },
     } as any);
     k1.define({
-      b: { type: 'string', enum: ['x', 'y'] as const, default: 'x' },
+      b: { type: 'enum', options: ['x', 'y'] as const, default: 'x' },
     } as any);
 
     k2.define({
-      b: { type: 'string', enum: ['x', 'y'] as const, default: 'x' },
+      b: { type: 'enum', options: ['x', 'y'] as const, default: 'x' },
     } as any);
     k2.define({
       a: { type: 'number', range: { min: 0, max: 10 }, default: 1 },
@@ -194,28 +212,32 @@ describe('props: define merge semantics (v0)', () => {
     expect(k1.getDiagnostics()).toEqual(k2.getDiagnostics());
   });
 
-  it('PROP-V0-1800: define merge failure is atomic (observable behavior unchanged; warnings not partially added)', () => {
-    type P = { a: number };
+  it('PROP-V0-1800: define merge conflict blocks the whole batch without partial behavior or warnings', () => {
+    type P = { a: number; b: number };
     const pm = new PropsKernel<P>();
 
     pm.define({
-      a: { type: 'number', range: { min: 0, max: 10 }, default: 1 },
+      a: { type: 'number', empty: 'error', default: 1 },
+      b: { type: 'number', range: { min: 0, max: 10 }, default: 5 },
     } satisfies PropsSpecMap<P>);
 
-    pm.applyRaw({});
+    pm.applyRaw({ a: 2, b: 5 });
     const beforeValue = pm.get().a;
     const beforeWarn = warnings(pm).length;
 
-    // incompatible range => throw
+    // Same incoming batch first produces a warning for `a`, then a blocking conflict for `b`.
     expect(() =>
-      pm.define({ a: { type: 'number', range: { min: 100, max: 200 } } } as any)
+      pm.define({
+        a: { type: 'number', empty: 'accept' },
+        b: { type: 'number', range: { min: 100, max: 200 } },
+      } as any)
     ).toThrow(/define merge error/i);
 
-    // behavior unchanged
-    pm.applyRaw({});
+    // Behavior is unchanged: `a` did not become empty-accepting after the failed batch.
+    pm.applyRaw({ a: null, b: 5 });
     expect(pm.get().a).toBe(beforeValue);
 
-    // warnings should not grow due to failed merge (atomic)
+    // Warnings from the failed transaction are not recorded.
     expect(warnings(pm).length).toBe(beforeWarn);
   });
 });

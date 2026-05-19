@@ -1,9 +1,9 @@
 id: C-CORE-VALUE-0001
 type: contract
-title: Prototype-level semantics use null as the only canonical empty value
+title: Prototype-level semantics use `null` as the only canonical empty value
 status: draft
 since: 0.1.0
-summary: Prototype-level values should receive null as the canonical empty value even when a host can express other empty values.
+summary: Prototype-level values should receive `null` as the canonical empty value even when a host can express other empty values.
 sources:
   - path: internal/contracts/props/base-text/00.props-contract.v0.zh-CN.md
     sections:

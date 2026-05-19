@@ -34,20 +34,31 @@ function isValidEmptyBehavior(x: any): x is EmptyBehavior {
 }
 
 function isValidPropType(x: any): x is PropType {
-  return x === 'any' || x === 'boolean' || x === 'string' || x === 'number' || x === 'object';
+  return (
+    x === 'any' ||
+    x === 'boolean' ||
+    x === 'string' ||
+    x === 'number' ||
+    x === 'object' ||
+    x === 'enum'
+  );
 }
 
-function isSupersetEnum(next?: readonly any[], prev?: readonly any[]) {
+function isValidOptions(x: any): x is readonly string[] {
+  return Array.isArray(x) && x.length > 0 && x.every((option) => typeof option === 'string');
+}
+
+function isSupersetOptions(next?: readonly string[], prev?: readonly string[]) {
   if (!prev || prev.length === 0) return true;
   if (!next) return false;
-  const set = new Set(next.map(String));
-  return prev.every((x) => set.has(String(x)));
+  const set = new Set(next);
+  return prev.every((x) => set.has(x));
 }
 
 /**
  * NOTE:
  * The current merge strategy is "incoming must not be stricter".
- * - enum: incoming must be a superset of prev (or equal), else error.
+ * - options: incoming must be a superset of prev (or equal), else error.
  * - range: incoming must be wider/equal (or omit), else error.
  */
 function rangeWider(next?: { min?: number; max?: number }, prev?: { min?: number; max?: number }) {
@@ -98,7 +109,34 @@ export function mergeSpecs<A extends PropsBaseType, B extends PropsBaseType>(
       diags.push({
         level: 'error',
         key,
-        message: `type must be one of \"any\" | \"boolean\" | \"string\" | \"number\" | \"object\"`,
+        message: `type must be one of \"any\" | \"boolean\" | \"string\" | \"number\" | \"object\" | \"enum\"`,
+      });
+      continue;
+    }
+
+    if ((next as any).type === 'enum' && !isValidOptions((next as any).options)) {
+      diags.push({
+        level: 'error',
+        key,
+        message: `enum props require non-empty string options`,
+      });
+      continue;
+    }
+
+    if ((next as any).type !== 'enum' && hasOwn(next as any, 'options')) {
+      diags.push({
+        level: 'error',
+        key,
+        message: `options are only allowed for type "enum"`,
+      });
+      continue;
+    }
+
+    if (hasOwn(next as any, 'enum')) {
+      diags.push({
+        level: 'error',
+        key,
+        message: `enum descriptor field is deprecated; use type "enum" with options`,
       });
       continue;
     }
@@ -204,30 +242,30 @@ export function mergeSpecs<A extends PropsBaseType, B extends PropsBaseType>(
     }
 
     // -----------------------------
-    // enum:
+    // enum options:
     // - require incoming to be superset/equal, else error
     // - if widened => warning
     // -----------------------------
-    if ((prev as any).enum || (next as any).enum) {
-      const prevEnum = (prev as any).enum as readonly any[] | undefined;
-      const nextEnum = (next as any).enum as readonly any[] | undefined;
+    if ((prev as any).options || (next as any).options) {
+      const prevOptions = (prev as any).options as readonly string[] | undefined;
+      const nextOptions = (next as any).options as readonly string[] | undefined;
 
-      if (!isSupersetEnum(nextEnum, prevEnum)) {
+      if (!isSupersetOptions(nextOptions, prevOptions)) {
         diags.push({
           level: 'error',
           key,
-          message: `enum becomes stricter (subset)`,
+          message: `enum options become stricter (subset)`,
         });
         continue;
       }
 
       // warn if next strictly wider than prev
       // (i.e. prev is not a superset of next)
-      if (!isSupersetEnum(prevEnum, nextEnum)) {
+      if (!isSupersetOptions(prevOptions, nextOptions)) {
         diags.push({
           level: 'warning',
           key,
-          message: `enum widened (superset)`,
+          message: `enum options widened (superset)`,
         });
       }
     }
@@ -330,7 +368,7 @@ export function mergeSpecs<A extends PropsBaseType, B extends PropsBaseType>(
 
       // enforced merges
       empty: mergedEmpty,
-      enum: (next as any).enum ?? (prev as any).enum,
+      options: (next as any).options ?? (prev as any).options,
       range: (next as any).range ?? (prev as any).range,
       validator: (prev as any).validator ?? (next as any).validator,
     };
