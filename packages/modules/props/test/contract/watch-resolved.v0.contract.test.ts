@@ -13,7 +13,7 @@ import type { PropsSpecMap } from '@proto.ui/types';
  * - watchAll trigger condition and WatchInfo semantics
  * - watch(keys) trigger condition and WatchInfo semantics
  * - Object.is based diff semantics (NaN stable)
- * - order: watchAll before keyed watches; registration order within group
+ * - order: watchAll and keyed watches share registration order
  * - resolved-based semantics (undeclared/raw-only changes do not trigger)
  *
  * NOTE:
@@ -180,18 +180,17 @@ describe('props: watch(resolved) contract (v0)', () => {
     expect(lastMatched).toEqual(['b']);
   });
 
-  it('PROP-V0-3500: order: watchAll before keyed watches; registration order preserved within group', () => {
+  it('PROP-V0-3500: order: watchAll and keyed watches share registration order', () => {
     type P = { a: number };
     const pm = createModule<P>();
     pm.define({ a: { type: 'number', default: 1 } } satisfies PropsSpecMap<P>);
 
     const order: string[] = [];
 
-    pm.watchAllKeys(() => order.push('all-1'));
-    pm.watchAllKeys(() => order.push('all-2'));
-
     pm.watchKeys(['a'], () => order.push('key-1'));
+    pm.watchAllKeys(() => order.push('all-1'));
     pm.watchKeys(['a'], () => order.push('key-2'));
+    pm.watchAllKeys(() => order.push('all-2'));
 
     // hydration
     pm.applyRaw({ a: 1 });
@@ -201,7 +200,7 @@ describe('props: watch(resolved) contract (v0)', () => {
     pm.applyRaw({ a: 2 });
     execResolvedTasks(pm);
 
-    expect(order).toEqual(['all-1', 'all-2', 'key-1', 'key-2']);
+    expect(order).toEqual(['key-1', 'all-1', 'key-2', 'all-2']);
   });
 
   it('PROP-V0-3100/3600: diff uses Object.is (NaN stable); raw invalid may not cause resolved change -> no schedule', () => {

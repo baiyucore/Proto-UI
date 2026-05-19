@@ -66,11 +66,11 @@ cases:
     valueKind: dispatch-window
     expectation: first-prev-latest-next
   - id: T-PROPS-0007-CASE-DISPATCH-ORDER
-    title: Resolved watcher dispatch preserves `watchAll` before keyed watcher ordering
+    title: Resolved watcher dispatch preserves shared registration order
     covers:
       - C-PROPS-0011-J
     valueKind: dispatch-order
-    expectation: watch-all-before-keyed-registration-order
+    expectation: shared-registration-order
 implementations:
   - id: module-props-resolved-watchers
     kind: module-test

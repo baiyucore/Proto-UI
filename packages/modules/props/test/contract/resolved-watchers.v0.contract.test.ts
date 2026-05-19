@@ -260,16 +260,16 @@ describe('props: resolved watchers (T-PROPS-0007)', () => {
     ]);
   });
 
-  it('T-PROPS-0007-CASE-DISPATCH-ORDER / C-PROPS-0011-J: dispatch runs watchAll before keyed watchers and preserves registration order', () => {
+  it('T-PROPS-0007-CASE-DISPATCH-ORDER / C-PROPS-0011-J: dispatch preserves shared registration order across watchAll and keyed watchers', () => {
     type P = { value: number };
     const pm = createModule<P>();
     pm.define({ value: { type: 'number' } } satisfies PropsSpecMap<P>);
 
     const order: string[] = [];
-    pm.watchAllKeys(() => order.push('all-1'));
-    pm.watchAllKeys(() => order.push('all-2'));
     pm.watchKeys(['value'], () => order.push('key-1'));
+    pm.watchAllKeys(() => order.push('all-1'));
     pm.watchKeys(['value'], () => order.push('key-2'));
+    pm.watchAllKeys(() => order.push('all-2'));
 
     pm.applyRaw({ value: 1 });
     expect(drain(pm)).toEqual([]);
@@ -277,6 +277,6 @@ describe('props: resolved watchers (T-PROPS-0007)', () => {
     pm.applyRaw({ value: 2 });
     executeResolvedTasks(pm);
 
-    expect(order).toEqual(['all-1', 'all-2', 'key-1', 'key-2']);
+    expect(order).toEqual(['key-1', 'all-1', 'key-2', 'all-2']);
   });
 });

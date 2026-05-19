@@ -70,6 +70,7 @@ export class PropsKernel<P extends PropsBaseType> {
         .filter((d: PropsKernelDiag) => d.level === 'error')
         .map((d: PropsKernelDiag) => (d.key ? `${d.key}: ${d.message}` : d.message))
         .join('; ');
+      // Merge conflicts are transaction-level blocking errors: do not assign specs or persist warnings from the failed merge.
       throw new Error(`[Props] define merge error: ${msg}`);
     }
     for (const d of diags) {

@@ -48,8 +48,8 @@ Behavioral alignment:
 
 On a watcher-firing raw application:
 
-1. raw watchers (rawAll → raw(keys), registration order preserved)
-2. resolved watchers (watchAll → watch(keys), registration order preserved)
+1. raw watchers (rawAll → raw(keys), registration order preserved within each group)
+2. resolved watchers (`watchAll` and `watch(keys)` share registration order)
 
 ---
 

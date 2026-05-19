@@ -3,7 +3,7 @@ type: contract
 title: Resolved props watchers observe resolved snapshot changes
 status: active
 since: 0.1.0
-summary: Resolved props watchers fire from declared-key `resolved snapshot` diffs, skip `hydration`, may observe coalesced update windows, and preserve `watchAll`/`watch(keys)` ordering.
+summary: Resolved props watchers fire from declared-key `resolved snapshot` diffs, skip `hydration`, may observe coalesced update windows, and preserve shared registration order.
 statement:
   zh-CN: >-
     `def.props.watchAll(cb)` 与 `def.props.watch(keys, cb)` 是 setup 阶段声明的 resolved props watcher API。它们不监听 raw props 重新传入这一事实本身，而是监听 declared `prop key` 在 `resolved snapshot` 中的语义变化。初次 `hydration` 不触发 watcher；后续变更使用 `Object.is` 比较 resolved value。若多次 raw props 应用在一次 watcher dispatch 前被合并，watcher 观察的是该 dispatch window 中第一份 previous `resolved snapshot` 到最后一份 next `resolved snapshot` 的净变化。
@@ -58,8 +58,11 @@ criteria:
       en: This allows the runtime to dispatch watchers at a callback-safe point instead of executing prototype callbacks immediately during props input synchronization. It also means watchers observe the net change within the window, not every raw props application.
   - id: C-PROPS-0011-J
     text:
-      zh-CN: resolved watcher dispatch 顺序必须是所有 `watchAll` callback 先于 keyed `watch(keys)` callback；同组内保持注册顺序。
-      en: Resolved watcher dispatch order must run all `watchAll` callbacks before keyed `watch(keys)` callbacks; registration order must be preserved within each group.
+      zh-CN: resolved watcher dispatch 顺序必须在所有匹配的 `watchAll(cb)` 与 `watch(keys, cb)` callback 之间保持 setup 阶段的注册顺序。
+      en: Resolved watcher dispatch order must preserve setup-time registration order across all matching `watchAll(cb)` and `watch(keys, cb)` callbacks.
+    rationale:
+      zh-CN: '`watchAll` 与 `watch(keys)` 都观察同一个 dispatch window 中的 resolved snapshot diff；`watchAll` 并不建立 keyed watcher 正确执行所需的前置语义。共享注册顺序更符合原型作者对 setup 代码执行顺序的直觉。'
+      en: "`watchAll` and `watch(keys)` observe the same resolved snapshot diff in the same dispatch window; `watchAll` does not establish prerequisite semantics needed by keyed watchers. Shared registration order better matches prototype authors' expectations from setup code order."
 sources:
   - path: internal/contracts/props/base-text/03.watch-resolved.v0.zh-CN.md
     sections:
@@ -90,6 +93,9 @@ revisions:
   - version: 0.1.0
     change: revised
     summary: Expanded resolved watcher semantics into criteria covering registration, hydration skip, `Object.is` diffs, callback payloads, dispatch coalescing, and ordering.
+  - version: 0.1.0
+    change: revised
+    summary: Changed resolved watcher dispatch ordering from `watchAll` before keyed watchers to shared registration order.
 tags:
   - props
   - watch

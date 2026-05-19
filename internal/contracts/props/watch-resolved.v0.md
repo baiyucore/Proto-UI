@@ -63,8 +63,7 @@ Callback:
 
 For a watcher-firing `applyRaw(...)`:
 
-1. `watchAll` callbacks (registration order)
-2. `watch(keys)` callbacks (registration order)
+- matching `watchAll` and `watch(keys)` callbacks run in shared registration order
 
 ---
 

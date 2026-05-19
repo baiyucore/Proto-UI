@@ -3,7 +3,7 @@ type: contract
 title: Failed declaration merge must not partially apply
 status: active
 since: 0.1.0
-summary: Blocking diagnostics during `setup`-time prop declaration merge should reject the merge transaction without partially applying changes.
+summary: Blocking diagnostics during `setup`-time prop declaration merge reject the merge transaction without partially applying changes.
 statement:
   zh-CN: >-
     当 setup 期间的 prop declaration merge 产生任意 blocking error 时，本次 `define()` 必须作为一个事务整体失败。失败的 incoming declaration 不得改变已存在的 declaration、resolved 行为、fallback 行为或 diagnostics；尤其不得留下本次失败 merge 过程中产生的部分 warning。
@@ -44,6 +44,9 @@ revisions:
   - version: 0.1.0
     change: revised
     summary: Promoted declaration merge atomicity to active criteria and linked it as a refinement of `C-PROPS-0007`.
+  - version: 0.1.0
+    change: revised
+    summary: Resolved declaration merge conflicts as blocking errors and moved the rationale to `D-PROPS-MERGE-BLOCKING-0001`.
 tags:
   - props
   - define

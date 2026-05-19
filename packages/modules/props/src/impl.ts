@@ -52,8 +52,10 @@ export class PropsModuleImpl<P extends PropsBaseType> extends ModuleBase {
   private readonly declaredKeys: Set<string> = new Set();
 
   // watchers (setup-only registration)
-  private watch: Array<{ keys: string[]; cb: PropsWatchCb<P>; active: boolean }> = [];
-  private watchAll: Array<{ cb: PropsWatchCb<P>; active: boolean }> = [];
+  private resolvedWatchSeq = 0;
+  private watch: Array<{ order: number; keys: string[]; cb: PropsWatchCb<P>; active: boolean }> =
+    [];
+  private watchAll: Array<{ order: number; cb: PropsWatchCb<P>; active: boolean }> = [];
   private watchRaw: Array<{
     keys: string[];
     cb: RawWatchCb<P & PropsBaseType>;
@@ -119,7 +121,7 @@ export class PropsModuleImpl<P extends PropsBaseType> extends ModuleBase {
       }
     }
 
-    const entry = { keys: [...(keys as any)], cb, active: true };
+    const entry = { order: this.resolvedWatchSeq++, keys: [...(keys as any)], cb, active: true };
     this.watch.push(entry);
     return () => {
       entry.active = false;
@@ -128,7 +130,7 @@ export class PropsModuleImpl<P extends PropsBaseType> extends ModuleBase {
 
   watchAllKeys(cb: PropsWatchCb<P>): () => void {
     this.guardSetupOnly('def.props.watchAll');
-    const entry = { cb, active: true };
+    const entry = { order: this.resolvedWatchSeq++, cb, active: true };
     this.watchAll.push(entry);
     return () => {
       entry.active = false;
@@ -274,7 +276,9 @@ export class PropsModuleImpl<P extends PropsBaseType> extends ModuleBase {
       });
     }
 
-    // resolved watchers: all first, then keyed (registration order preserved within group)
+    // resolved watchers: watchAll and keyed watchers share registration order.
+    const resolvedTasks: Array<{ order: number; task: PropsWatchTask<P> }> = [];
+
     for (const w of this.watchAll) {
       if (!w.active) continue;
       if (changedAllResolved.length === 0) continue;
@@ -282,12 +286,15 @@ export class PropsModuleImpl<P extends PropsBaseType> extends ModuleBase {
         changedKeysAll: changedAllResolved as any,
         changedKeysMatched: changedAllResolved as any,
       };
-      tasks.push({
-        kind: 'resolved',
-        cb: w.cb as any,
-        next: nextResolved as any,
-        prev: prevResolved as any,
-        info: info as any,
+      resolvedTasks.push({
+        order: w.order,
+        task: {
+          kind: 'resolved',
+          cb: w.cb as any,
+          next: nextResolved as any,
+          prev: prevResolved as any,
+          info: info as any,
+        },
       });
     }
 
@@ -300,14 +307,20 @@ export class PropsModuleImpl<P extends PropsBaseType> extends ModuleBase {
         changedKeysAll: changedAllResolved as any,
         changedKeysMatched: matched as any,
       };
-      tasks.push({
-        kind: 'resolved',
-        cb: w.cb as any,
-        next: nextResolved as any,
-        prev: prevResolved as any,
-        info: info as any,
+      resolvedTasks.push({
+        order: w.order,
+        task: {
+          kind: 'resolved',
+          cb: w.cb as any,
+          next: nextResolved as any,
+          prev: prevResolved as any,
+          info: info as any,
+        },
       });
     }
+
+    resolvedTasks.sort((a, b) => a.order - b.order);
+    for (const { task } of resolvedTasks) tasks.push(task);
 
     return tasks;
   }
