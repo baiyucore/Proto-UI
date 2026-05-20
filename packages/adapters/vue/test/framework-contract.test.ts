@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Prototype } from '@proto.ui/core';
 
 import { createVueAdapter, type VueRuntime } from '../src/adapt';
+import { createMountedVueAdapter, flushVue } from './utils/vue';
 
 function createFakeVueRuntime() {
   const mounted: Array<() => void> = [];
@@ -129,5 +130,27 @@ describe('adapter-vue: framework contract', () => {
     expect(typeof exposed.current.getExposes).toBe('function');
     expect(fake.mounted.length).toBeGreaterThan(0);
     expect(fake.beforeUnmount.length).toBeGreaterThan(0);
+  });
+
+  it('merges fallthrough attrs.style with hostStyle on the host root', async () => {
+    const proto: Prototype = {
+      name: 'vue-host-style-merge',
+      setup() {
+        return (r) => [r.el('div', 'ok')];
+      },
+    };
+
+    const mounted = createMountedVueAdapter(proto, {
+      hostStyle: { color: 'blue', padding: '4px' },
+      style: { color: 'red', margin: '8px' },
+    });
+
+    await flushVue();
+
+    expect(mounted.root?.style.color).toBe('red');
+    expect(mounted.root?.style.padding).toBe('4px');
+    expect(mounted.root?.style.margin).toBe('8px');
+
+    mounted.unmount();
   });
 });

@@ -407,7 +407,7 @@ export function createVueAdapter(runtime: VueRuntime) {
                 rootRef.value = el;
               },
               class: mergeHostClass([props.hostClass, ctx.attrs.class]),
-              style: props.hostStyle,
+              style: mergeHostStyle([props.hostStyle, ctx.attrs.style]),
               'data-pui-root': '',
               'data-pui-style': serializeStyleTokens(hostTokens.value),
               'data-demo-ref': ctx.attrs['data-demo-ref'] as string | undefined,
@@ -453,6 +453,23 @@ function mergeHostClass(input: unknown) {
   }
 
   return out;
+}
+
+function mergeHostStyle(input: unknown) {
+  const values = (Array.isArray(input) ? input : [input])
+    .flatMap((value) => {
+      if (value == null || value === '') return [];
+      return Array.isArray(value) ? value : [value];
+    })
+    .filter((value) => {
+      if (value == null || value === '') return false;
+      if (typeof value === 'object') return Object.keys(value as object).length > 0;
+      return String(value).trim().length > 0;
+    });
+
+  if (values.length === 0) return undefined;
+  if (values.length === 1) return values[0];
+  return values;
 }
 
 function serializeStyleTokens(tokens: string[]) {

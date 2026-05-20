@@ -46,6 +46,7 @@ export type ReactAdapterProps<Props extends PropsBaseType> = Props &
     children?: any;
     className?: string;
     hostClassName?: string;
+    style?: any;
     hostStyle?: any;
     [key: `on${string}`]: unknown;
   };
@@ -69,7 +70,7 @@ type ReactRuntimeInput = ReactRuntime | { React: ReactRuntime };
 function defaultGetProps<Props extends PropsBaseType>(
   props: ReactAdapterProps<Props>
 ): Partial<Props> {
-  const { children, className, hostClassName, hostStyle, ...rest } = (props ?? {}) as any;
+  const { children, className, hostClassName, style, hostStyle, ...rest } = (props ?? {}) as any;
   const filtered: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(rest)) {
     if (isFrameworkEventProp(key, value)) continue;
@@ -386,7 +387,7 @@ export function createReactAdapter(runtimeInput: ReactRuntimeInput) {
         {
           ref: rootRef as { current: HTMLElement | null },
           className: mergeHostClassName([props.hostClassName, props.className]),
-          style: props.hostStyle,
+          style: mergeHostStyle([props.hostStyle, props.style]),
           'data-pui-root': '',
           'data-pui-style': serializeStyleTokens(hostTokens),
           'data-demo-ref': props['data-demo-ref' as keyof typeof props] as string | undefined,
@@ -425,6 +426,23 @@ function mergeHostClassName(input: unknown) {
   }
 
   return out.length > 0 ? out.join(' ') : undefined;
+}
+
+function mergeHostStyle(input: unknown) {
+  const values = (Array.isArray(input) ? input : [input])
+    .flatMap((value) => {
+      if (value == null || value === '') return [];
+      return Array.isArray(value) ? value : [value];
+    })
+    .filter((value) => {
+      if (value == null || value === '') return false;
+      if (typeof value === 'object') return Object.keys(value as object).length > 0;
+      return String(value).trim().length > 0;
+    });
+
+  if (values.length === 0) return undefined;
+  if (values.length === 1) return values[0];
+  return values;
 }
 
 function serializeStyleTokens(tokens: string[]) {
