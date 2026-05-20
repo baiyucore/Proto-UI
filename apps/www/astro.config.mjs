@@ -376,7 +376,6 @@ export default defineConfig({
               label: 'Props',
               translations: { en: 'Props', 'zh-CN': 'Props' },
               slug: 'specifications/props',
-              badge: inProgressBadge,
             },
             {
               label: 'Event',
