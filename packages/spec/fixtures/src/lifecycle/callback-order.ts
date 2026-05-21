@@ -57,11 +57,12 @@ export const LIFECYCLE_CALLBACK_ORDER_CASES = [
   },
   {
     id: 'update-render-commit-updated',
-    title: 'update lifecycle order runs updated after update commit',
+    title: 'update lifecycle order runs updated after update commit completion',
     specCase: 'T-LIFECYCLE-0001-CASE-UPDATE-CYCLE-ORDER',
     covers: ['C-LIFECYCLE-0002-E'],
     expectation: 'update-render-commit-updated',
     expectedOrder: ['update', 'update-render', 'update-commit', 'updated'],
+    notes: ['`update-commit` represents the commit completion boundary in this fixture.'],
   },
   {
     id: 'unmounted-before-dispose-availability',

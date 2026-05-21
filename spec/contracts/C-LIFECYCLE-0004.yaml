@@ -6,11 +6,11 @@ since: 0.1.0
 summary: The CP0-CP10 checkpoint model refines runtime lifecycle ordering for runtime and adapter design without becoming prototype API.
 statement:
   zh-CN: >-
-    Proto UI runtime 与 adapter 必须把 host 行为映射到同一组不可重排的 lifecycle checkpoints：CP0 setup exit、CP1 created callbacks、CP2 logical tree ready、CP3 commit start、CP4 commit done、CP5 mounted callbacks、CP6 update render、CP7 update commit、CP8 updated callbacks、CP9 unmount begin、CP10 dispose complete。该 checkpoint 模型是 runtime/adapter 设计约束，不是原型作者可见 API；它只把 `C-LIFECYCLE-0002` 的 runtime 顺序细化为可实现、可测试的边界。
+    Proto UI runtime 与 adapter 必须把 host 行为映射到同一组不可重排的 lifecycle checkpoints：CP0 setup exit、CP1 created callbacks、CP2 logical tree ready、CP3 commit start、CP4 commit done、CP5 mounted callbacks、CP6 update render、CP7 update commit done、CP8 updated callbacks、CP9 unmount begin、CP10 dispose complete。该 checkpoint 模型是 runtime/adapter 设计约束，不是原型作者可见 API；它只把 `C-LIFECYCLE-0002` 的 runtime 顺序细化为可实现、可测试的边界。CP4 与 CP7 均表示 host commit completion，可以由同步或异步 host profile 达成。
 
 
   en: >-
-    Proto UI runtime and adapters must map host behavior into one non-reorderable set of lifecycle checkpoints: CP0 setup exit, CP1 created callbacks, CP2 logical tree ready, CP3 commit start, CP4 commit done, CP5 mounted callbacks, CP6 update render, CP7 update commit, CP8 updated callbacks, CP9 unmount begin, and CP10 dispose complete. This checkpoint model constrains runtime and adapter design; it is not a prototype-author API. It only refines the runtime order in `C-LIFECYCLE-0002` into implementable and testable boundaries.
+    Proto UI runtime and adapters must map host behavior into one non-reorderable set of lifecycle checkpoints: CP0 setup exit, CP1 created callbacks, CP2 logical tree ready, CP3 commit start, CP4 commit done, CP5 mounted callbacks, CP6 update render, CP7 update commit done, CP8 updated callbacks, CP9 unmount begin, and CP10 dispose complete. This checkpoint model constrains runtime and adapter design; it is not a prototype-author API. It only refines the runtime order in `C-LIFECYCLE-0002` into implementable and testable boundaries. CP4 and CP7 both represent host commit completion, which may be reached by either synchronous or asynchronous host profiles.
 
 
 criteria:
@@ -24,8 +24,8 @@ criteria:
       en: CP1 through CP5 must occur in `created callbacks -> logical tree ready -> commit start -> commit done -> mounted callbacks` order.
   - id: C-LIFECYCLE-0004-C
     text:
-      zh-CN: 每个 update cycle 的 CP6 到 CP8 必须按 `update render -> update commit -> updated callbacks` 的顺序发生。
-      en: For each update cycle, CP6 through CP8 must occur in `update render -> update commit -> updated callbacks` order.
+      zh-CN: 每个被接受的 update cycle 的 CP6 到 CP8 必须按 `update render -> update commit done -> updated callbacks` 的顺序发生；CP8 不得早于 CP7。
+      en: For each accepted update cycle, CP6 through CP8 must occur in `update render -> update commit done -> updated callbacks` order; CP8 must not occur before CP7.
   - id: C-LIFECYCLE-0004-D
     text:
       zh-CN: CP9 必须表示实例进入 unmount/disconnect 流程且 `unmounted` callback 即将或正在执行；此时受 runtime 管理的 module handle 仍不得被提前 dispose。
@@ -81,6 +81,9 @@ revisions:
   - version: 0.1.0
     change: introduced
     summary: Drafted the runtime/adapter checkpoint model for lifecycle governance.
+  - version: 0.1.0
+    change: revised
+    summary: Clarified CP7 as update commit completion so checkpoint ordering supports synchronous and asynchronous host profiles.
 tags:
   - lifecycle
   - checkpoint

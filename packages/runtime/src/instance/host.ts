@@ -11,7 +11,7 @@ export interface RuntimeHost<P extends PropsBaseType> {
   /** For diagnostics / errors */
   readonly prototypeName: string;
 
-  /** Commit HostRoot children to the host platform */
+  /** Commit HostRoot children to the host platform and call signal.done() at commit completion. */
   commit(children: TemplateChildren, signal?: CommitSignal): void;
 
   /** Scheduling hook (for microtask/macrotask decisions, adapter controls timing) */

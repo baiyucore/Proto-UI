@@ -41,7 +41,9 @@ export function executeWithHost<P extends PropsBaseType>(
   propsPort.applyRaw({ ...(host.getRawProps?.() ?? {}) });
   timeline.mark('host:ready');
 
-  const doRenderCommit = (kind: 'initial' | 'update') => {
+  let ended = false;
+
+  const doRenderCommit = (kind: 'initial' | 'update', onCommitted?: () => void) => {
     // pull latest raw before rendering
     propsPort.syncFromHost();
 
@@ -53,6 +55,7 @@ export function executeWithHost<P extends PropsBaseType>(
     const afterCommit = () => {
       if (commitDone) return;
       commitDone = true;
+      if (ended) return;
 
       timeline.mark('commit:done');
 
@@ -83,10 +86,11 @@ export function executeWithHost<P extends PropsBaseType>(
           for (const cb of lifecycle.updated) cb(run);
         });
       }
+
+      onCommitted?.();
     };
 
     host.commit(children, { done: afterCommit });
-    afterCommit();
 
     return children;
   };
@@ -128,11 +132,6 @@ export function executeWithHost<P extends PropsBaseType>(
 
   const presencePort = moduleHub.getPort<PresencePort>('presence');
 
-  // initial commit
-  const children = doRenderCommit('initial');
-
-  let ended = false;
-
   const finishMount = () => {
     if (ended) return;
     moduleHub.setProtoPhase('mounted');
@@ -151,12 +150,15 @@ export function executeWithHost<P extends PropsBaseType>(
   // presence mount is async by design, but executeWithHost must stay sync
   // to avoid breaking adapter contracts across the monorepo. We defer the
   // mounted phase via .then() so it still waits for the mount approval.
-  const mountPromise = presencePort?.awaitMount();
-  if (mountPromise) {
-    mountPromise.then(finishMount);
-  } else {
-    finishMount();
-  }
+  // initial commit
+  const children = doRenderCommit('initial', () => {
+    const mountPromise = presencePort?.awaitMount();
+    if (mountPromise) {
+      mountPromise.then(finishMount);
+    } else {
+      finishMount();
+    }
+  });
 
   const invokeUnmounted = async () => {
     if (ended) return;

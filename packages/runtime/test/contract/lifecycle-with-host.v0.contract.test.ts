@@ -126,6 +126,45 @@ describe('runtime contract: lifecycle-with-host (v0)', () => {
     void run; // silence unused if your TS config complains
   });
 
+  it('updated waits for host commit completion signal', async () => {
+    const calls: string[] = [];
+    const pendingDone: Array<() => void> = [];
+    const host: RuntimeHost<any> = {
+      prototypeName: 'x-runtime-life-async-commit',
+      getRawProps: () => ({}),
+      commit(_children, signal) {
+        calls.push('commit');
+        if (signal) pendingDone.push(signal.done);
+      },
+      schedule() {},
+    };
+
+    const P: Prototype = {
+      name: 'x-runtime-life-async-commit',
+      setup(def) {
+        def.lifecycle.onUpdated(() => calls.push('updated'));
+        return (r) => [r.el('div', 'v')];
+      },
+    };
+
+    const { controller } = executeWithHost(P, host);
+
+    // Complete the initial commit first; this test focuses on the update commit.
+    expect(pendingDone.length).toBe(1);
+    pendingDone.shift()!();
+
+    calls.length = 0;
+
+    controller.update();
+
+    expect(calls).toEqual(['commit']);
+    expect(pendingDone.length).toBe(1);
+
+    pendingDone.shift()!();
+
+    expect(calls).toEqual(['commit', 'updated']);
+  });
+
   it('unmounted is invoked when adapter calls invokeUnmounted()', async () => {
     const { host, calls } = createMockHost();
 
@@ -164,7 +203,9 @@ describe('runtime contract: lifecycle-with-host (v0)', () => {
     const host: RuntimeHost<any> = {
       prototypeName: proto.name,
       getRawProps: () => ({}),
-      commit: () => {},
+      commit: (_children, signal) => {
+        signal?.done();
+      },
       schedule: (task) => {
         scheduled = task;
       },

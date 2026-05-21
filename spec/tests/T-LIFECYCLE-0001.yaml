@@ -29,12 +29,13 @@ cases:
     notes:
       - Covers hosts that schedule `mounted` asynchronously and then unmount before the scheduled task runs.
   - id: T-LIFECYCLE-0001-CASE-UPDATE-CYCLE-ORDER
-    title: Update cycle runs render, commit, then updated callbacks
+    title: Update cycle runs render, commit completion, then updated callbacks
     covers:
       - C-LIFECYCLE-0002-E
     expectation: update-render-commit-updated
     notes:
       - The fixture models ordering, not whether the host performs the update synchronously or schedules it.
+      - The `commit` trace point represents the commit completion boundary for this fixture.
   - id: T-LIFECYCLE-0001-CASE-UNMOUNT-DISPOSAL-BOUNDARY
     title: Unmounted runs before dispose and handles are invalid after dispose
     covers:

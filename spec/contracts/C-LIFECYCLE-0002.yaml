@@ -6,11 +6,11 @@ since: 0.1.0
 summary: Proto UI exposes lifecycle callbacks over the canonical runtime order `created -> first render -> commit -> mounted -> update cycles -> unmounted/dispose`.
 statement:
   zh-CN: >-
-    Proto UI 的原型可见生命周期 API 必须映射到同一条 runtime 顺序：`setup -> created -> first render -> commit -> mounted -> (update -> render -> commit -> updated)*n -> unmounted/dispose`。`created`、`mounted`、`updated` 与 `unmounted` 是 setup 阶段注册、runtime 阶段调用的 callback；runtime 必须保证它们相对 render、commit、update 与 dispose 的顺序稳定，adapter 不得通过 host 生命周期重排这些语义。
+    Proto UI 的原型可见生命周期 API 必须映射到同一条 runtime 顺序：`setup -> created -> first render -> commit -> mounted -> (update -> render -> commit -> updated)*n -> unmounted/dispose`。这里的 `commit` 指对应 host commit 被 runtime/adapter 认定完成的语义边界，而不是必须同步完成的函数调用。`created`、`mounted`、`updated` 与 `unmounted` 是 setup 阶段注册、runtime 阶段调用的 callback；runtime 必须保证它们相对 render、commit completion、update 与 dispose 的顺序稳定，adapter 不得通过 host 生命周期重排这些语义。
 
 
   en: >-
-    Proto UI's prototype-visible lifecycle API must map to one runtime order: `setup -> created -> first render -> commit -> mounted -> (update -> render -> commit -> updated)*n -> unmounted/dispose`. `created`, `mounted`, `updated`, and `unmounted` are callbacks registered during setup and invoked during runtime. The runtime must keep their ordering relative to render, commit, update, and dispose stable, and adapters must not reorder these semantics through host lifecycles.
+    Proto UI's prototype-visible lifecycle API must map to one runtime order: `setup -> created -> first render -> commit -> mounted -> (update -> render -> commit -> updated)*n -> unmounted/dispose`. Here `commit` means the semantic boundary where the corresponding host commit is considered complete by the runtime/adapter, not necessarily a synchronously completed function call. `created`, `mounted`, `updated`, and `unmounted` are callbacks registered during setup and invoked during runtime. The runtime must keep their ordering relative to render, commit completion, update, and dispose stable, and adapters must not reorder these semantics through host lifecycles.
 
 
 criteria:
@@ -32,8 +32,8 @@ criteria:
       en: '`mounted` callbacks must run after the first commit completes; if the instance unmounts before a mounted callback runs, the queued mounted callback must become ineffective.'
   - id: C-LIFECYCLE-0002-E
     text:
-      zh-CN: 每个 update cycle 必须按照 `update -> render -> commit -> updated` 的顺序执行；`updated` callback 不得早于对应 update commit。
-      en: Each update cycle must execute in `update -> render -> commit -> updated` order; `updated` callbacks must not run before the corresponding update commit.
+      zh-CN: 每个被接受的 update cycle 必须按照 `update intent -> render -> commit completion -> updated` 的顺序执行；`updated` callback 不得早于对应 update commit completion。
+      en: Each accepted update cycle must execute in `update intent -> render -> commit completion -> updated` order; `updated` callbacks must not run before the corresponding update commit completion.
   - id: C-LIFECYCLE-0002-F
     text:
       zh-CN: '`unmounted` callback 必须在实例 dispose 之前执行；在 `unmounted` callback 执行期间，runtime handle 与受 lifecycle 管理的模块 handle 仍处于可用窗口。'
@@ -80,6 +80,9 @@ revisions:
   - version: 0.1.0
     change: revised
     summary: Resolved the `created` protoPhase exposure gap as an implementation follow-up without changing the callback ordering criteria.
+  - version: 0.1.0
+    change: revised
+    summary: Clarified that lifecycle commit ordering is based on host commit completion rather than synchronous function-call completion.
 tags:
   - lifecycle
   - callbacks

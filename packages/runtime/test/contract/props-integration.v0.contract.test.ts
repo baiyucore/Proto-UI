@@ -13,8 +13,9 @@ function createMockHost<P extends PropsBaseType>(initialRaw: Record<string, any>
   const host: RuntimeHost<P> = {
     getRawProps: () => raw,
 
-    commit: (children: any) => {
+    commit: (children: any, signal) => {
       commits.push(children);
+      signal?.done();
     },
 
     schedule: (job: () => void) => {
