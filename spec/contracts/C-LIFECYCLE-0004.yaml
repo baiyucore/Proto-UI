@@ -1,0 +1,88 @@
+id: C-LIFECYCLE-0004
+type: contract
+title: Runtime and adapters preserve canonical lifecycle checkpoints
+status: draft
+since: 0.1.0
+summary: The CP0-CP10 checkpoint model refines runtime lifecycle ordering for runtime and adapter design without becoming prototype API.
+statement:
+  zh-CN: >-
+    Proto UI runtime 与 adapter 必须把 host 行为映射到同一组不可重排的 lifecycle checkpoints：CP0 setup exit、CP1 created callbacks、CP2 logical tree ready、CP3 commit start、CP4 commit done、CP5 mounted callbacks、CP6 update render、CP7 update commit、CP8 updated callbacks、CP9 unmount begin、CP10 dispose complete。该 checkpoint 模型是 runtime/adapter 设计约束，不是原型作者可见 API；它只把 `C-LIFECYCLE-0002` 的 runtime 顺序细化为可实现、可测试的边界。
+
+
+  en: >-
+    Proto UI runtime and adapters must map host behavior into one non-reorderable set of lifecycle checkpoints: CP0 setup exit, CP1 created callbacks, CP2 logical tree ready, CP3 commit start, CP4 commit done, CP5 mounted callbacks, CP6 update render, CP7 update commit, CP8 updated callbacks, CP9 unmount begin, and CP10 dispose complete. This checkpoint model constrains runtime and adapter design; it is not a prototype-author API. It only refines the runtime order in `C-LIFECYCLE-0002` into implementable and testable boundaries.
+
+
+criteria:
+  - id: C-LIFECYCLE-0004-A
+    text:
+      zh-CN: CP0 必须表示 `proto.setup(def)` 已经返回，且 `setup` 时期已经退出，但任何 lifecycle callback 尚未执行。
+      en: CP0 must represent that `proto.setup(def)` has returned and the `setup` period has exited, while no lifecycle callback has run yet.
+  - id: C-LIFECYCLE-0004-B
+    text:
+      zh-CN: CP1 到 CP5 必须按 `created callbacks -> logical tree ready -> commit start -> commit done -> mounted callbacks` 的顺序发生。
+      en: CP1 through CP5 must occur in `created callbacks -> logical tree ready -> commit start -> commit done -> mounted callbacks` order.
+  - id: C-LIFECYCLE-0004-C
+    text:
+      zh-CN: 每个 update cycle 的 CP6 到 CP8 必须按 `update render -> update commit -> updated callbacks` 的顺序发生。
+      en: For each update cycle, CP6 through CP8 must occur in `update render -> update commit -> updated callbacks` order.
+  - id: C-LIFECYCLE-0004-D
+    text:
+      zh-CN: CP9 必须表示实例进入 unmount/disconnect 流程且 `unmounted` callback 即将或正在执行；此时受 runtime 管理的 module handle 仍不得被提前 dispose。
+      en: CP9 must represent that the instance has entered unmount/disconnect flow and `unmounted` callbacks are about to run or are running; runtime-managed module handles must not be disposed early at this point.
+  - id: C-LIFECYCLE-0004-E
+    text:
+      zh-CN: CP10 必须表示实例 dispose 完成；CP10 之后受 `SystemCaps` 或 runtime lifecycle 管理的 handle 访问必须失败。
+      en: CP10 must represent completed instance disposal; after CP10, access to handles governed by `SystemCaps` or runtime lifecycle must fail.
+  - id: C-LIFECYCLE-0004-F
+    text:
+      zh-CN: adapter 必须把 host-specific lifecycle 映射到 CP0-CP10，不得引入与 canonical checkpoint 顺序竞争或平行的生命周期模型。
+      en: Adapters must map host-specific lifecycles into CP0-CP10 and must not introduce a competing or parallel lifecycle model.
+  - id: C-LIFECYCLE-0004-G
+    text:
+      zh-CN: CP checkpoint 名称与编号不得作为原型作者 API 暴露；原型作者只依赖 `C-LIFECYCLE-0002` 定义的 callback 顺序与可用性。
+      en: CP checkpoint names and numbers must not be exposed as prototype-author APIs; prototype authors only rely on the callback ordering and availability defined by `C-LIFECYCLE-0002`.
+sources:
+  - path: internal/contracts/lifecycle/adapter-lifecycle.v0.md
+    sections:
+      - Canonical Timeline
+      - Checkpoints
+      - Mandatory Rules
+  - path: internal/contracts/lifecycle/component-lifecycle.v0.md
+    sections:
+      - Execution Domain Mapping (v0)
+      - Ordering Guarantees
+      - Unmount & Disposal Semantics
+dependsOn:
+  contracts:
+    - C-LIFECYCLE-0001
+    - C-LIFECYCLE-0002
+    - C-LIFECYCLE-0003
+openQuestions:
+  - id: C-LIFECYCLE-0004-Q-CP-SOURCE-OF-TRUTH
+    question:
+      zh-CN: CP0-CP10 是否应成为 runtime timeline/test trace 的稳定命名，还是只作为契约文档中的语义 checkpoint？
+      en: Should CP0-CP10 become stable names in runtime timeline/test traces, or remain only semantic checkpoints in contract documents?
+    context:
+      zh-CN: 当前实现已有 runtime timeline mark，但名称与 CP 编号不完全一一对应。
+      en: The current implementation has runtime timeline marks, but their names do not map one-to-one to CP numbers.
+    blocks:
+      - C-LIFECYCLE-0004
+  - id: C-LIFECYCLE-0004-Q-ADAPTER-PROFILES
+    question:
+      zh-CN: React、Vue、Web Component 等 host-specific 生命周期映射是否应分别建立 adapter profile 契约，而不是继续扩展 core lifecycle 契约？
+      en: Should React, Vue, Web Component, and other host-specific lifecycle mappings be governed by separate adapter profile contracts rather than expanding core lifecycle contracts?
+    context:
+      zh-CN: core lifecycle 只约束 adapter 必须保序映射到 CP 模型；具体 connected/disconnected、framework next tick、DOM move 等行为属于 host profile。
+      en: Core lifecycle only requires adapters to preserve ordering into the CP model; concrete connected/disconnected, framework next tick, DOM move, and similar behavior belongs to host profiles.
+    blocks:
+      - C-LIFECYCLE-0004-F
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Drafted the runtime/adapter checkpoint model for lifecycle governance.
+tags:
+  - lifecycle
+  - checkpoint
+  - runtime
+  - adapter

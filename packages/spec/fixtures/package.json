@@ -16,6 +16,10 @@
     "./props/json-value-boundary": {
       "types": "./src/props/json-value-boundary.ts",
       "default": "./src/props/json-value-boundary.ts"
+    },
+    "./lifecycle/callback-order": {
+      "types": "./src/lifecycle/callback-order.ts",
+      "default": "./src/lifecycle/callback-order.ts"
     }
   },
   "description": "Shared semantic test fixtures for Proto UI spec contracts."
