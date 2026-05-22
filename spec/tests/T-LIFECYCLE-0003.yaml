@@ -1,0 +1,73 @@
+id: T-LIFECYCLE-0003
+type: test
+title: Canonical lifecycle checkpoint trace tests
+status: draft
+since: 0.1.0
+summary: Runtime tests that verify the CP0-CP10 canonical checkpoint names and trace boundaries required by `C-LIFECYCLE-0004`.
+cases:
+  - id: T-LIFECYCLE-0003-CASE-CANONICAL-NAMES
+    title: CP0-CP10 canonical checkpoint names are stable
+    covers:
+      - C-LIFECYCLE-0004-H
+      - C-LIFECYCLE-0004-I
+    expectation: stable-canonical-checkpoint-names
+  - id: T-LIFECYCLE-0003-CASE-INITIAL-CHECKPOINTS
+    title: Initial runtime flow records CP0 through CP5 in canonical order
+    covers:
+      - C-LIFECYCLE-0004-A
+      - C-LIFECYCLE-0004-B
+      - C-LIFECYCLE-0004-H
+    expectation: initial-flow-cp0-through-cp5
+  - id: T-LIFECYCLE-0003-CASE-UPDATE-CHECKPOINTS
+    title: Accepted update cycles record CP6 through CP8 in canonical order
+    covers:
+      - C-LIFECYCLE-0004-C
+      - C-LIFECYCLE-0004-H
+    expectation: update-flow-cp6-through-cp8
+  - id: T-LIFECYCLE-0003-CASE-DISPOSE-CHECKPOINTS
+    title: Unmount and dispose record CP9 before CP10
+    covers:
+      - C-LIFECYCLE-0004-D
+      - C-LIFECYCLE-0004-E
+      - C-LIFECYCLE-0004-H
+    expectation: unmount-dispose-cp9-before-cp10
+implementations:
+  - id: runtime-lifecycle-canonical-checkpoints
+    kind: runtime-test
+    status: passing
+    path: packages/runtime/test/contract/lifecycle.checkpoints.v0.contract.test.ts
+    required: true
+    consumesCases:
+      - T-LIFECYCLE-0003-CASE-CANONICAL-NAMES
+      - T-LIFECYCLE-0003-CASE-INITIAL-CHECKPOINTS
+      - T-LIFECYCLE-0003-CASE-UPDATE-CHECKPOINTS
+      - T-LIFECYCLE-0003-CASE-DISPOSE-CHECKPOINTS
+    notes:
+      - Uses `RuntimeHost.onLifecycleCheckpoint` to observe canonical runtime checkpoints without exposing them as prototype-author APIs.
+      - Includes delayed `CommitSignal.done()` coverage so CP7/CP8 are tied to update commit completion.
+verifies:
+  contracts:
+    - id: C-LIFECYCLE-0004
+      anchors:
+        - C-LIFECYCLE-0004-A
+        - C-LIFECYCLE-0004-B
+        - C-LIFECYCLE-0004-C
+        - C-LIFECYCLE-0004-D
+        - C-LIFECYCLE-0004-E
+        - C-LIFECYCLE-0004-H
+        - C-LIFECYCLE-0004-I
+exercises:
+  contracts:
+    - id: C-LIFECYCLE-0002
+      role: execution-order
+      coverageImpact: exercises-test-surface
+      note: Canonical checkpoint tests exercise the lifecycle callback ordering model at runtime trace boundaries.
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Added canonical lifecycle checkpoint trace coverage for `C-LIFECYCLE-0004`.
+tags:
+  - lifecycle
+  - checkpoint
+  - runtime
+  - contract-test

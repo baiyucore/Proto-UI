@@ -11,9 +11,10 @@ function createMockHost<P extends PropsBaseType>(initialRaw: Record<string, any>
   const scheduled: Array<() => void> = [];
 
   const host: RuntimeHost<P> = {
-    getRawProps: () => raw,
+    prototypeName: 'props-integration-test',
+    getRawProps: () => raw as Readonly<P & PropsBaseType>,
 
-    commit: (children: any, signal) => {
+    commit: (children, signal) => {
       commits.push(children);
       signal?.done();
     },
@@ -25,7 +26,7 @@ function createMockHost<P extends PropsBaseType>(initialRaw: Record<string, any>
     // optional hooks used by executeWithHost
     onRuntimeReady: () => {},
     onUnmountBegin: () => {},
-  } as any;
+  };
 
   const flush = () => {
     while (scheduled.length) {

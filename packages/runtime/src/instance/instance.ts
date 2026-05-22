@@ -35,7 +35,6 @@ import { __RT_EVENT_CALLBACKS } from '../kernel/event';
 import { CallbackScope } from './execute/callback-scope';
 import { createKernel, type Kernel } from '../kernel';
 import { createAsHookStateProjector } from '../kernel/as-hook';
-import type { RuntimeTimeline } from '../kernel/timeline';
 
 export type RuntimeInstance<P extends PropsBaseType> = {
   kernel: Kernel<P>;
@@ -50,7 +49,6 @@ export type RuntimeInstance<P extends PropsBaseType> = {
    */
   runLifecycle(kind: keyof Kernel<P>['lifecycle']): void;
 
-  setTimeline(t: RuntimeTimeline | null): void;
   dispose(): void;
 };
 
@@ -155,10 +153,6 @@ export function createRuntimeInstance<P extends PropsBaseType>(
     });
   };
 
-  const setTimeline = (t: RuntimeTimeline | null) => {
-    kernel.setTimeline(t);
-  };
-
   const dispose = () => {
     moduleHub.dispose();
   };
@@ -169,7 +163,6 @@ export function createRuntimeInstance<P extends PropsBaseType>(
     callbackScope,
     renderOnce,
     runLifecycle,
-    setTimeline,
     dispose,
   };
 }
