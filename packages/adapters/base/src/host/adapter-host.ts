@@ -12,7 +12,7 @@ export type AdapterHostHooks<P extends PropsBaseType> = {
 
 export type AdapterHostInput<P extends PropsBaseType> = Pick<
   RuntimeHost<P>,
-  'commit' | 'schedule' | 'getRawProps'
+  'commit' | 'schedule' | 'getRawProps' | 'onLifecycleCheckpoint'
 >;
 
 export type AdapterHostSession<P extends PropsBaseType> = {
@@ -35,6 +35,7 @@ export function createAdapterHost<P extends PropsBaseType>(
     getRawProps: host.getRawProps,
     commit: host.commit,
     schedule: host.schedule,
+    onLifecycleCheckpoint: host.onLifecycleCheckpoint,
     onRuntimeReady: hooks.onRuntimeReady,
     onUnmountBegin: hooks.onUnmountBegin,
   });

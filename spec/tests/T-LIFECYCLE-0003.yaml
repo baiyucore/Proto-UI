@@ -3,7 +3,7 @@ type: test
 title: Canonical lifecycle checkpoint trace tests
 status: draft
 since: 0.1.0
-summary: Runtime tests that verify the CP0-CP10 canonical checkpoint names and trace boundaries required by `C-LIFECYCLE-0004`.
+summary: Runtime and adapter tests that verify the CP0-CP10 canonical checkpoint names and trace boundaries required by `C-LIFECYCLE-0004`.
 cases:
   - id: T-LIFECYCLE-0003-CASE-CANONICAL-NAMES
     title: CP0-CP10 canonical checkpoint names are stable
@@ -31,6 +31,27 @@ cases:
       - C-LIFECYCLE-0004-E
       - C-LIFECYCLE-0004-H
     expectation: unmount-dispose-cp9-before-cp10
+  - id: T-LIFECYCLE-0003-CASE-ADAPTER-CANONICAL-TRACE
+    title: Official adapters expose conformance traces with canonical checkpoint names
+    covers:
+      - C-LIFECYCLE-0004-F
+      - C-LIFECYCLE-0004-H
+      - C-LIFECYCLE-0004-I
+    expectation: adapter-trace-uses-canonical-checkpoint-names
+  - id: T-LIFECYCLE-0003-CASE-ADAPTER-COMMIT-COMPLETION
+    title: Official adapters record CP4 and CP7 only after host commit completion
+    covers:
+      - C-LIFECYCLE-0004-B
+      - C-LIFECYCLE-0004-C
+      - C-LIFECYCLE-0004-F
+    expectation: adapter-checkpoint-trace-respects-host-commit-completion
+  - id: T-LIFECYCLE-0003-CASE-ADAPTER-DISPOSE-BOUNDARY
+    title: Official adapters map host unmount or disconnect into CP9 and CP10
+    covers:
+      - C-LIFECYCLE-0004-D
+      - C-LIFECYCLE-0004-E
+      - C-LIFECYCLE-0004-F
+    expectation: adapter-unmount-disconnect-maps-to-cp9-cp10
 implementations:
   - id: runtime-lifecycle-canonical-checkpoints
     kind: runtime-test
@@ -45,6 +66,42 @@ implementations:
     notes:
       - Uses `RuntimeHost.onLifecycleCheckpoint` to observe canonical runtime checkpoints without exposing them as prototype-author APIs.
       - Includes delayed `CommitSignal.done()` coverage so CP7/CP8 are tied to update commit completion.
+  - id: adapter-react-lifecycle-canonical-checkpoints
+    kind: adapter-test
+    status: passing
+    path: packages/adapters/react/test/contract/lifecycle-checkpoints.v0.contract.test.ts
+    required: true
+    consumesCases:
+      - T-LIFECYCLE-0003-CASE-ADAPTER-CANONICAL-TRACE
+      - T-LIFECYCLE-0003-CASE-ADAPTER-COMMIT-COMPLETION
+      - T-LIFECYCLE-0003-CASE-ADAPTER-DISPOSE-BOUNDARY
+    notes:
+      - Uses the React adapter diagnostics hook to observe canonical runtime checkpoints without exposing checkpoint names as prototype-author APIs.
+      - Verifies CP7 and CP8 are not recorded until the fake React host has performed the follow-up render/layout-effect commit completion step.
+  - id: adapter-vue-lifecycle-canonical-checkpoints
+    kind: adapter-test
+    status: passing
+    path: packages/adapters/vue/test/contract/lifecycle-checkpoints.v0.contract.test.ts
+    required: true
+    consumesCases:
+      - T-LIFECYCLE-0003-CASE-ADAPTER-CANONICAL-TRACE
+      - T-LIFECYCLE-0003-CASE-ADAPTER-COMMIT-COMPLETION
+      - T-LIFECYCLE-0003-CASE-ADAPTER-DISPOSE-BOUNDARY
+    notes:
+      - Uses the Vue adapter diagnostics hook to observe canonical runtime checkpoints without exposing checkpoint names as prototype-author APIs.
+      - Verifies CP7 and CP8 are not recorded until Vue post-flush/nextTick commit completion has settled.
+  - id: adapter-web-component-lifecycle-canonical-checkpoints
+    kind: adapter-test
+    status: passing
+    path: packages/adapters/web-component/test/contract/lifecycle-checkpoints.v0.contract.test.ts
+    required: true
+    consumesCases:
+      - T-LIFECYCLE-0003-CASE-ADAPTER-CANONICAL-TRACE
+      - T-LIFECYCLE-0003-CASE-ADAPTER-COMMIT-COMPLETION
+      - T-LIFECYCLE-0003-CASE-ADAPTER-DISPOSE-BOUNDARY
+    notes:
+      - Uses the Web Component adapter diagnostics hook to observe canonical runtime checkpoints without exposing checkpoint names as prototype-author APIs.
+      - Verifies the synchronous DOM commit path records CP7 and CP8 before `update()` returns.
 verifies:
   contracts:
     - id: C-LIFECYCLE-0004
@@ -54,6 +111,7 @@ verifies:
         - C-LIFECYCLE-0004-C
         - C-LIFECYCLE-0004-D
         - C-LIFECYCLE-0004-E
+        - C-LIFECYCLE-0004-F
         - C-LIFECYCLE-0004-H
         - C-LIFECYCLE-0004-I
 exercises:
@@ -66,8 +124,12 @@ revisions:
   - version: 0.1.0
     change: introduced
     summary: Added canonical lifecycle checkpoint trace coverage for `C-LIFECYCLE-0004`.
+  - version: 0.1.0
+    change: revised
+    summary: Added official adapter conformance coverage for canonical checkpoint traces and host commit completion boundaries.
 tags:
   - lifecycle
   - checkpoint
   - runtime
+  - adapter
   - contract-test

@@ -1,5 +1,5 @@
 import type { Prototype } from '@proto.ui/core';
-import type { CommitSignal, RuntimeController } from '@proto.ui/runtime';
+import type { CommitSignal, RuntimeCheckpoint, RuntimeController } from '@proto.ui/runtime';
 import {
   createHostWiring,
   createEventGate,
@@ -54,6 +54,9 @@ export interface ReactAdapterOptions<Props extends PropsBaseType> {
   schedule?: (task: () => void) => void;
   getProps?: (props: ReactAdapterProps<Props>) => Partial<Props> | null | undefined;
   getMeta?: (key: string) => unknown;
+  diagnostics?: {
+    onLifecycleCheckpoint?: (cp: RuntimeCheckpoint) => void;
+  };
   exposeStateWebMode?: ExposeStateWebMode;
   autoUpdateOnPropsChange?: boolean;
   rootTag?: string;
@@ -265,6 +268,7 @@ export function createReactAdapter(runtimeInput: ReactRuntimeInput) {
           wiring,
           eventGate,
           router,
+          onLifecycleCheckpoint: opt.diagnostics?.onLifecycleCheckpoint,
           onCommit: (children, signal) => {
             pendingCommitRef.current = true;
             pendingSignalRef.current = signal;
