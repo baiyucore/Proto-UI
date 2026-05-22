@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { DefHandle, Prototype } from '@proto.ui/core';
+import type { DefHandle, Prototype, RunHandle } from '@proto.ui/core';
 import { executeWithHost, type RuntimeHost } from '../../src';
 
 function createHost(): RuntimeHost<any> {
@@ -16,8 +16,10 @@ function createHost(): RuntimeHost<any> {
 }
 
 describe('runtime contract: lifecycle registration (v0)', () => {
-  it('def.lifecycle callbacks are setup-only registrations', async () => {
+  it('def.lifecycle exposes the v0 setup-only registration surface', async () => {
     const calls: string[] = [];
+    const callbackRuns: Array<RunHandle<any>> = [];
+    const registrationReturns: unknown[] = [];
     let capturedDef!: DefHandle<any>;
 
     const proto: Prototype = {
@@ -25,10 +27,42 @@ describe('runtime contract: lifecycle registration (v0)', () => {
       setup(def) {
         capturedDef = def;
 
-        expect(() => def.lifecycle.onCreated(() => calls.push('created'))).not.toThrow();
-        expect(() => def.lifecycle.onMounted(() => calls.push('mounted'))).not.toThrow();
-        expect(() => def.lifecycle.onUpdated(() => calls.push('updated'))).not.toThrow();
-        expect(() => def.lifecycle.onUnmounted(() => calls.push('unmounted'))).not.toThrow();
+        expect(Object.keys(def.lifecycle).sort()).toEqual([
+          'onCreated',
+          'onMounted',
+          'onUnmounted',
+          'onUpdated',
+        ]);
+
+        expect(() => {
+          registrationReturns.push(
+            def.lifecycle.onCreated((run) => {
+              callbackRuns.push(run);
+              calls.push('created');
+            })
+          );
+          registrationReturns.push(
+            def.lifecycle.onMounted((run) => {
+              callbackRuns.push(run);
+              calls.push('mounted');
+            })
+          );
+          registrationReturns.push(
+            def.lifecycle.onUpdated((run) => {
+              callbackRuns.push(run);
+              calls.push('updated');
+            })
+          );
+          registrationReturns.push(
+            def.lifecycle.onUnmounted((run) => {
+              callbackRuns.push(run);
+              calls.push('unmounted');
+            })
+          );
+        }).not.toThrow();
+
+        expect(calls).toEqual([]);
+        expect(registrationReturns).toEqual([undefined, undefined, undefined, undefined]);
 
         return (r) => [r.el('div', 'ok')];
       },
@@ -39,6 +73,8 @@ describe('runtime contract: lifecycle registration (v0)', () => {
 
     expect(calls).toContain('created');
     expect(calls).toContain('mounted');
+    expect(callbackRuns.length).toBeGreaterThanOrEqual(2);
+    expect(callbackRuns.every((run) => run && typeof run.update === 'function')).toBe(true);
 
     expect(() => capturedDef.lifecycle.onCreated(() => undefined)).toThrow(/phase/i);
     expect(() => capturedDef.lifecycle.onMounted(() => undefined)).toThrow(/phase/i);

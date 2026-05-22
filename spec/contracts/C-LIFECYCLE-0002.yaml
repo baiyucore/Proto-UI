@@ -16,8 +16,8 @@ statement:
 criteria:
   - id: C-LIFECYCLE-0002-A
     text:
-      zh-CN: '`def.lifecycle.onCreated/onMounted/onUpdated/onUnmounted` 必须只能在 `setup` 时期注册。'
-      en: '`def.lifecycle.onCreated/onMounted/onUpdated/onUnmounted` must only be registered during the `setup` period.'
+      zh-CN: 通过 `C-LIFECYCLE-0005` 定义的 prototype-visible lifecycle API 注册的 callback，必须由 runtime 生命周期流程调用，而不是在注册时立即执行。
+      en: Callbacks registered through the prototype-visible lifecycle API defined by `C-LIFECYCLE-0005` must be invoked by runtime lifecycle flow rather than immediately during registration.
   - id: C-LIFECYCLE-0002-B
     text:
       zh-CN: '`created` callback 必须在 `setup` 完成之后、首次 render 与首次 commit 之前执行。'
@@ -63,6 +63,7 @@ sources:
 dependsOn:
   contracts:
     - C-LIFECYCLE-0001
+    - C-LIFECYCLE-0005
 openQuestions:
   - id: C-LIFECYCLE-0002-Q-CALLBACK-ERRORS
     question:
@@ -83,6 +84,9 @@ revisions:
   - version: 0.1.0
     change: revised
     summary: Clarified that lifecycle commit ordering is based on host commit completion rather than synchronous function-call completion.
+  - version: 0.1.0
+    change: revised
+    summary: Moved lifecycle API surface syntax ownership to `C-LIFECYCLE-0005` while keeping callback invocation ordering here.
 tags:
   - lifecycle
   - callbacks

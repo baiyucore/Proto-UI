@@ -1,5 +1,5 @@
 export type LifecycleCallbackOrderExpectation =
-  | 'lifecycle-registration-setup-only'
+  | 'lifecycle-registration-defers-callback-invocation'
   | 'setup-created-render-commit-mounted'
   | 'queued-mounted-callback-invalidated-after-unmount'
   | 'update-render-commit-updated'
@@ -32,11 +32,11 @@ export type LifecycleCallbackOrderCase = {
 export const LIFECYCLE_CALLBACK_ORDER_CASES = [
   {
     id: 'setup-registration-setup-only',
-    title: 'lifecycle callback registration is setup-only',
+    title: 'lifecycle callback registration defers invocation to runtime flow',
     specCase: 'T-LIFECYCLE-0001-CASE-SETUP-REGISTRATION',
     covers: ['C-LIFECYCLE-0002-A'],
-    expectation: 'lifecycle-registration-setup-only',
-    notes: ['Attempts to register lifecycle callbacks after setup must fail fast.'],
+    expectation: 'lifecycle-registration-defers-callback-invocation',
+    notes: ['Registration records callbacks; runtime lifecycle flow invokes them later.'],
   },
   {
     id: 'initial-created-render-commit-mounted',
