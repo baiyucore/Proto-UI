@@ -24,9 +24,17 @@ criteria:
       en: The renderer handle must provide a render-time read view so render can read current runtime input needed to build the template.
   - id: C-CORE-SYNTAX-0006-C
     text:
-      zh-CN: 当前 v0 renderer read view 至少必须提供 props 的 `get()`、`getRaw()` 与 `isProvided()` 读取入口。
-      en: The current v0 renderer read view must at least provide props `get()`, `getRaw()`, and `isProvided()` read entries.
+      zh-CN: 当前 v0 renderer read view 必须提供 props 的 `get()`、`getRaw()` 与 `isProvided()` 读取入口。
+      en: The current v0 renderer read view must provide props `get()`, `getRaw()`, and `isProvided()` read entries.
   - id: C-CORE-SYNTAX-0006-D
+    text:
+      zh-CN: 当前 v0 renderer read view 必须提供 context 的 `read()` 与 `tryRead()` 读取入口，但不得提供 context write/update 入口。
+      en: The current v0 renderer read view must provide context `read()` and `tryRead()` entries, but must not provide context write/update entries.
+  - id: C-CORE-SYNTAX-0006-E
+    text:
+      zh-CN: 当前 v0 renderer read view 必须提供 anatomy 的只读 query surface。
+      en: The current v0 renderer read view must provide the anatomy read-only query surface.
+  - id: C-CORE-SYNTAX-0006-F
     text:
       zh-CN: Renderer handle 不得暴露 `run.update()` 或等价 update entry。
       en: The renderer handle must not expose `run.update()` or an equivalent update entry.
@@ -42,20 +50,13 @@ dependsOn:
   contracts:
     - C-CORE-SYNTAX-0005
     - C-LIFECYCLE-0003
-openQuestions:
-  - id: C-CORE-SYNTAX-0006-Q-CONTEXT-READ
-    question:
-      zh-CN: Renderer read view 是否应扩展到 context/anatomy 等 read-only runtime input？
-      en: Should the renderer read view expand to context, anatomy, and other read-only runtime input?
-    context:
-      zh-CN: 旧讨论认为 render 读取当前 runtime input 是必要能力；当前实现主要稳定覆盖 props read，context read 更像后续实现缺口。
-      en: Older discussion treats reading current runtime input during render as necessary; the current implementation primarily stabilizes props read, while context read looks like a follow-up implementation gap.
-    blocks:
-      - C-CORE-SYNTAX-0006-B
 revisions:
   - version: 0.1.0
     change: introduced
     summary: Captured the render-time renderer handle syntax surface and read/update boundary.
+  - version: 0.1.0
+    change: revised
+    summary: Added context and anatomy read-only entries to renderer read view.
 tags:
   - core
   - syntax
