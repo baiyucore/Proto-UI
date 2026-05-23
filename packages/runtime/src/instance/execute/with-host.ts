@@ -41,6 +41,8 @@ export function executeWithHost<P extends PropsBaseType>(
   propsPort.applyRaw({ ...(host.getRawProps?.() ?? {}) });
 
   let ended = false;
+  let updateInFlight = false;
+  let updateQueued = false;
 
   const doRenderCommit = (kind: 'initial' | 'update', onCommitted?: () => void) => {
     // pull latest raw before rendering
@@ -97,6 +99,28 @@ export function executeWithHost<P extends PropsBaseType>(
 
   let controller!: RuntimeController;
 
+  const startUpdate = () => {
+    updateInFlight = true;
+
+    try {
+      doRenderCommit('update', () => {
+        updateInFlight = false;
+
+        if (!updateQueued || ended) {
+          updateQueued = false;
+          return;
+        }
+
+        updateQueued = false;
+        startUpdate();
+      });
+    } catch (error) {
+      updateInFlight = false;
+      updateQueued = false;
+      throw error;
+    }
+  };
+
   const evaluateRuleStyle = () => {
     propsPort.syncFromHost();
     const current = propsFacade.get();
@@ -116,7 +140,12 @@ export function executeWithHost<P extends PropsBaseType>(
       callbackScope.runNoSync(run, () => {});
     },
     update() {
-      doRenderCommit('update');
+      if (ended) return;
+      if (updateInFlight) {
+        updateQueued = true;
+        return;
+      }
+      startUpdate();
     },
     getRuleStyleTokens() {
       return evaluateRuleStyle();

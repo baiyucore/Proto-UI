@@ -21,6 +21,7 @@ type HookInstance = {
 let CURRENT: HookInstance | null = null;
 const OWNED_STYLE_KEYS = new WeakMap<HTMLElement, Set<string>>();
 const OWNED_ATTR_KEYS = new WeakMap<HTMLElement, Set<string>>();
+const WRAPPED_UPDATE = Symbol('fake-react-wrapped-update');
 
 export function createFakeReactRuntime() {
   const runtime: ReactRuntime = {
@@ -140,13 +141,7 @@ export function createMountedReactAdapter(
     ...(options as any),
   } as any);
   const mounted = fake.render(Component, props);
-  if (mounted.ref?.current && typeof mounted.ref.current.update === 'function') {
-    const rawUpdate = mounted.ref.current.update.bind(mounted.ref.current);
-    mounted.ref.current.update = () => {
-      rawUpdate();
-      mounted.update();
-    };
-  }
+  wrapAdapterUpdate(mounted);
   return { ...mounted, runtime: fake.runtime, Component };
 }
 
@@ -163,14 +158,30 @@ export function createMountedReactAdapterInto(
     ...(options as any),
   } as any);
   const mounted = fake.render(Component, props, { current: null }, hostEl);
-  if (mounted.ref?.current && typeof mounted.ref.current.update === 'function') {
-    const rawUpdate = mounted.ref.current.update.bind(mounted.ref.current);
-    mounted.ref.current.update = () => {
-      rawUpdate();
-      mounted.update();
-    };
-  }
+  wrapAdapterUpdate(mounted);
   return { ...mounted, runtime: fake.runtime, Component };
+}
+
+function wrapAdapterUpdate(
+  mounted: ReturnType<ReturnType<typeof createFakeReactRuntime>['render']>
+) {
+  const handle = mounted.ref?.current as
+    | {
+        update?: () => void;
+        [WRAPPED_UPDATE]?: true;
+      }
+    | null
+    | undefined;
+
+  if (!handle || typeof handle.update !== 'function' || handle[WRAPPED_UPDATE]) return;
+
+  const rawUpdate = handle.update.bind(handle);
+  handle.update = () => {
+    rawUpdate();
+    mounted.update();
+    wrapAdapterUpdate(mounted);
+  };
+  handle[WRAPPED_UPDATE] = true;
 }
 
 function runInstance(inst: HookInstance) {

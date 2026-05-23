@@ -24,6 +24,12 @@ cases:
       - C-LIFECYCLE-0004-C
       - C-LIFECYCLE-0004-H
     expectation: update-flow-cp6-through-cp8
+  - id: T-LIFECYCLE-0003-CASE-ASYNC-UPDATE-COALESCING
+    title: Update intents during pending async commit are coalesced into a later update cycle
+    covers:
+      - C-LIFECYCLE-0004-C
+      - C-LIFECYCLE-0004-H
+    expectation: async-update-intents-queue-until-previous-cp8
   - id: T-LIFECYCLE-0003-CASE-DISPOSE-CHECKPOINTS
     title: Unmount and dispose record CP9 before CP10
     covers:
@@ -62,10 +68,12 @@ implementations:
       - T-LIFECYCLE-0003-CASE-CANONICAL-NAMES
       - T-LIFECYCLE-0003-CASE-INITIAL-CHECKPOINTS
       - T-LIFECYCLE-0003-CASE-UPDATE-CHECKPOINTS
+      - T-LIFECYCLE-0003-CASE-ASYNC-UPDATE-COALESCING
       - T-LIFECYCLE-0003-CASE-DISPOSE-CHECKPOINTS
     notes:
       - Uses `RuntimeHost.onLifecycleCheckpoint` to observe canonical runtime checkpoints without exposing them as prototype-author APIs.
       - Includes delayed `CommitSignal.done()` coverage so CP7/CP8 are tied to update commit completion.
+      - Verifies repeated update intents during a pending async commit are accepted as a queued/coalesced update cycle after the previous cycle reaches CP8.
   - id: adapter-react-lifecycle-canonical-checkpoints
     kind: adapter-test
     status: passing
@@ -127,6 +135,9 @@ revisions:
   - version: 0.1.0
     change: revised
     summary: Added official adapter conformance coverage for canonical checkpoint traces and host commit completion boundaries.
+  - version: 0.1.0
+    change: revised
+    summary: Added queued async update intent coverage for runtime checkpoint traces.
 tags:
   - lifecycle
   - checkpoint

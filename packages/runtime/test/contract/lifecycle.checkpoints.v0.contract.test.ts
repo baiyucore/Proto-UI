@@ -128,4 +128,65 @@ describe('contract: runtime / lifecycle canonical checkpoints (v0)', () => {
 
     expect(trace).toEqual(['CP6_UPDATE_RENDER', 'CP7_UPDATE_COMMIT_DONE', 'CP8_UPDATED_CALLBACKS']);
   });
+
+  it('coalesces update intents while an async update commit is still pending', () => {
+    const trace: RuntimeCheckpoint[] = [];
+    const scheduled: Array<() => void> = [];
+    const pendingDone: Array<() => void> = [];
+
+    const P: Prototype = {
+      name: 'x-lifecycle-checkpoints-queued-update',
+      setup(def) {
+        def.lifecycle.onUpdated(() => {});
+        return (r) => [r.el('div', 'v')];
+      },
+    };
+
+    const host: RuntimeHost<any> = {
+      prototypeName: P.name,
+      getRawProps: () => ({}),
+      commit(_children, signal) {
+        if (signal) pendingDone.push(signal.done);
+      },
+      schedule(task) {
+        scheduled.push(task);
+      },
+      onLifecycleCheckpoint(cp) {
+        trace.push(cp);
+      },
+    };
+
+    const { controller } = executeWithHost(P, host);
+
+    pendingDone.shift()!();
+    scheduled.shift()?.();
+
+    trace.length = 0;
+    controller.update();
+    controller.update();
+
+    expect(trace).toEqual(['CP6_UPDATE_RENDER']);
+    expect(pendingDone).toHaveLength(1);
+
+    pendingDone.shift()!();
+
+    expect(trace).toEqual([
+      'CP6_UPDATE_RENDER',
+      'CP7_UPDATE_COMMIT_DONE',
+      'CP8_UPDATED_CALLBACKS',
+      'CP6_UPDATE_RENDER',
+    ]);
+    expect(pendingDone).toHaveLength(1);
+
+    pendingDone.shift()!();
+
+    expect(trace).toEqual([
+      'CP6_UPDATE_RENDER',
+      'CP7_UPDATE_COMMIT_DONE',
+      'CP8_UPDATED_CALLBACKS',
+      'CP6_UPDATE_RENDER',
+      'CP7_UPDATE_COMMIT_DONE',
+      'CP8_UPDATED_CALLBACKS',
+    ]);
+  });
 });
