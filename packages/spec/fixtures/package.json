@@ -20,6 +20,14 @@
     "./lifecycle/callback-order": {
       "types": "./src/lifecycle/callback-order.ts",
       "default": "./src/lifecycle/callback-order.ts"
+    },
+    "./core/prototype-render-syntax": {
+      "types": "./src/core/prototype-render-syntax.ts",
+      "default": "./src/core/prototype-render-syntax.ts"
+    },
+    "./template/authoring": {
+      "types": "./src/template/authoring.ts",
+      "default": "./src/template/authoring.ts"
     }
   },
   "description": "Shared semantic test fixtures for Proto UI spec contracts."
