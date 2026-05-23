@@ -3,42 +3,70 @@ type: contract
 title: Prototype execution separates setup-time planning from runtime execution
 status: draft
 since: 0.1.0
-summary: '`Setup`-time planning and `runtime` execution are distinct phases with different semantic responsibilities.'
+summary: '`setup` and `runtime` are the coarse execution periods shared by all Proto UI lifecycle models.'
 statement:
-  zh-CN: Proto UI 原型的生命周期早于组件生命周期，并分为 `setup-time planning` 与 `runtime execution` 两个语义阶段。
-  en: A Proto UI prototype lifecycle starts before the component lifecycle and separates `setup-time planning` from `runtime execution`.
+  zh-CN: >-
+    Proto UI 的生命周期模型首先被粗略划分为 `setup` 与 `runtime` 两个执行时期：`setup` 期间具体组件实例尚不存在，原型作者只能声明、注册或计划能力；`runtime` 期间具体组件实例已经存在，runtime callback、render 与 host 驱动路径可以服务于某次真实运行。更细的生命周期 callback 模型与 CP checkpoint 模型都共享同一个 `setup` 语义，只是对 `runtime` 时期进行不同粒度的细化。
+
+
+  en: >-
+    Proto UI first separates lifecycle execution into the coarse `setup` and `runtime` periods. During `setup`, no concrete component instance exists and prototype authors may only declare, register, or plan capabilities. During `runtime`, a concrete component instance exists and runtime callbacks, render execution, and host-driven paths serve a real invocation. The finer lifecycle callback model and CP checkpoint model share the same `setup` semantics and only refine the `runtime` period at different granularities.
+
+
 criteria:
   - id: C-LIFECYCLE-0001-A
     text:
-      zh-CN: 原型生命周期的起点早于组件生命周期，因为原型可以作为 DSL 通过适配器或编译器生成组件。
-      en: The prototype lifecycle starts before the component lifecycle because a prototype can be adapted or compiled into a component.
+      zh-CN: '`setup` 时期必须表示具体组件实例尚不存在的阶段。'
+      en: The `setup` period must represent the stage before a concrete component instance exists.
   - id: C-LIFECYCLE-0001-B
     text:
-      zh-CN: '`setup` 阶段覆盖从原型被创建到组件被创建之前的时间段。'
-      en: The `setup` phase spans from prototype creation to before component creation.
+      zh-CN: '`setup` 时期的原型 API 语义必须是声明、注册、配置或计划，而不是针对某次真实运行立即执行。'
+      en: Prototype APIs in the `setup` period must describe declarations, registrations, configuration, or plans rather than immediate execution for a real invocation.
   - id: C-LIFECYCLE-0001-C
     text:
-      zh-CN: '`runtime` 阶段覆盖从组件被创建到组件被销毁的时间段。'
-      en: The `runtime` phase spans from component creation to component destruction.
+      zh-CN: '`runtime` 时期必须表示具体组件实例已经存在，直到该实例完成 unmount/dispose 的阶段。'
+      en: The `runtime` period must represent the stage where a concrete component instance exists until that instance completes unmount/dispose.
   - id: C-LIFECYCLE-0001-D
     text:
-      zh-CN: '`setup` 阶段的语法语义是计划、声明、注册或预演，而不是具体某次调用的执行。'
-      en: '`Setup`-time syntax describes plans, declarations, registrations, or previews rather than execution for a concrete invocation.'
+      zh-CN: '`runtime` 时期的原型 API 可以观察或作用于当前实例的运行输入、状态、上下文与 host 驱动 callback。'
+      en: Prototype APIs in the `runtime` period may observe or act on the current instance's runtime input, state, context, and host-driven callbacks.
   - id: C-LIFECYCLE-0001-E
     text:
-      zh-CN: '`runtime` 阶段的语法语义服务于具体某次调用，可以观察或作用于当前运行输入与状态。'
-      en: '`Runtime` syntax serves a concrete invocation and may observe or act on current runtime input and state.'
+      zh-CN: 生命周期 callback 模型与 CP checkpoint 模型不得重新定义 `setup` 语义，只能对 `runtime` 时期进行更细粒度的划分。
+      en: The lifecycle callback model and CP checkpoint model must not redefine `setup` semantics; they may only refine the `runtime` period at finer granularity.
+  - id: C-LIFECYCLE-0001-F
+    text:
+      zh-CN: 用于 API 可用性判断的 execution guard 必须至少能区分 `setup` 与 `runtime` 两个时期。
+      en: Execution guards used for API availability must at least distinguish the `setup` and `runtime` periods.
 sources:
-  - path: internal/contracts/props/base-text/01.define-merge.v0.zh-CN.md
+  - path: internal/contracts/lifecycle/component-lifecycle.v0.md
     sections:
-      - '1. 范围与术语'
-  - path: internal/contracts/props/base-text/02.resolve-fallback.v0.zh-CN.md
+      - Execution Domain Mapping (v0)
+  - path: internal/contracts/lifecycle/exec-phase-guard.v0.md
     sections:
-      - '2. 公共运行时 API'
+      - 1. Terminology
+      - 3. Semantics
+openQuestions:
+  - id: C-LIFECYCLE-0001-Q-EXEC-PHASE-INTERNAL
+    question:
+      zh-CN: '`SystemCaps.execPhase()` 是否应被视为纯实现层守卫，而不进入公开 lifecycle 模型？'
+      en: Should `SystemCaps.execPhase()` be treated as a purely implementation-level guard rather than part of the public lifecycle model?
+    context:
+      zh-CN: >-
+        `setup/runtime` 是契约层的粗粒度时期；当前实现还使用 `setup/render/callback/unknown` 作为 `execPhase`。其中 `render/callback` 更像 API guard 与 callback context 的实现细节，`unknown` 更像 runtime idle marker，后续可以考虑收敛或隐藏。
+
+      en: >-
+        `setup/runtime` is the coarse contract-level period model. The current implementation also uses `setup/render/callback/unknown` as `execPhase`; `render/callback` look more like API-guard and callback-context implementation details, while `unknown` looks like a runtime idle marker that could be collapsed or hidden later.
+
+    blocks:
+      - C-LIFECYCLE-0001-F
 revisions:
   - version: 0.1.0
     change: introduced
     summary: Drafted the upstream lifecycle model used by setup-time props declarations.
+  - version: 0.1.0
+    change: revised
+    summary: Reframed the entity around the shared setup/runtime execution-period model.
 tags:
   - lifecycle
   - setup

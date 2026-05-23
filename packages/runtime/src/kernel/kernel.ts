@@ -22,7 +22,6 @@ import type { RuleFacade } from '@proto.ui/module-rule';
 import type { ModuleOrchestratorFacadeView } from '../orchestrator/module-orchestrator/types';
 import type { PropsFacade } from '@proto.ui/module-props';
 import type { ExecPhase } from '@proto.ui/module-base';
-import type { RuntimeTimeline } from './timeline';
 import { attachAsHookRuntime } from './as-hook';
 
 export type Kernel<P extends PropsBaseType> = {
@@ -38,8 +37,6 @@ export type Kernel<P extends PropsBaseType> = {
   renderFn: RenderFn;
 
   renderOnce(): TemplateChildren;
-
-  setTimeline(t: RuntimeTimeline | null): void;
 };
 
 export type CreateKernelOptions = {
@@ -58,8 +55,6 @@ export function createKernel<P extends PropsBaseType>(
   opt?: CreateKernelOptions & { eventSink?: EventCallbacksSink<P> }
 ): Kernel<P> {
   let phase: ExecPhase = 'unknown';
-  let timeline: RuntimeTimeline | null = null;
-
   const setPhase = (p: ExecPhase) => {
     phase = p;
     opt?.onPhaseChange?.(p);
@@ -133,7 +128,6 @@ export function createKernel<P extends PropsBaseType>(
     const children = renderFn(renderer);
     setPhase('unknown');
 
-    timeline?.mark('tree:logical-ready');
     return children;
   };
 
@@ -150,9 +144,5 @@ export function createKernel<P extends PropsBaseType>(
     renderFn,
 
     renderOnce,
-
-    setTimeline: (t) => {
-      timeline = t;
-    },
   };
 }

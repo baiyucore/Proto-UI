@@ -20,8 +20,9 @@ describe('runtime contract: asHook (v0)', () => {
     const host: RuntimeHost<P> = {
       prototypeName: name,
       getRawProps: () => raw as any,
-      commit(children) {
+      commit(children, signal) {
         commits.push(children);
+        signal?.done();
       },
       schedule(task) {
         scheduled.push(task);

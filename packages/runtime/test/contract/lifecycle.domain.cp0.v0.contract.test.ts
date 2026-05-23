@@ -22,7 +22,9 @@ describe('contract: runtime / domain switch at CP0 (v0)', () => {
     const host: RuntimeHost<any> = {
       prototypeName: P.name,
       getRawProps: () => ({}),
-      commit: () => {},
+      commit: (_children, signal) => {
+        signal?.done();
+      },
       schedule: () => {},
     };
 

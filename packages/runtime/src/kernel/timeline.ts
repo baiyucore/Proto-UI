@@ -1,99 +1,126 @@
 // packages/runtime/src/kernel/timeline.ts
-export type RuntimeCheckpoint =
-  | 'setup:end'
-  | 'host:ready'
-  // cycle-level (repeatable per commit)
-  | 'tree:logical-ready'
-  | 'commit:begin'
-  | 'commit:done'
-  | 'instance:reachable'
-  | 'afterRenderCommit'
-  // instance-level
-  | 'proto:mounted'
-  | 'mounted:callbacks'
-  | 'unmount:begin'
-  | 'unmounted:callbacks'
-  | 'dispose:done';
+
+export const CANONICAL_RUNTIME_CHECKPOINTS = [
+  'CP0_SETUP_EXIT',
+  'CP1_CREATED_CALLBACKS',
+  'CP2_LOGICAL_TREE_READY',
+  'CP3_COMMIT_START',
+  'CP4_COMMIT_DONE',
+  'CP5_MOUNTED_CALLBACKS',
+  'CP6_UPDATE_RENDER',
+  'CP7_UPDATE_COMMIT_DONE',
+  'CP8_UPDATED_CALLBACKS',
+  'CP9_UNMOUNT_BEGIN',
+  'CP10_DISPOSE_COMPLETE',
+] as const;
+
+export type RuntimeCheckpoint = (typeof CANONICAL_RUNTIME_CHECKPOINTS)[number];
+
+export type RuntimeTimelineOptions = {
+  onMark?: (cp: RuntimeCheckpoint) => void;
+};
 
 export type RuntimeTimeline = {
   mark(cp: RuntimeCheckpoint): void;
 };
 
-export function createTimeline(): RuntimeTimeline {
-  // instance-level monotonic order
-  const instOrder: RuntimeCheckpoint[] = [
-    'setup:end',
-    'host:ready',
-    'proto:mounted',
-    'mounted:callbacks',
-    'unmount:begin',
-    'unmounted:callbacks',
-    'dispose:done',
+export function createTimeline(options: RuntimeTimelineOptions = {}): RuntimeTimeline {
+  const instanceOrder: RuntimeCheckpoint[] = [
+    'CP0_SETUP_EXIT',
+    'CP1_CREATED_CALLBACKS',
+    'CP5_MOUNTED_CALLBACKS',
+    'CP9_UNMOUNT_BEGIN',
+    'CP10_DISPOSE_COMPLETE',
+  ];
+  const initialCycleOrder: RuntimeCheckpoint[] = [
+    'CP2_LOGICAL_TREE_READY',
+    'CP3_COMMIT_START',
+    'CP4_COMMIT_DONE',
+  ];
+  const updateCycleOrder: RuntimeCheckpoint[] = [
+    'CP6_UPDATE_RENDER',
+    'CP7_UPDATE_COMMIT_DONE',
+    'CP8_UPDATED_CALLBACKS',
   ];
 
-  // cycle-level order (repeatable)
-  const cycleOrder: RuntimeCheckpoint[] = [
-    'tree:logical-ready',
-    'commit:begin',
-    'commit:done',
-    'instance:reachable',
-    'afterRenderCommit',
-  ];
+  const instanceIndex = new Map(instanceOrder.map((k, i) => [k, i]));
+  const initialCycleIndex = new Map(initialCycleOrder.map((k, i) => [k, i]));
+  const updateCycleIndex = new Map(updateCycleOrder.map((k, i) => [k, i]));
 
-  const instIndex = new Map(instOrder.map((k, i) => [k, i]));
-  const cycleIndex = new Map(cycleOrder.map((k, i) => [k, i]));
+  let instanceLast = -1;
+  let initialCycleLast = -1;
+  let updateCycleLast = -1;
 
-  let instLast = -1;
-  let cycleLast = -1; // -1 means "not started"; 3 means "cycle completed"
-
-  const unmountBeginI = instIndex.get('unmount:begin')!;
+  const unmountBeginIndex = instanceIndex.get('CP9_UNMOUNT_BEGIN')!;
 
   return {
     mark(cp: RuntimeCheckpoint) {
-      // disallow any cycle marks after unmount begins
-      if (cycleIndex.has(cp)) {
-        if (instLast >= unmountBeginI) {
-          throw new Error(`[Lifecycle] cycle checkpoint after unmount: ${cp}`);
+      if (!isRuntimeCheckpoint(cp)) {
+        throw new Error(`[Lifecycle] unknown checkpoint: ${cp}`);
+      }
+
+      if (initialCycleIndex.has(cp)) {
+        if (instanceLast >= unmountBeginIndex) {
+          throw new Error(`[Lifecycle] initial checkpoint after unmount: ${cp}`);
         }
 
-        const i = cycleIndex.get(cp)!;
+        const i = initialCycleIndex.get(cp)!;
+        if (i <= initialCycleLast) {
+          throw new Error(
+            `[Lifecycle] checkpoint out of order (initial cycle): ${cp} after ${initialCycleOrder[initialCycleLast]}`
+          );
+        }
+        initialCycleLast = i;
+        options.onMark?.(cp);
+        return;
+      }
 
-        // starting a new cycle must happen only when previous cycle finished (or no cycle yet)
-        if (cp === 'tree:logical-ready') {
-          if (!(cycleLast === -1 || cycleLast === cycleOrder.length - 1)) {
+      if (updateCycleIndex.has(cp)) {
+        if (instanceLast >= unmountBeginIndex) {
+          throw new Error(`[Lifecycle] update checkpoint after unmount: ${cp}`);
+        }
+        if (initialCycleLast !== initialCycleOrder.length - 1) {
+          throw new Error(`[Lifecycle] update checkpoint before initial commit completion: ${cp}`);
+        }
+
+        const i = updateCycleIndex.get(cp)!;
+        if (cp === 'CP6_UPDATE_RENDER') {
+          if (!(updateCycleLast === -1 || updateCycleLast === updateCycleOrder.length - 1)) {
             throw new Error(
-              `[Lifecycle] new cycle started before previous cycle finished: ${cp} after ${cycleOrder[cycleLast]}`
+              `[Lifecycle] new update cycle started before previous cycle finished: ${cp} after ${updateCycleOrder[updateCycleLast]}`
             );
           }
-          cycleLast = -1; // reset for new cycle
+          updateCycleLast = -1;
         }
 
-        if (i <= cycleLast) {
+        if (i <= updateCycleLast) {
           throw new Error(
-            `[Lifecycle] checkpoint out of order (cycle): ${cp} after ${cycleOrder[cycleLast]}`
+            `[Lifecycle] checkpoint out of order (update cycle): ${cp} after ${updateCycleOrder[updateCycleLast]}`
           );
         }
 
-        cycleLast = i;
+        updateCycleLast = i;
+        options.onMark?.(cp);
         return;
       }
 
-      // instance-level marks
-      if (instIndex.has(cp)) {
-        const i = instIndex.get(cp)!;
+      if (instanceIndex.has(cp)) {
+        const i = instanceIndex.get(cp)!;
 
-        if (i <= instLast) {
+        if (i <= instanceLast) {
           throw new Error(
-            `[Lifecycle] checkpoint out of order (instance): ${cp} after ${instOrder[instLast]}`
+            `[Lifecycle] checkpoint out of order (instance): ${cp} after ${instanceOrder[instanceLast]}`
           );
         }
 
-        instLast = i;
+        instanceLast = i;
+        options.onMark?.(cp);
         return;
       }
-
-      // unknown checkpoint
-      throw new Error(`[Lifecycle] unknown checkpoint: ${cp}`);
     },
   };
+}
+
+function isRuntimeCheckpoint(value: string): value is RuntimeCheckpoint {
+  return (CANONICAL_RUNTIME_CHECKPOINTS as readonly string[]).includes(value);
 }

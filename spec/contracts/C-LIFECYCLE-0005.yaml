@@ -1,0 +1,65 @@
+id: C-LIFECYCLE-0005
+type: contract
+title: Prototype lifecycle API surface uses setup-time callback registration
+status: draft
+since: 0.1.0
+summary: Prototype-visible lifecycle syntax is the setup-time `def.lifecycle` callback registration surface for `created`, `mounted`, `updated`, and `unmounted`.
+statement:
+  zh-CN: >-
+    Proto UI 的 prototype-visible lifecycle API 必须通过 setup 阶段的 `def.lifecycle` surface 注册 runtime callback。v0 的 portable lifecycle entry 固定为 `def.lifecycle.onCreated(cb)`、`def.lifecycle.onMounted(cb)`、`def.lifecycle.onUpdated(cb)` 与 `def.lifecycle.onUnmounted(cb)`；这些 entry 只负责注册 callback，不会在注册时立即执行 callback，也不提供 portable unsubscribe/revoke handle。被注册的 callback 在 runtime 阶段执行，并必须接收绑定到当前 callback invocation 的 `run handle`。CP checkpoint、host-specific lifecycle hook、adapter diagnostics hook 与 runtime internal lifecycle marker 不得作为 prototype-visible lifecycle API 暴露。
+
+
+  en: >-
+    Proto UI's prototype-visible lifecycle API must register runtime callbacks through the setup-time `def.lifecycle` surface. The v0 portable lifecycle entries are fixed as `def.lifecycle.onCreated(cb)`, `def.lifecycle.onMounted(cb)`, `def.lifecycle.onUpdated(cb)`, and `def.lifecycle.onUnmounted(cb)`. These entries only register callbacks; they must not invoke callbacks during registration and must not provide a portable unsubscribe or revoke handle. Registered callbacks execute during runtime and must receive a `run handle` bound to the current callback invocation. CP checkpoints, host-specific lifecycle hooks, adapter diagnostics hooks, and runtime-internal lifecycle markers must not be exposed as prototype-visible lifecycle APIs.
+
+
+criteria:
+  - id: C-LIFECYCLE-0005-A
+    text:
+      zh-CN: lifecycle setup API 必须由 `def.lifecycle` 承载，而不是由 `run handle`、renderer、adapter option 或 host-specific hook 承载。
+      en: The lifecycle setup API must be carried by `def.lifecycle`, not by the `run handle`, renderer, adapter options, or host-specific hooks.
+  - id: C-LIFECYCLE-0005-B
+    text:
+      zh-CN: v0 portable lifecycle registration entries 必须固定为 `onCreated`、`onMounted`、`onUpdated` 与 `onUnmounted`。
+      en: The v0 portable lifecycle registration entries must be fixed as `onCreated`, `onMounted`, `onUpdated`, and `onUnmounted`.
+  - id: C-LIFECYCLE-0005-C
+    text:
+      zh-CN: '`def.lifecycle.onCreated/onMounted/onUpdated/onUnmounted` 必须是 setup-only registration API；setup 结束后调用必须失败。'
+      en: '`def.lifecycle.onCreated/onMounted/onUpdated/onUnmounted` must be setup-only registration APIs; calls after setup exits must fail.'
+  - id: C-LIFECYCLE-0005-D
+    text:
+      zh-CN: lifecycle registration API 不得在注册时立即执行 callback；callback 只能由 runtime 生命周期流程调用。
+      en: Lifecycle registration APIs must not invoke callbacks during registration; callbacks may only be invoked by runtime lifecycle flow.
+  - id: C-LIFECYCLE-0005-E
+    text:
+      zh-CN: lifecycle callback 执行时必须接收绑定当前 callback invocation 的 `run handle`，并遵守 `C-CORE-SYNTAX-0002`。
+      en: Lifecycle callbacks must receive a `run handle` bound to the current callback invocation and must follow `C-CORE-SYNTAX-0002`.
+  - id: C-LIFECYCLE-0005-F
+    text:
+      zh-CN: lifecycle registration API 的返回值不得被解释为 portable unsubscribe、revoke 或 lifecycle handle 能力。
+      en: Return values from lifecycle registration APIs must not be interpreted as portable unsubscribe, revoke, or lifecycle-handle capabilities.
+  - id: C-LIFECYCLE-0005-G
+    text:
+      zh-CN: CP checkpoint、host-specific lifecycle hook、adapter diagnostics hook 与 runtime internal lifecycle marker 不得作为 prototype-visible lifecycle API 暴露。
+      en: CP checkpoints, host-specific lifecycle hooks, adapter diagnostics hooks, and runtime-internal lifecycle markers must not be exposed as prototype-visible lifecycle APIs.
+sources:
+  - path: internal/contracts/lifecycle/component-lifecycle.v0.md
+    sections:
+      - Lifecycle Callbacks
+  - path: packages/core/src/handles.ts
+    sections:
+      - DefHandle.lifecycle
+dependsOn:
+  contracts:
+    - C-LIFECYCLE-0001
+    - C-CORE-SYNTAX-0001
+    - C-CORE-SYNTAX-0002
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Split prototype lifecycle API surface syntax from lifecycle callback ordering.
+tags:
+  - lifecycle
+  - syntax
+  - setup
+  - run-handle

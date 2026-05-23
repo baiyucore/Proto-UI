@@ -1,0 +1,64 @@
+id: C-CORE-SYNTAX-0004
+type: contract
+title: Setup receives `def` and may produce render
+status: draft
+since: 0.1.0
+summary: Prototype `setup` receives the definition handle and returns either a render function or `void`.
+statement:
+  zh-CN: >-
+    Prototype `setup` 必须在 setup 阶段以 `def` 句柄作为参数执行。`setup` 的 portable 返回值形态是 render function 或 `void`：返回函数时，该函数成为该实例的 render function；返回 `void` 时，当前 v0 runtime 将其解释为默认 slot render。
+
+
+  en: >-
+    Prototype `setup` must run during setup with the `def` handle as its argument. The portable return shape of `setup` is either a render function or `void`: when it returns a function, that function becomes the instance render function; when it returns `void`, the current v0 runtime interprets it as the default slot render.
+
+
+criteria:
+  - id: C-CORE-SYNTAX-0004-A
+    text:
+      zh-CN: '`setup` 调用必须接收 `definition handle`，并遵守 `C-CORE-SYNTAX-0001` 的 setup-time 能力边界。'
+      en: '`setup` invocation must receive the `definition handle` and follow the setup-time capability boundary in `C-CORE-SYNTAX-0001`.'
+  - id: C-CORE-SYNTAX-0004-B
+    text:
+      zh-CN: '`setup` 返回函数时，该函数必须被 runtime 视为当前实例的 render function。'
+      en: When `setup` returns a function, the runtime must treat that function as the current instance's render function.
+  - id: C-CORE-SYNTAX-0004-C
+    text:
+      zh-CN: '`setup` 返回 `void` 时，当前 v0 runtime 必须提供默认 render，输出一个匿名 slot。'
+      en: When `setup` returns `void`, the current v0 runtime must provide a default render that outputs one anonymous slot.
+  - id: C-CORE-SYNTAX-0004-D
+    text:
+      zh-CN: '`setup` 不得返回除 render function 或 `void` 之外的 portable 值形态。'
+      en: '`setup` must not return a portable value shape other than a render function or `void`.'
+sources:
+  - path: packages/core/src/prototype.ts
+    sections:
+      - Prototype
+      - RenderFn
+  - path: packages/runtime/src/kernel/kernel.ts
+    sections:
+      - setup
+      - render
+dependsOn:
+  contracts:
+    - C-CORE-SYNTAX-0001
+    - C-CORE-SYNTAX-0003
+openQuestions:
+  - id: C-CORE-SYNTAX-0004-Q-DEFAULT-SLOT
+    question:
+      zh-CN: '`setup` 返回 `void` 时的默认 slot render 是否应长期作为 public contract，而不是仅作为当前 runtime 的 v0 默认实现？'
+      en: Should the default slot render for `setup` returning `void` remain a long-term public contract rather than only the current runtime's v0 default implementation?
+    context:
+      zh-CN: 当前 runtime 已实现默认 slot render，且大量无 render 的测试原型依赖该行为；后续若要收紧为必须显式返回 render，需要迁移这一路径。
+      en: The current runtime implements default slot render, and many render-less test prototypes rely on it; if future versions require explicit render returns, this path will need migration.
+    blocks:
+      - C-CORE-SYNTAX-0004-C
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Captured setup argument and return-shape semantics, including current default slot render behavior.
+tags:
+  - core
+  - syntax
+  - setup
+  - render

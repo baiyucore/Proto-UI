@@ -25,7 +25,7 @@ import { markProtoInstance } from './platform/instance-tree';
 import { createWebEffectsPort } from './runtime/effects-port';
 import { createWebComponentModules } from './runtime/modules';
 import { createWebComponentHostSession } from './runtime/session';
-import type { RuntimeController } from '@proto.ui/runtime';
+import type { RuntimeCheckpoint, RuntimeController } from '@proto.ui/runtime';
 
 export { __WC_DEBUG_SYS } from './debug/hooks';
 
@@ -42,6 +42,9 @@ export interface WebComponentAdapterOptions<Props extends PropsBaseType = PropsB
   getProps?: (el: HTMLElement) => Partial<Props> | null | undefined;
   schedule?: (task: () => void) => void;
   getMeta?: (key: string) => unknown;
+  diagnostics?: {
+    onLifecycleCheckpoint?: (cp: RuntimeCheckpoint) => void;
+  };
   exposeStateWebMode?: {
     allowContinuousAttr?: boolean;
     allowStringVar?: boolean;
@@ -213,6 +216,7 @@ export function AdaptToWebComponent<Props extends PropsBaseType>(
         wiring,
         eventGate,
         router,
+        onLifecycleCheckpoint: opt.diagnostics?.onLifecycleCheckpoint,
         getSlotProjector: () => this._slotProjector,
         ensureSlotProjector: () => {
           if (!this._slotProjector) this._slotProjector = new SlotProjector(thisEl);

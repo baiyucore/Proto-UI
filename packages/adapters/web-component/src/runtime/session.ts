@@ -1,6 +1,7 @@
 import { createAdapterHost, createHostWiring } from '@proto.ui/adapter-base';
 import type { Prototype, TemplateChildren } from '@proto.ui/core';
 import { type RawPropsSource } from '@proto.ui/module-props';
+import type { RuntimeCheckpoint } from '@proto.ui/runtime';
 import { type PropsBaseType } from '@proto.ui/types';
 
 import { commitChildren } from '../commit';
@@ -23,6 +24,7 @@ export function createWebComponentHostSession<Props extends PropsBaseType>(args:
   router: {
     dispose(): void;
   };
+  onLifecycleCheckpoint?: (cp: RuntimeCheckpoint) => void;
   getSlotProjector: () => SlotProjector | null;
   ensureSlotProjector: () => SlotProjector;
   clearSlotProjector: () => void;
@@ -39,6 +41,7 @@ export function createWebComponentHostSession<Props extends PropsBaseType>(args:
     wiring,
     eventGate,
     router,
+    onLifecycleCheckpoint,
     getSlotProjector,
     ensureSlotProjector,
     clearSlotProjector,
@@ -52,6 +55,7 @@ export function createWebComponentHostSession<Props extends PropsBaseType>(args:
     {
       getRawProps: () => rawPropsSource.get() as Readonly<Props & PropsBaseType>,
       schedule,
+      onLifecycleCheckpoint,
       commit: (children, signal) => {
         commitWebComponentChildren({
           root,

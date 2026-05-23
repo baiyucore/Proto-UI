@@ -15,7 +15,7 @@ export function executeWithHost<P extends PropsBaseType>(
   proto: Prototype<P>,
   host: RuntimeHost<P>
 ): ExecuteWithHostResult {
-  const timeline = createTimeline();
+  const timeline = createTimeline({ onMark: (cp) => host.onLifecycleCheckpoint?.(cp) });
 
   const inst = createRuntimeInstance(proto, {
     allowRunUpdate: true,
@@ -23,7 +23,7 @@ export function executeWithHost<P extends PropsBaseType>(
       host.onRuntimeReady?.(hub.getWiring());
     },
   });
-  inst.setTimeline(timeline);
+  timeline.mark('CP0_SETUP_EXIT');
 
   const { kernel, moduleHub, callbackScope } = inst;
   const { lifecycle, run } = kernel;
@@ -39,24 +39,29 @@ export function executeWithHost<P extends PropsBaseType>(
 
   // initial props hydration (before any callbacks + before initial render)
   propsPort.applyRaw({ ...(host.getRawProps?.() ?? {}) });
-  timeline.mark('host:ready');
 
-  const doRenderCommit = (kind: 'initial' | 'update') => {
+  let ended = false;
+  let updateInFlight = false;
+  let updateQueued = false;
+
+  const doRenderCommit = (kind: 'initial' | 'update', onCommitted?: () => void) => {
     // pull latest raw before rendering
     propsPort.syncFromHost();
 
     const children = inst.renderOnce();
+    timeline.mark(kind === 'initial' ? 'CP2_LOGICAL_TREE_READY' : 'CP6_UPDATE_RENDER');
 
-    timeline.mark('commit:begin');
+    if (kind === 'initial') {
+      timeline.mark('CP3_COMMIT_START');
+    }
 
     let commitDone = false;
     const afterCommit = () => {
       if (commitDone) return;
       commitDone = true;
+      if (ended) return;
 
-      timeline.mark('commit:done');
-
-      timeline.mark('instance:reachable');
+      timeline.mark(kind === 'initial' ? 'CP4_COMMIT_DONE' : 'CP7_UPDATE_COMMIT_DONE');
 
       // bind event dispatch
       const eventPort = moduleHub.getPort<EventPort>('event');
@@ -74,24 +79,47 @@ export function executeWithHost<P extends PropsBaseType>(
       }
 
       moduleHub.afterRenderCommit();
-      timeline.mark('afterRenderCommit');
 
       if (kind === 'update') {
         moduleHub.setProtoPhase('updated');
+        timeline.mark('CP8_UPDATED_CALLBACKS');
         // updated callbacks
         callbackScope.run(run, () => {
           for (const cb of lifecycle.updated) cb(run);
         });
       }
+
+      onCommitted?.();
     };
 
     host.commit(children, { done: afterCommit });
-    afterCommit();
 
     return children;
   };
 
   let controller!: RuntimeController;
+
+  const startUpdate = () => {
+    updateInFlight = true;
+
+    try {
+      doRenderCommit('update', () => {
+        updateInFlight = false;
+
+        if (!updateQueued || ended) {
+          updateQueued = false;
+          return;
+        }
+
+        updateQueued = false;
+        startUpdate();
+      });
+    } catch (error) {
+      updateInFlight = false;
+      updateQueued = false;
+      throw error;
+    }
+  };
 
   const evaluateRuleStyle = () => {
     propsPort.syncFromHost();
@@ -112,7 +140,12 @@ export function executeWithHost<P extends PropsBaseType>(
       callbackScope.runNoSync(run, () => {});
     },
     update() {
-      doRenderCommit('update');
+      if (ended) return;
+      if (updateInFlight) {
+        updateQueued = true;
+        return;
+      }
+      startUpdate();
     },
     getRuleStyleTokens() {
       return evaluateRuleStyle();
@@ -122,25 +155,20 @@ export function executeWithHost<P extends PropsBaseType>(
   (run as any).update = () => controller.update();
 
   // created callbacks: once, before first commit
+  timeline.mark('CP1_CREATED_CALLBACKS');
   callbackScope.run(run, () => {
     for (const cb of lifecycle.created) cb(run);
   });
 
   const presencePort = moduleHub.getPort<PresencePort>('presence');
 
-  // initial commit
-  const children = doRenderCommit('initial');
-
-  let ended = false;
-
   const finishMount = () => {
     if (ended) return;
     moduleHub.setProtoPhase('mounted');
-    timeline.mark('proto:mounted');
 
     host.schedule(() => {
       if (ended) return;
-      timeline.mark('mounted:callbacks');
+      timeline.mark('CP5_MOUNTED_CALLBACKS');
 
       callbackScope.run(run, () => {
         for (const cb of lifecycle.mounted) cb(run);
@@ -151,12 +179,15 @@ export function executeWithHost<P extends PropsBaseType>(
   // presence mount is async by design, but executeWithHost must stay sync
   // to avoid breaking adapter contracts across the monorepo. We defer the
   // mounted phase via .then() so it still waits for the mount approval.
-  const mountPromise = presencePort?.awaitMount();
-  if (mountPromise) {
-    mountPromise.then(finishMount);
-  } else {
-    finishMount();
-  }
+  // initial commit
+  const children = doRenderCommit('initial', () => {
+    const mountPromise = presencePort?.awaitMount();
+    if (mountPromise) {
+      mountPromise.then(finishMount);
+    } else {
+      finishMount();
+    }
+  });
 
   const invokeUnmounted = async () => {
     if (ended) return;
@@ -167,7 +198,7 @@ export function executeWithHost<P extends PropsBaseType>(
       await unmountPromise;
     }
 
-    timeline.mark('unmount:begin');
+    timeline.mark('CP9_UNMOUNT_BEGIN');
     host.onUnmountBegin?.();
 
     const eventPort = moduleHub.getPort<EventPort>('event');
@@ -180,11 +211,10 @@ export function executeWithHost<P extends PropsBaseType>(
     callbackScope.run(run, () => {
       for (const cb of lifecycle.unmounted) cb(run);
     });
-    timeline.mark('unmounted:callbacks');
 
     moduleHub.setProtoPhase('unmounted');
     inst.dispose();
-    timeline.mark('dispose:done');
+    timeline.mark('CP10_DISPOSE_COMPLETE');
   };
 
   return {

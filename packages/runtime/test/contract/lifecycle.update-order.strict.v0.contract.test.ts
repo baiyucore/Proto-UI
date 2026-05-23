@@ -20,8 +20,9 @@ describe('contract: runtime / update strict order (v0)', () => {
     const host: RuntimeHost<any> = {
       prototypeName: P.name,
       getRawProps: () => ({}),
-      commit: (_children: TemplateChildren) => {
+      commit: (_children: TemplateChildren, signal) => {
         calls.push('commit');
+        signal?.done();
       },
       schedule: (_task) => {},
     };

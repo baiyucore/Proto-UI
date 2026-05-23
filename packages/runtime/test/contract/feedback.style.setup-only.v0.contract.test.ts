@@ -47,7 +47,9 @@ function makeTestHost(prototypeName: string): RuntimeHost<any> {
   return {
     prototypeName,
     getRawProps: () => ({}),
-    commit: () => {},
+    commit: (_children, signal) => {
+      signal?.done();
+    },
     schedule: (task) => task(), // run mounted synchronously for contract
   };
 }

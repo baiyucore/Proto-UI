@@ -1,0 +1,94 @@
+id: C-LIFECYCLE-0002
+type: contract
+title: Prototype-visible lifecycle callbacks follow canonical runtime order
+status: draft
+since: 0.1.0
+summary: Proto UI exposes lifecycle callbacks over the canonical runtime order `created -> first render -> commit -> mounted -> update cycles -> unmounted/dispose`.
+statement:
+  zh-CN: >-
+    Proto UI 的原型可见生命周期 API 必须映射到同一条 runtime 顺序：`setup -> created -> first render -> commit -> mounted -> (update -> render -> commit -> updated)*n -> unmounted/dispose`。这里的 `commit` 指对应 host commit 被 runtime/adapter 认定完成的语义边界，而不是必须同步完成的函数调用。`created`、`mounted`、`updated` 与 `unmounted` 是 setup 阶段注册、runtime 阶段调用的 callback；runtime 必须保证它们相对 render、commit completion、update 与 dispose 的顺序稳定，adapter 不得通过 host 生命周期重排这些语义。
+
+
+  en: >-
+    Proto UI's prototype-visible lifecycle API must map to one runtime order: `setup -> created -> first render -> commit -> mounted -> (update -> render -> commit -> updated)*n -> unmounted/dispose`. Here `commit` means the semantic boundary where the corresponding host commit is considered complete by the runtime/adapter, not necessarily a synchronously completed function call. `created`, `mounted`, `updated`, and `unmounted` are callbacks registered during setup and invoked during runtime. The runtime must keep their ordering relative to render, commit completion, update, and dispose stable, and adapters must not reorder these semantics through host lifecycles.
+
+
+criteria:
+  - id: C-LIFECYCLE-0002-A
+    text:
+      zh-CN: 通过 `C-LIFECYCLE-0005` 定义的 prototype-visible lifecycle API 注册的 callback，必须由 runtime 生命周期流程调用，而不是在注册时立即执行。
+      en: Callbacks registered through the prototype-visible lifecycle API defined by `C-LIFECYCLE-0005` must be invoked by runtime lifecycle flow rather than immediately during registration.
+  - id: C-LIFECYCLE-0002-B
+    text:
+      zh-CN: '`created` callback 必须在 `setup` 完成之后、首次 render 与首次 commit 之前执行。'
+      en: '`created` callbacks must run after `setup` completes and before the first render and first commit.'
+  - id: C-LIFECYCLE-0002-C
+    text:
+      zh-CN: 首次 render 必须在 `created` 之后执行，并且首次 commit 必须应用该 render 的输出。
+      en: The first render must run after `created`, and the first commit must apply that render output.
+  - id: C-LIFECYCLE-0002-D
+    text:
+      zh-CN: '`mounted` callback 必须在首次 commit 完成之后执行；若实例在 mounted callback 执行前已经 unmount，已排队的 mounted callback 必须失效。'
+      en: '`mounted` callbacks must run after the first commit completes; if the instance unmounts before a mounted callback runs, the queued mounted callback must become ineffective.'
+  - id: C-LIFECYCLE-0002-E
+    text:
+      zh-CN: 每个被接受的 update cycle 必须按照 `update intent -> render -> commit completion -> updated` 的顺序执行；`updated` callback 不得早于对应 update commit completion。
+      en: Each accepted update cycle must execute in `update intent -> render -> commit completion -> updated` order; `updated` callbacks must not run before the corresponding update commit completion.
+  - id: C-LIFECYCLE-0002-F
+    text:
+      zh-CN: '`unmounted` callback 必须在实例 dispose 之前执行；在 `unmounted` callback 执行期间，runtime handle 与受 lifecycle 管理的模块 handle 仍处于可用窗口。'
+      en: '`unmounted` callbacks must run before instance disposal; while `unmounted` callbacks execute, runtime handles and lifecycle-managed module handles are still in their availability window.'
+  - id: C-LIFECYCLE-0002-G
+    text:
+      zh-CN: dispose 完成后，受 runtime lifecycle 管理的 module facade、port 或 handle 必须被视为失效，后续操作必须失败而不是继续产生 runtime 行为。
+      en: After disposal completes, module facades, ports, or handles governed by the runtime lifecycle must be considered invalid, and later operations must fail rather than keep producing runtime behavior.
+sources:
+  - path: internal/contracts/lifecycle/component-lifecycle.v0.md
+    sections:
+      - Lifecycle Callbacks
+      - Ordering Guarantees
+      - Update Cycle
+      - Unmount & Disposal Semantics
+  - path: internal/contracts/runtime/lifecycle-with-host.v0.md
+    sections:
+      - 'Contract: Lifecycle Semantics (cross-host)'
+      - Ordering Constraints (cross-host)
+  - path: internal/contracts/lifecycle/README.md
+    sections:
+      - 1. Canonical Lifecycle Timeline (v0)
+      - 3. Created Callback
+      - 6. Mounted Callback
+      - 7. Update Cycle (v0)
+      - 8. Unmounted Callback & Disposal
+dependsOn:
+  contracts:
+    - C-LIFECYCLE-0001
+    - C-LIFECYCLE-0005
+openQuestions:
+  - id: C-LIFECYCLE-0002-Q-CALLBACK-ERRORS
+    question:
+      zh-CN: lifecycle callback 抛错后的传播、后续 callback 是否继续执行、以及是否进入 dispose 是否应由本契约定义？
+      en: Should this contract define error propagation, whether later lifecycle callbacks continue, and whether disposal proceeds after a lifecycle callback throws?
+    context:
+      zh-CN: 旧契约只要求不能重排 canonical timeline，错误恢复仍是 adapter/runtime 断口。
+      en: Older contracts only require that the canonical timeline not be reordered; error recovery remains a runtime/adapter gap.
+    blocks:
+      - C-LIFECYCLE-0002
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Drafted the prototype-visible lifecycle callback ordering contract.
+  - version: 0.1.0
+    change: revised
+    summary: Resolved the `created` protoPhase exposure gap as an implementation follow-up without changing the callback ordering criteria.
+  - version: 0.1.0
+    change: revised
+    summary: Clarified that lifecycle commit ordering is based on host commit completion rather than synchronous function-call completion.
+  - version: 0.1.0
+    change: revised
+    summary: Moved lifecycle API surface syntax ownership to `C-LIFECYCLE-0005` while keeping callback invocation ordering here.
+tags:
+  - lifecycle
+  - callbacks
+  - runtime
+  - dispose
