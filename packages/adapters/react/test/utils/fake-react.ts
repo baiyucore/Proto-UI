@@ -263,16 +263,21 @@ function applyProps(el: HTMLElement, props: Record<string, any>) {
 
   const prevOwned = OWNED_STYLE_KEYS.get(el) ?? new Set<string>();
   const nextOwned = new Set<string>();
+  const flatStyle = flattenInlineStyle(props.style);
 
-  if (props.style && typeof props.style === 'object') {
+  if (flatStyle) {
     for (const key of prevOwned) {
-      if (!(key in props.style)) {
+      if (!(key in flatStyle)) {
         (el.style as any)[key] = '';
       }
     }
-    for (const [key, value] of Object.entries(props.style)) {
+    for (const [key, value] of Object.entries(flatStyle)) {
       (el.style as any)[key] = value as any;
       nextOwned.add(key);
+    }
+  } else if (prevOwned.size > 0) {
+    for (const key of prevOwned) {
+      (el.style as any)[key] = '';
     }
   }
   OWNED_STYLE_KEYS.set(el, nextOwned);
@@ -319,4 +324,32 @@ function depsEqual(a?: any[], b?: any[]) {
 function getCurrent() {
   if (!CURRENT) throw new Error('fake-react hooks called outside render');
   return CURRENT;
+}
+
+function flattenInlineStyle(value: unknown): Record<string, string> | null {
+  if (value == null) return null;
+
+  const items = Array.isArray(value) ? value : [value];
+  const out: Record<string, string> = {};
+
+  for (const item of items) {
+    if (typeof item === 'string') {
+      for (const part of item.split(';')) {
+        const idx = part.indexOf(':');
+        if (idx === -1) continue;
+        const key = part.slice(0, idx).trim();
+        const val = part.slice(idx + 1).trim();
+        if (key) out[key] = val;
+      }
+      continue;
+    }
+    if (item && typeof item === 'object') {
+      for (const [key, val] of Object.entries(item as Record<string, unknown>)) {
+        if (val == null || val === '') continue;
+        out[key] = String(val);
+      }
+    }
+  }
+
+  return Object.keys(out).length > 0 ? out : null;
 }

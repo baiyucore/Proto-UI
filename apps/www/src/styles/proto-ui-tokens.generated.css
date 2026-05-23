@@ -58,102 +58,83 @@
       scale(var(--pui-scale-x, 1), var(--pui-scale-y, 1));
   }
 
-  :where([data-pui-style~='aria-checked:bg-accent'])[aria-checked='true'],
-  :where([data-pui-style~='aria-checked:bg-accent'])[aria-checked] {
+  :where([data-pui-style~='aria-checked:bg-accent'])[aria-checked='true'] {
     background-color: var(--pui-accent);
   }
 
-  :where([data-pui-style~='aria-checked:bg-muted'])[aria-checked='true'],
-  :where([data-pui-style~='aria-checked:bg-muted'])[aria-checked] {
+  :where([data-pui-style~='aria-checked:bg-muted'])[aria-checked='true'] {
     background-color: var(--pui-muted);
   }
 
-  :where([data-pui-style~='aria-checked:bg-primary'])[aria-checked='true'],
-  :where([data-pui-style~='aria-checked:bg-primary'])[aria-checked] {
+  :where([data-pui-style~='aria-checked:bg-primary'])[aria-checked='true'] {
     background-color: var(--pui-primary);
   }
 
-  :where([data-pui-style~='aria-checked:pl-[22px]'])[aria-checked='true'],
-  :where([data-pui-style~='aria-checked:pl-[22px]'])[aria-checked] {
+  :where([data-pui-style~='aria-checked:pl-[22px]'])[aria-checked='true'] {
     padding-left: 22px;
   }
 
-  :where([data-pui-style~='aria-checked:pr-0.5'])[aria-checked='true'],
-  :where([data-pui-style~='aria-checked:pr-0.5'])[aria-checked] {
+  :where([data-pui-style~='aria-checked:pr-0.5'])[aria-checked='true'] {
     padding-right: 0.125rem;
   }
 
-  :where([data-pui-style~='aria-checked:text-accent-foreground'])[aria-checked='true'],
-  :where([data-pui-style~='aria-checked:text-accent-foreground'])[aria-checked] {
+  :where([data-pui-style~='aria-checked:text-accent-foreground'])[aria-checked='true'] {
     color: var(--pui-accent-foreground);
   }
 
-  :where([data-pui-style~='aria-checked:text-muted-foreground'])[aria-checked='true'],
-  :where([data-pui-style~='aria-checked:text-muted-foreground'])[aria-checked] {
+  :where([data-pui-style~='aria-checked:text-muted-foreground'])[aria-checked='true'] {
     color: var(--pui-muted-foreground);
   }
 
-  :where([data-pui-style~='aria-checked:text-primary-foreground'])[aria-checked='true'],
-  :where([data-pui-style~='aria-checked:text-primary-foreground'])[aria-checked] {
+  :where([data-pui-style~='aria-checked:text-primary-foreground'])[aria-checked='true'] {
     color: var(--pui-primary-foreground);
   }
 
-  :where([data-pui-style~='aria-current:hidden'])[aria-current='true'],
-  :where([data-pui-style~='aria-current:hidden'])[aria-current] {
+  :where([data-pui-style~='aria-current:hidden'])[aria-current='true'] {
     display: none;
   }
 
-  :where([data-pui-style~='aria-expanded:bg-muted'])[aria-expanded='true'],
-  :where([data-pui-style~='aria-expanded:bg-muted'])[aria-expanded] {
+  :where([data-pui-style~='aria-expanded:bg-muted'])[aria-expanded='true'] {
     background-color: var(--pui-muted);
   }
 
-  :where([data-pui-style~='aria-expanded:bg-secondary'])[aria-expanded='true'],
-  :where([data-pui-style~='aria-expanded:bg-secondary'])[aria-expanded] {
+  :where([data-pui-style~='aria-expanded:bg-secondary'])[aria-expanded='true'] {
     background-color: var(--pui-secondary);
   }
 
-  :where([data-pui-style~='aria-expanded:text-foreground'])[aria-expanded='true'],
-  :where([data-pui-style~='aria-expanded:text-foreground'])[aria-expanded] {
+  :where([data-pui-style~='aria-expanded:text-foreground'])[aria-expanded='true'] {
     color: var(--pui-foreground);
   }
 
-  :where([data-pui-style~='aria-expanded:text-secondary-foreground'])[aria-expanded='true'],
-  :where([data-pui-style~='aria-expanded:text-secondary-foreground'])[aria-expanded] {
+  :where([data-pui-style~='aria-expanded:text-secondary-foreground'])[aria-expanded='true'] {
     color: var(--pui-secondary-foreground);
   }
 
-  :where([data-pui-style~='aria-invalid:border-destructive'])[aria-invalid='true'],
-  :where([data-pui-style~='aria-invalid:border-destructive'])[aria-invalid] {
+  :where([data-pui-style~='aria-invalid:border-destructive'])[aria-invalid='true'] {
     border-color: var(--pui-destructive);
   }
 
-  :where([data-pui-style~='aria-invalid:ring-3'])[aria-invalid='true'],
-  :where([data-pui-style~='aria-invalid:ring-3'])[aria-invalid] {
+  :where([data-pui-style~='aria-invalid:ring-3'])[aria-invalid='true'] {
     --pui-ring-width: 3px;
     box-shadow: var(--pui-ring-inset,) 0 0 0 var(--pui-ring-width, 0px)
       var(--pui-ring-color, var(--pui-ring));
   }
 
-  :where([data-pui-style~='aria-invalid:ring-destructive/20'])[aria-invalid='true'],
-  :where([data-pui-style~='aria-invalid:ring-destructive/20'])[aria-invalid] {
+  :where([data-pui-style~='aria-invalid:ring-destructive/20'])[aria-invalid='true'] {
     --pui-ring-color: color-mix(in oklab, var(--pui-destructive) 20%, transparent);
     box-shadow: var(--pui-ring-inset,) 0 0 0 var(--pui-ring-width, 0px)
       var(--pui-ring-color, var(--pui-ring));
   }
 
-  :where([data-pui-style~='aria-selected:bg-background'])[aria-selected='true'],
-  :where([data-pui-style~='aria-selected:bg-background'])[aria-selected] {
+  :where([data-pui-style~='aria-selected:bg-background'])[aria-selected='true'] {
     background-color: var(--pui-background);
   }
 
-  :where([data-pui-style~='aria-selected:shadow-xs'])[aria-selected='true'],
-  :where([data-pui-style~='aria-selected:shadow-xs'])[aria-selected] {
+  :where([data-pui-style~='aria-selected:shadow-xs'])[aria-selected='true'] {
     box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   }
 
-  :where([data-pui-style~='aria-selected:text-foreground'])[aria-selected='true'],
-  :where([data-pui-style~='aria-selected:text-foreground'])[aria-selected] {
+  :where([data-pui-style~='aria-selected:text-foreground'])[aria-selected='true'] {
     color: var(--pui-foreground);
   }
 
@@ -300,14 +281,7 @@
     :where([data-pui-style~='dark:aria-checked:bg-input/50'])[aria-checked='true'],
   :where([data-theme='dark']):where(
       [data-pui-style~='dark:aria-checked:bg-input/50']
-    )[aria-checked='true'],
-  :where(.dark) :where([data-pui-style~='dark:aria-checked:bg-input/50'])[aria-checked],
-  :where(.dark):where([data-pui-style~='dark:aria-checked:bg-input/50'])[aria-checked],
-  :where([data-theme='dark'])
-    :where([data-pui-style~='dark:aria-checked:bg-input/50'])[aria-checked],
-  :where([data-theme='dark']):where(
-      [data-pui-style~='dark:aria-checked:bg-input/50']
-    )[aria-checked] {
+    )[aria-checked='true'] {
     background-color: color-mix(in oklab, var(--pui-input) 50%, transparent);
   }
 
@@ -317,14 +291,7 @@
     :where([data-pui-style~='dark:aria-checked:bg-primary'])[aria-checked='true'],
   :where([data-theme='dark']):where(
       [data-pui-style~='dark:aria-checked:bg-primary']
-    )[aria-checked='true'],
-  :where(.dark) :where([data-pui-style~='dark:aria-checked:bg-primary'])[aria-checked],
-  :where(.dark):where([data-pui-style~='dark:aria-checked:bg-primary'])[aria-checked],
-  :where([data-theme='dark'])
-    :where([data-pui-style~='dark:aria-checked:bg-primary'])[aria-checked],
-  :where([data-theme='dark']):where(
-      [data-pui-style~='dark:aria-checked:bg-primary']
-    )[aria-checked] {
+    )[aria-checked='true'] {
     background-color: var(--pui-primary);
   }
 
@@ -337,14 +304,7 @@
     :where([data-pui-style~='dark:aria-invalid:border-destructive/50'])[aria-invalid='true'],
   :where([data-theme='dark']):where(
       [data-pui-style~='dark:aria-invalid:border-destructive/50']
-    )[aria-invalid='true'],
-  :where(.dark) :where([data-pui-style~='dark:aria-invalid:border-destructive/50'])[aria-invalid],
-  :where(.dark):where([data-pui-style~='dark:aria-invalid:border-destructive/50'])[aria-invalid],
-  :where([data-theme='dark'])
-    :where([data-pui-style~='dark:aria-invalid:border-destructive/50'])[aria-invalid],
-  :where([data-theme='dark']):where(
-      [data-pui-style~='dark:aria-invalid:border-destructive/50']
-    )[aria-invalid] {
+    )[aria-invalid='true'] {
     border-color: color-mix(in oklab, var(--pui-destructive) 50%, transparent);
   }
 
@@ -357,14 +317,7 @@
     :where([data-pui-style~='dark:aria-invalid:ring-destructive/40'])[aria-invalid='true'],
   :where([data-theme='dark']):where(
       [data-pui-style~='dark:aria-invalid:ring-destructive/40']
-    )[aria-invalid='true'],
-  :where(.dark) :where([data-pui-style~='dark:aria-invalid:ring-destructive/40'])[aria-invalid],
-  :where(.dark):where([data-pui-style~='dark:aria-invalid:ring-destructive/40'])[aria-invalid],
-  :where([data-theme='dark'])
-    :where([data-pui-style~='dark:aria-invalid:ring-destructive/40'])[aria-invalid],
-  :where([data-theme='dark']):where(
-      [data-pui-style~='dark:aria-invalid:ring-destructive/40']
-    )[aria-invalid] {
+    )[aria-invalid='true'] {
     --pui-ring-color: color-mix(in oklab, var(--pui-destructive) 40%, transparent);
     box-shadow: var(--pui-ring-inset,) 0 0 0 var(--pui-ring-width, 0px)
       var(--pui-ring-color, var(--pui-ring));
@@ -566,38 +519,31 @@
     display: none;
   }
 
-  :where([data-pui-style~='hover:aria-checked:bg-input']):hover[aria-checked='true'],
-  :where([data-pui-style~='hover:aria-checked:bg-input']):hover[aria-checked] {
+  :where([data-pui-style~='hover:aria-checked:bg-input']):hover[aria-checked='true'] {
     background-color: var(--pui-input);
   }
 
-  :where([data-pui-style~='hover:aria-checked:bg-muted/60']):hover[aria-checked='true'],
-  :where([data-pui-style~='hover:aria-checked:bg-muted/60']):hover[aria-checked] {
-    background-color: color-mix(in oklab, var(--pui-muted) 60%, transparent);
+  :where([data-pui-style~='hover:aria-checked:bg-muted']):hover[aria-checked='true'] {
+    background-color: var(--pui-muted);
   }
 
-  :where([data-pui-style~='hover:aria-checked:bg-primary/90']):hover[aria-checked='true'],
-  :where([data-pui-style~='hover:aria-checked:bg-primary/90']):hover[aria-checked] {
+  :where([data-pui-style~='hover:aria-checked:bg-primary/90']):hover[aria-checked='true'] {
     background-color: color-mix(in oklab, var(--pui-primary) 90%, transparent);
   }
 
-  :where([data-pui-style~='hover:aria-checked:text-foreground']):hover[aria-checked='true'],
-  :where([data-pui-style~='hover:aria-checked:text-foreground']):hover[aria-checked] {
+  :where([data-pui-style~='hover:aria-checked:text-foreground']):hover[aria-checked='true'] {
     color: var(--pui-foreground);
   }
 
-  :where([data-pui-style~='hover:aria-selected:bg-background/70']):hover[aria-selected='true'],
-  :where([data-pui-style~='hover:aria-selected:bg-background/70']):hover[aria-selected] {
+  :where([data-pui-style~='hover:aria-selected:bg-background/70']):hover[aria-selected='true'] {
     background-color: color-mix(in oklab, var(--pui-background) 70%, transparent);
   }
 
-  :where([data-pui-style~='hover:aria-selected:shadow-xs']):hover[aria-selected='true'],
-  :where([data-pui-style~='hover:aria-selected:shadow-xs']):hover[aria-selected] {
+  :where([data-pui-style~='hover:aria-selected:shadow-xs']):hover[aria-selected='true'] {
     box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   }
 
-  :where([data-pui-style~='hover:aria-selected:text-foreground']):hover[aria-selected='true'],
-  :where([data-pui-style~='hover:aria-selected:text-foreground']):hover[aria-selected] {
+  :where([data-pui-style~='hover:aria-selected:text-foreground']):hover[aria-selected='true'] {
     color: var(--pui-foreground);
   }
 
@@ -689,6 +635,10 @@
     min-width: 14rem;
   }
 
+  :where([data-pui-style~='min-w-7']) {
+    min-width: 1.75rem;
+  }
+
   :where([data-pui-style~='min-w-8']) {
     min-width: 2rem;
   }
@@ -744,6 +694,10 @@
 
   :where([data-pui-style~='pr-[22px]']) {
     padding-right: 22px;
+  }
+
+  :where([data-pui-style~='px-2']) {
+    padding-inline: 0.5rem;
   }
 
   :where([data-pui-style~='px-2.5']) {

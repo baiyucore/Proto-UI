@@ -102,6 +102,7 @@ const staticUtilities: Record<string, string[]> = {
   'max-w-lg': ['max-width: 32rem;'],
   peer: [],
   'group/button': [],
+  'group/toggle': [],
 };
 
 export function renderProtoStyleTokenCss(tokens: string[]): string {
@@ -318,7 +319,7 @@ function applyVariant(selector: string, variant: string): string[] {
 
   if (variant.startsWith('aria-')) {
     const name = variant.slice('aria-'.length);
-    return [`${selector}[aria-${name}='true']`, `${selector}[aria-${name}]`];
+    return [`${selector}[aria-${name}='true']`];
   }
 
   const dataMatch = variant.match(/^data-\[(.+)\]$/);

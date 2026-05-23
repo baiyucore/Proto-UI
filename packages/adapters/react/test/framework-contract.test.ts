@@ -61,4 +61,42 @@ describe('adapter-react: framework contract', () => {
     expect(mounted.root?.className).toContain('rounded');
     expect(mounted.root?.getAttribute('label')).toBe(null);
   });
+
+  it('merges style and hostStyle onto the host root', () => {
+    const proto: Prototype = {
+      name: 'react-host-style-merge',
+      setup() {
+        return (r) => [r.el('div', 'ok')];
+      },
+    };
+
+    const mounted = createMountedReactAdapter(proto, {
+      style: { color: 'red', margin: '8px' },
+      hostStyle: { color: 'blue', padding: '4px' },
+    });
+
+    expect(mounted.root?.style.color).toBe('red');
+    expect(mounted.root?.style.padding).toBe('4px');
+    expect(mounted.root?.style.margin).toBe('8px');
+  });
+
+  it('does not leak style into prototype raw props', () => {
+    let seenStyle: unknown = 'unset';
+
+    const proto: Prototype = {
+      name: 'react-style-prop-boundary',
+      setup(def) {
+        def.lifecycle.onMounted((run) => {
+          seenStyle = (run.props.get() as { style?: unknown }).style;
+        });
+        return (r) => [r.el('div', 'ok')];
+      },
+    };
+
+    createMountedReactAdapter(proto, {
+      style: { width: '200px' },
+    });
+
+    expect(seenStyle).toBeUndefined();
+  });
 });

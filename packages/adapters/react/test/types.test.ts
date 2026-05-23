@@ -36,6 +36,7 @@ describe('adapter-react: type helpers', () => {
       children?: any;
       className?: string;
       hostClassName?: string;
+      style?: any;
       hostStyle?: any;
       onClick?: () => void;
       onCheckedChange?: (payload: { checked: boolean }) => void;

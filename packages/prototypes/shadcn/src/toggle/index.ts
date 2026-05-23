@@ -3,29 +3,29 @@ import { asToggle } from '@proto.ui/prototypes-base';
 import type { ShadcnToggleExposes, ShadcnToggleProps } from './types';
 
 const TOGGLE_BASE_TOKENS = [
+  'group/toggle',
   'inline-flex',
   'items-center',
   'justify-center',
-  'gap-2',
-  'rounded-md',
+  'gap-1',
+  'rounded-lg',
   'text-sm',
   'font-medium',
-  'transition-colors',
+  'transition-all',
   'outline-none',
   'border',
-  'border-transparent',
   'whitespace-nowrap',
 ].join(' ');
 
 const VARIANT_TOKENS: Record<NonNullable<ShadcnToggleProps['variant']>, string> = {
-  default: 'bg-transparent text-foreground',
-  outline: 'border-border bg-transparent shadow-xs',
+  default: 'border-transparent bg-transparent text-foreground',
+  outline: 'border-input bg-transparent text-foreground',
 };
 
 const SIZE_TOKENS: Record<NonNullable<ShadcnToggleProps['size']>, string> = {
-  default: 'h-9 px-3 min-w-9',
-  sm: 'h-8 px-2.5 min-w-8',
-  lg: 'h-10 px-5 min-w-10',
+  default: 'h-8 min-w-8 px-2.5',
+  sm: 'h-7 min-w-7 px-2',
+  lg: 'h-9 min-w-9 px-3',
 };
 
 const toggle = definePrototype<ShadcnToggleProps, ShadcnToggleExposes>({
@@ -72,22 +72,17 @@ const toggle = definePrototype<ShadcnToggleProps, ShadcnToggleExposes>({
 
     def.rule({
       when: (w: any) => w.state(checked).eq(true),
-      intent: (i: any) => i.feedback.style.use(tw('bg-muted text-muted-foreground')),
-    });
-
-    def.rule({
-      when: (w: any) => w.all(w.state(checked).eq(true), w.prop('variant').eq('outline')),
-      intent: (i: any) => i.feedback.style.use(tw('bg-accent text-accent-foreground')),
+      intent: (i: any) => i.feedback.style.use(tw('bg-muted')),
     });
 
     def.rule({
       when: (w: any) => w.all(w.state(hovered).eq(true), w.state(checked).eq(false)),
-      intent: (i: any) => i.feedback.style.use(tw('bg-muted/60 text-foreground')),
+      intent: (i: any) => i.feedback.style.use(tw('bg-muted text-foreground')),
     });
 
     def.rule({
       when: (w: any) => w.state(focusVisible).eq(true),
-      intent: (i: any) => i.feedback.style.use(tw('ring-3 ring-ring/50')),
+      intent: (i: any) => i.feedback.style.use(tw('border-ring ring-3 ring-ring/50')),
     });
 
     def.rule({

@@ -48,18 +48,24 @@ describe('prototypes/shadcn: toggle', () => {
     const { controller } = executeWithHost(toggle as any, host as any);
 
     let tokens = controller.getRuleStyleTokens();
-    expect(tokens).toContain('h-9');
+    expect(tokens).toContain('h-8');
     expect(tokens).toContain('bg-transparent');
+    expect(tokens).toContain('text-foreground');
 
     rootTarget.dispatchEvent(new CustomEvent('press.commit'));
     tokens = controller.getRuleStyleTokens();
     expect(tokens).toContain('bg-muted');
+    expect(tokens).toContain('text-foreground');
+    expect(tokens).not.toContain('bg-muted/60');
+    expect(tokens).not.toContain('text-muted-foreground');
 
     rawProps = { variant: 'outline', size: 'sm', defaultChecked: false, disabled: true };
     controller.applyRawProps(rawProps as any);
     tokens = controller.getRuleStyleTokens();
-    expect(tokens).toContain('border-border');
-    expect(tokens).toContain('h-8');
+    expect(tokens).toContain('border-input');
+    expect(tokens).toContain('h-7');
     expect(tokens).toContain('opacity-50');
+    expect(tokens).not.toContain('bg-accent');
+    expect(tokens).not.toContain('text-accent-foreground');
   });
 });
