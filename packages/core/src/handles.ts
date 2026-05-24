@@ -93,6 +93,14 @@ export interface RunHandle<Props extends PropsBaseType> {
     emit(key: string, payload?: any, options?: Record<string, unknown>): void;
   };
 
+  feedback: {
+    style: {
+      patch: (...handles: StyleHandle[]) => void;
+      suppress: (...handles: StyleHandle[]) => void;
+      clearPatch: () => void;
+    };
+  };
+
   anatomy: {
     /** runtime-only readonly anatomy query surface; unavailable during setup */
     has(family: AnatomyFamily, role: string): boolean;

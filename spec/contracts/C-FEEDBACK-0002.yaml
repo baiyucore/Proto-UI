@@ -6,11 +6,11 @@ since: 0.1.0
 summary: Feedback APIs must distinguish setup-time feedback planning from runtime feedback effects.
 statement:
   zh-CN: >-
-    Feedback 通路必须回应 `setup`/`runtime` 分离：setup 阶段 API 用于计划组件将如何产生反馈；runtime 阶段 API 如果被公开提供，则应表达运行期反馈副作用，而不得重新打开 setup-time 计划 API。公开 runtime API 的具体形态仍是 v0 断口。
+    Feedback 通路必须回应 `setup`/`runtime` 分离：setup 阶段 API 用于计划组件将如何产生反馈；runtime 阶段 API 如果被公开提供，则应表达运行期反馈副作用，而不得重新打开 setup-time 计划 API。v0 已先为 `feedback.style` 固化 runtime patch escape hatch；其他 feedback 子 surface 的 runtime API 可在各自契约中继续细化。
 
 
   en: >-
-    The Feedback channel must reflect `setup`/`runtime` separation: setup-time APIs plan how a component can produce feedback; runtime APIs, if publicly provided, should express runtime feedback effects and must not reopen setup-time planning APIs. The concrete shape of a public runtime API remains a v0 decision gap.
+    The Feedback channel must reflect `setup`/`runtime` separation: setup-time APIs plan how a component can produce feedback; runtime APIs, if publicly provided, should express runtime feedback effects and must not reopen setup-time planning APIs. v0 has stabilized a runtime patch escape hatch for `feedback.style`; runtime APIs for other feedback subsurfaces can be refined in their own contracts.
 
 
 criteria:
@@ -34,16 +34,6 @@ criteria:
     text:
       zh-CN: Feedback runtime effect 应能够在不触发 render 的情况下更新反馈；最差情况下宿主可以用与 render 等价的开销实现该能力，但这属于宿主实现成本。
       en: Feedback runtime effects should be able to update feedback without triggering render; in the worst case, a host can implement this with render-equivalent cost, but that is a host implementation cost.
-openQuestions:
-  - id: C-FEEDBACK-0002-Q-RUNTIME-API
-    question:
-      zh-CN: v0 是否应公开 feedback runtime API；若公开，它是否应表现为 add/remove 一组 style token 的副作用入口？
-      en: Should v0 expose a public feedback runtime API; if so, should it behave as a side-effecting entry for adding/removing a set of style tokens?
-    context:
-      zh-CN: 长期治理方向倾向提供 feedback runtime API，以便让 rule 的边界更清晰。当前可通过 `def.rule` 动态添加/去除样式并获得自动副作用管理；但如果 feedback 完全没有 runtime API，rule 在某些动态样式场景会从推荐路径变成必选路径。具体 API 形态仍需进一步讨论。
-      en: The long-term governance direction leans toward providing a feedback runtime API so rule boundaries stay clearer. Today, `def.rule` can dynamically add/remove styles with automatic side-effect management; however, if feedback has no runtime API at all, rule becomes required rather than merely recommended for some dynamic-style scenarios. The concrete API shape still needs further discussion.
-    blocks:
-      - C-FEEDBACK-0002-C
 sources:
   - path: internal/contracts/feedback/style.use.setup-only.v0.md
     sections:
@@ -52,7 +42,13 @@ sources:
   - path: packages/modules/feedback/src/create.ts
     sections:
       - useStyle
-      - useStyleRuntime
+      - patchStyle
+      - suppressStyle
+      - clearStylePatch
+  - path: spec/contracts/C-FEEDBACK-STYLE-0005.yaml
+    sections:
+      - C-FEEDBACK-STYLE-0005-A
+      - C-FEEDBACK-STYLE-0005-H
 dependsOn:
   contracts:
     - C-FEEDBACK-0001
@@ -65,6 +61,9 @@ revisions:
   - version: 0.1.0
     change: revised
     summary: Clarified public runtime API as a decision gap and recorded no-render feedback update as the target runtime effect boundary.
+  - version: 0.1.0
+    change: revised
+    summary: Resolved the feedback.style runtime API gap through C-FEEDBACK-STYLE-0005 while keeping other feedback subsurfaces open.
 tags:
   - feedback
   - api

@@ -6,6 +6,7 @@ import { PropsFacade } from '@proto.ui/module-props';
 import { ContextFacade } from '@proto.ui/module-context';
 import { EventFacade } from '@proto.ui/module-event';
 import { AnatomyFacade } from '@proto.ui/module-anatomy';
+import { FeedbackFacade } from '@proto.ui/module-feedback';
 
 export const createRunHandle = <P extends PropsBaseType>(
   update: RunHandle<P>['update'],
@@ -16,6 +17,7 @@ export const createRunHandle = <P extends PropsBaseType>(
   const context = facades['context'] as ContextFacade;
   const event = facades['event'] as EventFacade;
   const anatomy = facades['anatomy'] as AnatomyFacade | undefined;
+  const feedback = facades['feedback'] as FeedbackFacade;
 
   return {
     update,
@@ -32,6 +34,13 @@ export const createRunHandle = <P extends PropsBaseType>(
     },
     event: {
       emit: (key, payload, options) => event.emit(key, payload, options),
+    },
+    feedback: {
+      style: {
+        patch: (...handles) => feedback.style.patch(...handles),
+        suppress: (...handles) => feedback.style.suppress(...handles),
+        clearPatch: () => feedback.style.clearPatch(),
+      },
     },
     anatomy: {
       has: (family, role) => {
