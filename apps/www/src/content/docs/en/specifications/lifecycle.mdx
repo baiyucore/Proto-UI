@@ -1,0 +1,236 @@
+---
+title: 'Lifecycle'
+desp: 'Lifecycle specification'
+description: 'Lifecycle specification'
+---
+
+import SpecContractPreview from '@/components/SpecContractPreview.astro';
+import SpecPhaseBadge from '@/components/SpecPhaseBadge.astro';
+
+export const contractPreviews = [
+  {
+    id: 'C-LIFECYCLE-0001',
+    title: 'Prototype execution separates setup planning from runtime execution',
+    summary:
+      '`setup` and `runtime` are the coarse execution periods shared by Proto UI lifecycle models.',
+    quote:
+      'Proto UI first separates lifecycle execution into the coarse `setup` and `runtime` periods.',
+    criteria: [
+      '`setup` means no concrete component instance exists yet; APIs can only declare, register, or plan capabilities.',
+      '`runtime` means a concrete component instance exists until unmount/dispose completes.',
+      'Execution guards must at least distinguish `setup` from `runtime`.',
+    ],
+    tests:
+      'Referenced by callback order, API surface, update flow, and checkpoint tests as the upstream lifecycle model.',
+    source: 'spec/contracts/C-LIFECYCLE-0001.yaml',
+  },
+  {
+    id: 'C-LIFECYCLE-0002',
+    title: 'Prototype-visible lifecycle callbacks follow canonical runtime order',
+    summary:
+      'The prototype-visible lifecycle order is `created -> first render -> commit -> mounted -> update cycles -> unmounted/dispose`.',
+    quote:
+      'Proto UI exposes lifecycle callbacks over the canonical runtime order `created -> first render -> commit -> mounted -> update cycles -> unmounted/dispose`.',
+    criteria: [
+      '`created` runs after setup completes and before the first render and commit.',
+      '`mounted` runs after first commit completion.',
+      '`updated` must not run before the corresponding update commit completion.',
+      '`unmounted` runs before dispose; lifecycle-managed handles are invalid after dispose.',
+    ],
+    tests:
+      'T-LIFECYCLE-0001 covers initial order, mounted cancellation, update order, and disposal boundaries.',
+    source: 'spec/contracts/C-LIFECYCLE-0002.yaml',
+  },
+  {
+    id: 'C-LIFECYCLE-0003',
+    title: 'Runtime update flow has explicit render entry points',
+    summary:
+      'render/commit is a runtime-owned flow, not an implicit side effect of props, state, event, feedback, or other module APIs.',
+    quote:
+      'Proto UI must treat render/commit as runtime-owned flow rather than an implicit side effect of arbitrary module APIs.',
+    criteria: [
+      '`run.update()` expresses update intent, not a synchronous view-update guarantee.',
+      'Module API calls must not automatically trigger render or commit.',
+      'The runtime/host may schedule, batch, or coalesce update intents.',
+    ],
+    tests:
+      'T-LIFECYCLE-0002 covers explicit update intent, no implicit render, render reads, and host scheduling.',
+    source: 'spec/contracts/C-LIFECYCLE-0003.yaml',
+  },
+  {
+    id: 'C-LIFECYCLE-0004',
+    title: 'Runtime and adapters preserve canonical lifecycle checkpoints',
+    summary:
+      'The CP0-CP10 checkpoint model refines lifecycle ordering into implementable and testable runtime/adapter boundaries.',
+    quote:
+      'The CP0-CP10 checkpoint model refines runtime lifecycle ordering for runtime and adapter design without becoming prototype API.',
+    criteria: [
+      'CP0 means setup exit.',
+      'CP1 through CP5 are ordered as created, logical tree, commit start, commit done, mounted.',
+      'CP6 through CP8 are ordered as update render, update commit done, updated.',
+      'CP checkpoint names and numbers must not become prototype-author APIs.',
+    ],
+    tests:
+      'T-LIFECYCLE-0003 covers runtime traces and React, Vue, and Web Component adapter conformance traces.',
+    source: 'spec/contracts/C-LIFECYCLE-0004.yaml',
+  },
+  {
+    id: 'C-LIFECYCLE-0005',
+    title: 'Prototype lifecycle API uses setup-time callback registration',
+    summary:
+      'The v0 lifecycle API is fixed as `def.lifecycle.onCreated/onMounted/onUpdated/onUnmounted`.',
+    quote:
+      'Prototype-visible lifecycle syntax is the setup-time `def.lifecycle` callback registration surface for `created`, `mounted`, `updated`, and `unmounted`.',
+    criteria: [
+      'Lifecycle setup APIs live on `def.lifecycle`.',
+      'Registration APIs are setup-only.',
+      'Callbacks receive a `run handle` bound to the current callback invocation.',
+      'CP checkpoints and host-specific hooks must not be exposed as prototype-visible APIs.',
+    ],
+    tests:
+      'T-LIFECYCLE-0004 covers API surface, setup-only registration, deferred invocation, run handle binding, and no portable revoke.',
+    source: 'spec/contracts/C-LIFECYCLE-0005.yaml',
+  },
+];
+
+## What Lifecycle Is
+
+`Lifecycle` defines the execution order of a prototype instance over time. It is not a convenience set of callbacks attached to a prototype; it is the core specification that decides when capabilities are available, when commits are complete, when updates enter the render flow, and when an instance releases responsibility.
+
+`setup` and `runtime` first separate definition-time from execution-time, but that is not enough. Once inside `runtime`, a component still moves through created, render, commit, mounted, update, unmounted, and dispose stages. Lifecycle gives those stages a stable order so the same prototype keeps consistent execution semantics across hosts.
+
+This page focuses on portable lifecycle semantics. React, Vue, Web Components, and other hosts may have different native lifecycle machinery, but adapters must map those differences back into Proto UI's canonical order.
+
+## Execution Periods
+
+Proto UI first separates execution into two coarse periods:
+
+```txt
+setup
+  -> runtime
+```
+
+<SpecPhaseBadge label="setup-only" />
+
+During `setup`, no concrete component instance exists. Prototype authors declare, register, or plan capabilities such as lifecycle callbacks, props declarations, state declarations, and feedback style plans. Setup code cannot read runtime input for a concrete invocation.
+
+<SpecPhaseBadge label="runtime-only" />
+
+During `runtime`, a concrete component instance exists. render execution, callbacks, host-driven updates, unmount, and dispose all happen in this period. Runtime APIs may read or act on the current instance, but they cannot reopen setup-time structural declaration surfaces.
+
+These two periods are the foundation for every finer lifecycle model. Callback ordering and CP checkpoints do not redefine `setup`; they only refine boundaries inside `runtime`.
+
+## Registering Lifecycle Callbacks
+
+<SpecPhaseBadge label="setup-only" />
+
+Prototype authors register lifecycle callbacks through `def.lifecycle`:
+
+```ts
+def.lifecycle.onCreated((run) => {
+  // setup has completed, first render has not started.
+});
+
+def.lifecycle.onMounted((run) => {
+  // first commit has completed.
+});
+
+def.lifecycle.onUpdated((run) => {
+  // an update commit has completed.
+});
+
+def.lifecycle.onUnmounted((run) => {
+  // dispose has not completed; runtime handles are still available.
+});
+```
+
+These APIs only register callbacks. They do not invoke callbacks during registration, and they do not define a portable unsubscribe or revoke handle. Calling `def.lifecycle.*` after setup exits must fail.
+
+When a callback runs, it receives a `run handle` bound to the current callback invocation. That lets the callback read runtime input, request an explicit update intent, or call other runtime capabilities, while still following the contracts for those capabilities.
+
+## Canonical Runtime Order
+
+The prototype-visible lifecycle order is:
+
+```txt
+setup
+  -> created
+  -> first render
+  -> commit completion
+  -> mounted
+  -> (update intent -> render -> commit completion -> updated)*
+  -> unmounted
+  -> dispose complete
+```
+
+`commit completion` is a semantic boundary, not necessarily the synchronous return of a host commit function. React, Vue, and other asynchronous hosts may confirm commit completion later; `mounted` and `updated` must wait for the corresponding commit completion.
+
+`unmounted` must run before dispose. During `unmounted`, lifecycle-managed runtime handles are still in their availability window. After dispose completes, those handles must be considered invalid, and later operations should fail instead of producing runtime behavior.
+
+## Update Flow
+
+render and commit are owned by the runtime. They must not appear as implicit side effects of arbitrary module APIs.
+
+The prototype-author entry point is:
+
+```ts
+run.update();
+```
+
+`run.update()` expresses update intent. The runtime or host may execute it synchronously, schedule it, batch it, or coalesce it; prototype authors must not rely on host-view changes being observable immediately after the call returns.
+
+Props, state, context, event, feedback, and similar module APIs should not trigger render or commit by themselves. They may update their own runtime channel data, dispatch watchers, or request a style flush, but entering an update cycle belongs to the explicit update path.
+
+Once an update intent is accepted as an update cycle, the order is:
+
+```txt
+update intent
+  -> render
+  -> commit completion
+  -> updated callback
+```
+
+## Runtime Checkpoints
+
+CP checkpoints are the lifecycle trace model used by the runtime and adapters. They are not prototype-author APIs; they let implementation and tests describe lifecycle ordering through the same boundaries.
+
+| Checkpoint | Semantic boundary  |
+| ---------- | ------------------ |
+| `CP0`      | setup exit         |
+| `CP1`      | created callbacks  |
+| `CP2`      | logical tree ready |
+| `CP3`      | commit start       |
+| `CP4`      | commit done        |
+| `CP5`      | mounted callbacks  |
+| `CP6`      | update render      |
+| `CP7`      | update commit done |
+| `CP8`      | updated callbacks  |
+| `CP9`      | unmount begin      |
+| `CP10`     | dispose complete   |
+
+Adapters must map host-specific lifecycle behavior into these checkpoints. They must not introduce a competing or parallel lifecycle model. Test traces may record checkpoints, but the names and numbers must not become prototype-visible APIs.
+
+## Contract Previews
+
+<SpecContractPreview items={contractPreviews} locale="en" />
+
+## Test Mapping
+
+Lifecycle coverage is mapped through `spec/tests/T-LIFECYCLE-0001..0004.yaml` and implemented across runtime and adapter conformance tests.
+
+| Test entity        | Main coverage                                           |
+| ------------------ | ------------------------------------------------------- |
+| `T-LIFECYCLE-0001` | callback order, mounted invalidation, disposal boundary |
+| `T-LIFECYCLE-0002` | explicit update intent, no implicit render, scheduling  |
+| `T-LIFECYCLE-0003` | CP0-CP10 checkpoint traces and adapter conformance      |
+| `T-LIFECYCLE-0004` | `def.lifecycle` API surface and setup-only registration |
+
+These tests turn lifecycle from "callbacks roughly follow host habits" into a verifiable cross-host temporal order.
+
+## Related Specs
+
+- `Core` defines setup, the `run handle`, render functions, and template return values; Lifecycle defines runtime order on top of those foundations.
+- `Props`, `State`, `Context`, `Event`, and `Feedback` runtime APIs must respect the Lifecycle no-implicit-render boundary.
+- `Feedback` may request a style flush, but that is not a render commit; update flow still belongs to Lifecycle / runtime update semantics.
+- `Template` render output is produced inside the runtime render flow; template structure changes must enter render/commit through explicit update flow.
+- Adapters may have host-specific lifecycle hooks, but those hooks must map back to Proto UI canonical lifecycle instead of becoming a separate portable semantic model.

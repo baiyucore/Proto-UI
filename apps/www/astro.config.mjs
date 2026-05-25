@@ -373,6 +373,16 @@ export default defineConfig({
               badge: inProgressBadge,
             },
             {
+              label: 'Lifecycle',
+              translations: { en: 'Lifecycle', 'zh-CN': 'Lifecycle' },
+              slug: 'specifications/lifecycle',
+            },
+            {
+              label: 'Template',
+              translations: { en: 'Template', 'zh-CN': 'Template' },
+              slug: 'specifications/template',
+            },
+            {
               label: 'Props',
               translations: { en: 'Props', 'zh-CN': 'Props' },
               slug: 'specifications/props',
@@ -405,7 +415,6 @@ export default defineConfig({
               label: 'Feedback',
               translations: { en: 'Feedback', 'zh-CN': 'Feedback' },
               slug: 'specifications/feedback',
-              badge: inProgressBadge,
             },
             {
               label: 'asHook',
