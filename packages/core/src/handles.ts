@@ -93,6 +93,14 @@ export interface RunHandle<Props extends PropsBaseType> {
     emit(key: string, payload?: any, options?: Record<string, unknown>): void;
   };
 
+  feedback: {
+    style: {
+      patch: (...handles: StyleHandle[]) => void;
+      suppress: (...handles: StyleHandle[]) => void;
+      clearPatch: () => void;
+    };
+  };
+
   anatomy: {
     /** runtime-only readonly anatomy query surface; unavailable during setup */
     has(family: AnatomyFamily, role: string): boolean;
@@ -200,6 +208,8 @@ export type ContextOnChangeOptional<P extends PropsBaseType, T extends JsonObjec
 // 注意：这里不叫 run，避免和 callback-time 的 run 混淆
 export interface RenderReadHandle<Props extends PropsBaseType> {
   props: RunHandle<Props>['props'];
+  context: Pick<RunHandle<Props>['context'], 'read' | 'tryRead'>;
+  anatomy: RunHandle<Props>['anatomy'];
 }
 
 export interface ElementFactory {

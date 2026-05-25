@@ -3,8 +3,9 @@ export type PrototypeRenderSyntaxExpectation =
   | 'setup-receives-definition-handle'
   | 'setup-returned-render-is-executed'
   | 'void-setup-uses-default-slot-render'
+  | 'invalid-setup-return-fails-fast'
   | 'render-receives-renderer-handle-and-returns-template-children'
-  | 'renderer-read-props-without-update-entry';
+  | 'renderer-read-runtime-input-without-write-entry';
 
 export type PrototypeRenderSyntaxCase = {
   id: string;
@@ -43,7 +44,14 @@ export const PROTOTYPE_RENDER_SYNTAX_CASES = [
     specCase: 'T-CORE-SYNTAX-0001-CASE-SETUP-VOID-DEFAULT',
     covers: ['C-CORE-SYNTAX-0004-C'],
     expectation: 'void-setup-uses-default-slot-render',
-    notes: ['This records the current v0 runtime behavior and its open-question boundary.'],
+    notes: ['Default slot render is a stable v0 contract.'],
+  },
+  {
+    id: 'setup-invalid-return',
+    title: 'setup rejects non-render non-void returns',
+    specCase: 'T-CORE-SYNTAX-0001-CASE-SETUP-RETURN-INVALID',
+    covers: ['C-CORE-SYNTAX-0004-D'],
+    expectation: 'invalid-setup-return-fails-fast',
   },
   {
     id: 'render-receives-renderer',
@@ -53,17 +61,19 @@ export const PROTOTYPE_RENDER_SYNTAX_CASES = [
     expectation: 'render-receives-renderer-handle-and-returns-template-children',
   },
   {
-    id: 'renderer-read-props-no-update',
-    title: 'renderer read exposes props and no update entry',
+    id: 'renderer-read-runtime-input-no-write',
+    title: 'renderer read exposes props, context, and anatomy without write entries',
     specCase: 'T-CORE-SYNTAX-0001-CASE-RENDER-READ',
     covers: [
       'C-CORE-SYNTAX-0006-B',
       'C-CORE-SYNTAX-0006-C',
       'C-CORE-SYNTAX-0006-D',
+      'C-CORE-SYNTAX-0006-E',
+      'C-CORE-SYNTAX-0006-F',
       'C-LIFECYCLE-0003-D',
       'C-LIFECYCLE-0003-E',
     ],
-    expectation: 'renderer-read-props-without-update-entry',
+    expectation: 'renderer-read-runtime-input-without-write-entry',
   },
 ] as const satisfies readonly PrototypeRenderSyntaxCase[];
 

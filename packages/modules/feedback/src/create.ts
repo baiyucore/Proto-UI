@@ -6,7 +6,6 @@ import { createModule, defineModule, ModuleBase } from '@proto.ui/module-base';
 import type { ModuleFactoryArgs } from '@proto.ui/module-base';
 
 import type { FeedbackFacade, FeedbackModule, FeedbackPort } from './types';
-import { mergeTwTokensV0 } from '@proto.ui/core';
 import { EFFECTS_CAP } from './caps';
 
 export function createFeedbackModule(ctx: ModuleFactoryArgs): FeedbackModule {
@@ -45,9 +44,9 @@ export function createFeedbackModule(ctx: ModuleFactoryArgs): FeedbackModule {
           };
         }
 
-        /** runtime-only */
+        /** internal runtime base style contribution, used by rule execution */
         useStyleRuntime(handles: StyleHandle[]): () => void {
-          const op = 'run.feedback.style.use';
+          const op = 'rule.feedback.style.use';
           if (this.protoPhase === 'setup') {
             throw illegalPhase(op, this.protoPhase, {
               prototypeName: init.prototypeName,
@@ -64,6 +63,33 @@ export function createFeedbackModule(ctx: ModuleFactoryArgs): FeedbackModule {
             this.dirty = true;
             this.flushIfPossible();
           };
+        }
+
+        /** runtime-only public patch API */
+        patchStyle(handles: StyleHandle[]): void {
+          const op = 'run.feedback.style.patch';
+          this.ensureRuntime(op);
+          this.recorder.patch(...handles);
+          this.dirty = true;
+          this.flushIfPossible();
+        }
+
+        /** runtime-only public suppress API */
+        suppressStyle(handles: StyleHandle[]): void {
+          const op = 'run.feedback.style.suppress';
+          this.ensureRuntime(op);
+          this.recorder.suppress(...handles);
+          this.dirty = true;
+          this.flushIfPossible();
+        }
+
+        /** runtime-only public clear API */
+        clearStylePatch(): void {
+          const op = 'run.feedback.style.clearPatch';
+          this.ensureRuntime(op);
+          this.recorder.clearPatch();
+          this.dirty = true;
+          this.flushIfPossible();
         }
 
         /** internal: record tokens without v0 validation (setup or runtime) */
@@ -122,9 +148,7 @@ export function createFeedbackModule(ctx: ModuleFactoryArgs): FeedbackModule {
             return;
           }
           const effects = this.caps.get(EFFECTS_CAP);
-          // merge with existing recorded styles to preserve setup styles
-          const base = this.exportMerged();
-          const merged = mergeTwTokensV0([...base.tokens, ...(handle?.tokens ?? [])]);
+          const merged = this.recorder.exportWithAdditional(handle);
           effects.queueStyle({ kind: 'tw', tokens: merged.tokens });
           effects.requestFlush();
           this.flushRequested = true;
@@ -149,6 +173,16 @@ export function createFeedbackModule(ctx: ModuleFactoryArgs): FeedbackModule {
             this.flushRequested = true;
           }
         }
+
+        private ensureRuntime(op: string): void {
+          this.sys?.ensureRuntime(op);
+          if (!this.sys && this.protoPhase === 'setup') {
+            throw illegalPhase(op, this.protoPhase, {
+              prototypeName: init.prototypeName,
+              hint: `Use 'run' only after setup.`,
+            });
+          }
+        }
       }
 
       const impl = new Impl(caps);
@@ -156,6 +190,9 @@ export function createFeedbackModule(ctx: ModuleFactoryArgs): FeedbackModule {
       const facade: FeedbackFacade = {
         style: {
           use: (...handles) => impl.useStyle(handles),
+          patch: (...handles) => impl.patchStyle(handles),
+          suppress: (...handles) => impl.suppressStyle(handles),
+          clearPatch: () => impl.clearStylePatch(),
           exportMerged: () => impl.exportMerged(),
         },
       };
@@ -165,6 +202,9 @@ export function createFeedbackModule(ctx: ModuleFactoryArgs): FeedbackModule {
         port: {
           applyMergedStyle: (h) => impl.applyMergedStyle(h),
           useStyleRuntime: (...handles) => impl.useStyleRuntime(handles),
+          patchStyle: (...handles) => impl.patchStyle(handles),
+          suppressStyle: (...handles) => impl.suppressStyle(handles),
+          clearStylePatch: () => impl.clearStylePatch(),
           useStyleUnsafe: (...handles) => impl.useStyleUnsafe(handles),
         } satisfies FeedbackPort,
         hooks: {

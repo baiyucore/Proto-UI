@@ -29,6 +29,11 @@ cases:
     covers:
       - C-CORE-SYNTAX-0004-C
     expectation: void-setup-uses-default-slot-render
+  - id: T-CORE-SYNTAX-0001-CASE-SETUP-RETURN-INVALID
+    title: Setup rejects non-render non-void returns
+    covers:
+      - C-CORE-SYNTAX-0004-D
+    expectation: invalid-setup-return-fails-fast
   - id: T-CORE-SYNTAX-0001-CASE-RENDER-HANDLE
     title: Render receives a renderer handle and returns TemplateChildren
     covers:
@@ -37,14 +42,16 @@ cases:
       - C-CORE-SYNTAX-0006-A
     expectation: render-receives-renderer-handle-and-returns-template-children
   - id: T-CORE-SYNTAX-0001-CASE-RENDER-READ
-    title: Renderer read exposes current runtime props without update entry
+    title: Renderer read exposes current runtime input without write entries
     covers:
       - C-CORE-SYNTAX-0006-B
       - C-CORE-SYNTAX-0006-C
       - C-CORE-SYNTAX-0006-D
+      - C-CORE-SYNTAX-0006-E
+      - C-CORE-SYNTAX-0006-F
       - C-LIFECYCLE-0003-D
       - C-LIFECYCLE-0003-E
-    expectation: renderer-read-props-without-update-entry
+    expectation: renderer-read-runtime-input-without-write-entry
 implementations:
   - id: core-prototype-render-syntax-fixture
     kind: fixture
@@ -56,6 +63,7 @@ implementations:
       - T-CORE-SYNTAX-0001-CASE-SETUP-DEF
       - T-CORE-SYNTAX-0001-CASE-SETUP-RETURN-RENDER
       - T-CORE-SYNTAX-0001-CASE-SETUP-VOID-DEFAULT
+      - T-CORE-SYNTAX-0001-CASE-SETUP-RETURN-INVALID
       - T-CORE-SYNTAX-0001-CASE-RENDER-HANDLE
       - T-CORE-SYNTAX-0001-CASE-RENDER-READ
     notes:
@@ -76,6 +84,7 @@ implementations:
       - T-CORE-SYNTAX-0001-CASE-SETUP-DEF
       - T-CORE-SYNTAX-0001-CASE-SETUP-RETURN-RENDER
       - T-CORE-SYNTAX-0001-CASE-SETUP-VOID-DEFAULT
+      - T-CORE-SYNTAX-0001-CASE-SETUP-RETURN-INVALID
       - T-CORE-SYNTAX-0001-CASE-RENDER-HANDLE
       - T-CORE-SYNTAX-0001-CASE-RENDER-READ
 verifies:
@@ -91,6 +100,7 @@ verifies:
         - C-CORE-SYNTAX-0004-A
         - C-CORE-SYNTAX-0004-B
         - C-CORE-SYNTAX-0004-C
+        - C-CORE-SYNTAX-0004-D
     - id: C-CORE-SYNTAX-0005
       anchors:
         - C-CORE-SYNTAX-0005-A
@@ -102,6 +112,8 @@ verifies:
         - C-CORE-SYNTAX-0006-B
         - C-CORE-SYNTAX-0006-C
         - C-CORE-SYNTAX-0006-D
+        - C-CORE-SYNTAX-0006-E
+        - C-CORE-SYNTAX-0006-F
 exercises:
   contracts:
     - id: C-LIFECYCLE-0003
@@ -112,6 +124,9 @@ revisions:
   - version: 0.1.0
     change: introduced
     summary: Added shared fixture and contract tests for prototype setup/render syntax.
+  - version: 0.1.0
+    change: revised
+    summary: Added invalid setup return coverage and context/anatomy render read coverage.
 tags:
   - core
   - syntax

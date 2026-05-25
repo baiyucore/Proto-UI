@@ -198,7 +198,7 @@ export class ContextModuleImpl extends ModuleBase {
   // -------------------------
 
   read<T extends JsonObject>(key: ContextKey<T>): T {
-    this.guardCallbackOnly('run.context.read');
+    this.guardRuntimeOnly('run.context.read');
 
     const self = this.getSelfToken();
     this.ensureSubscribed(self, key, 'required', 'read');
@@ -224,7 +224,7 @@ export class ContextModuleImpl extends ModuleBase {
   }
 
   tryRead<T extends JsonObject>(key: ContextKey<T>): T | null {
-    this.guardCallbackOnly('run.context.tryRead');
+    this.guardRuntimeOnly('run.context.tryRead');
 
     const self = this.getSelfToken();
     this.ensureSubscribed(self, key, 'optional', 'tryRead');
@@ -337,6 +337,14 @@ export class ContextModuleImpl extends ModuleBase {
 
   private guardCallbackOnly(op: string) {
     if (this.sys.execPhase() !== 'callback') {
+      throw contextError(ERR.PHASE, `[Context] illegal phase for ${op}: ${this.sys.execPhase()}`);
+    }
+  }
+
+  private guardRuntimeOnly(op: string) {
+    try {
+      this.sys.ensureRuntime(op);
+    } catch {
       throw contextError(ERR.PHASE, `[Context] illegal phase for ${op}: ${this.sys.execPhase()}`);
     }
   }

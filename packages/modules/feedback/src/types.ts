@@ -6,6 +6,15 @@ export interface FeedbackFacade extends ModuleFacade {
     /** setup-only */
     use: (...handles: StyleHandle[]) => () => void;
 
+    /** runtime-only */
+    patch: (...handles: StyleHandle[]) => void;
+
+    /** runtime-only */
+    suppress: (...handles: StyleHandle[]) => void;
+
+    /** runtime-only */
+    clearPatch: () => void;
+
     /** pure snapshot: allowed in any phase */
     exportMerged: () => StyleHandle;
   };
@@ -18,11 +27,17 @@ export type FeedbackPort = {
    */
   applyMergedStyle(handle: StyleHandle): void;
 
-  /**
-   * Runtime-only: record a style use (returns unUse).
-   * Preserves ordering semantics (later use wins by position).
-   */
+  /** Internal: record a rule-produced base style use (returns unUse). */
   useStyleRuntime: (...handles: StyleHandle[]) => () => void;
+
+  /** Runtime-only public feedback.style patch surface. */
+  patchStyle: (...handles: StyleHandle[]) => void;
+
+  /** Runtime-only public feedback.style suppress surface. */
+  suppressStyle: (...handles: StyleHandle[]) => void;
+
+  /** Runtime-only public feedback.style patch reset surface. */
+  clearStylePatch: () => void;
 
   /**
    * Internal: record style tokens without v0 token validation.

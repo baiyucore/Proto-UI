@@ -21,6 +21,8 @@ import {
 import type { RuleFacade } from '@proto.ui/module-rule';
 import type { ModuleOrchestratorFacadeView } from '../orchestrator/module-orchestrator/types';
 import type { PropsFacade } from '@proto.ui/module-props';
+import type { ContextFacade } from '@proto.ui/module-context';
+import type { AnatomyFacade } from '@proto.ui/module-anatomy';
 import type { ExecPhase } from '@proto.ui/module-base';
 import { attachAsHookRuntime } from './as-hook';
 
@@ -86,6 +88,10 @@ export function createKernel<P extends PropsBaseType>(
   let renderFn: RenderFn = defaultRender;
   if (typeof maybeRender === 'function') {
     renderFn = maybeRender;
+  } else if (typeof maybeRender !== 'undefined') {
+    throw new Error(
+      `[Prototype] setup() must return render function or void, got: ${typeof maybeRender}.`
+    );
   }
   setPhase('unknown');
 
@@ -112,9 +118,55 @@ export function createKernel<P extends PropsBaseType>(
   // ----------------
   const facades = modules.getFacades();
   const propsFacade = facades['props'] as PropsFacade<P>;
+  const contextFacade = facades['context'] as ContextFacade;
+  const anatomyFacade = facades['anatomy'] as AnatomyFacade | undefined;
 
   const read: RenderReadHandle<P> = {
     props: propsFacade as any,
+    context: {
+      read: (key) => contextFacade.read(key),
+      tryRead: (key) => contextFacade.tryRead(key),
+    },
+    anatomy: {
+      has: (family, role) => {
+        if (!anatomyFacade) throw new Error(`[Anatomy] module unavailable`);
+        return anatomyFacade.has(family, role);
+      },
+      parts: ((family: any, options: any) => {
+        if (!anatomyFacade) throw new Error(`[Anatomy] module unavailable`);
+        return anatomyFacade.parts(family, options as any);
+      }) as RenderReadHandle<P>['anatomy']['parts'],
+      partsOf: ((family: any, role: any, options: any) => {
+        if (!anatomyFacade) throw new Error(`[Anatomy] module unavailable`);
+        return anatomyFacade.partsOf(family, role, options as any);
+      }) as RenderReadHandle<P>['anatomy']['partsOf'],
+      order: {
+        version: ((family, options) => {
+          if (!anatomyFacade) throw new Error(`[Anatomy] module unavailable`);
+          return anatomyFacade.order.version(family, options as any);
+        }) as RenderReadHandle<P>['anatomy']['order']['version'],
+        parts: ((family, options) => {
+          if (!anatomyFacade) throw new Error(`[Anatomy] module unavailable`);
+          return anatomyFacade.order.parts(family, options as any);
+        }) as RenderReadHandle<P>['anatomy']['order']['parts'],
+        partsOf: ((family, role, options) => {
+          if (!anatomyFacade) throw new Error(`[Anatomy] module unavailable`);
+          return anatomyFacade.order.partsOf(family, role, options as any);
+        }) as RenderReadHandle<P>['anatomy']['order']['partsOf'],
+        indexOfSelf: ((family, role, options) => {
+          if (!anatomyFacade) throw new Error(`[Anatomy] module unavailable`);
+          return anatomyFacade.order.indexOfSelf(family, role, options as any);
+        }) as RenderReadHandle<P>['anatomy']['order']['indexOfSelf'],
+        prevOfSelf: ((family, role, options) => {
+          if (!anatomyFacade) throw new Error(`[Anatomy] module unavailable`);
+          return anatomyFacade.order.prevOfSelf(family, role, options as any);
+        }) as RenderReadHandle<P>['anatomy']['order']['prevOfSelf'],
+        nextOfSelf: ((family, role, options) => {
+          if (!anatomyFacade) throw new Error(`[Anatomy] module unavailable`);
+          return anatomyFacade.order.nextOfSelf(family, role, options as any);
+        }) as RenderReadHandle<P>['anatomy']['order']['nextOfSelf'],
+      },
+    },
   };
 
   const { el, slot, r, svg } = createRendererPrimitives();

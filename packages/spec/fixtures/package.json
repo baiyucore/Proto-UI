@@ -28,6 +28,14 @@
     "./template/authoring": {
       "types": "./src/template/authoring.ts",
       "default": "./src/template/authoring.ts"
+    },
+    "./feedback/style-authoring": {
+      "types": "./src/feedback/style-authoring.ts",
+      "default": "./src/feedback/style-authoring.ts"
+    },
+    "./feedback/style-runtime-patch": {
+      "types": "./src/feedback/style-runtime-patch.ts",
+      "default": "./src/feedback/style-runtime-patch.ts"
     }
   },
   "description": "Shared semantic test fixtures for Proto UI spec contracts."
