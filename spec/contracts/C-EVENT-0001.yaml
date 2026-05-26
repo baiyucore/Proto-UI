@@ -1,0 +1,61 @@
+id: C-EVENT-0001
+type: contract
+title: Event is the user-to-component information channel
+status: draft
+since: 0.1.0
+summary: Event carries user interaction information into a Component.
+statement:
+  zh-CN: >-
+    Event 是 Proto UI 中 User → Component 方向的信息通路。它承载 User 对组件发起的操作、输入与交互意图，使组件能够在 runtime callback 中响应用户行为。Event 不承载组件对 User 的可感知反馈，也不承载 App Maker 配置、Component 对 App Maker 的暴露信息或 Other Component 协作语义。
+
+
+  en: >-
+    Event is the User → Component information channel in Proto UI. It carries operations, input, and interaction intent initiated by the User toward a component, so the component can respond to user behavior in runtime callbacks. Event does not carry perceivable feedback from the component to the User, App Maker configuration, Component-to-App-Maker exposed information, or Other Component collaboration semantics.
+
+
+criteria:
+  - id: C-EVENT-0001-A
+    text:
+      zh-CN: Event 必须被识别为 User → Component 方向的信息通路。
+      en: Event must be identified as the User → Component information channel.
+  - id: C-EVENT-0001-B
+    text:
+      zh-CN: Event 必须承载 User 对组件发起的操作、输入或交互意图。
+      en: Event must carry operations, input, or interaction intent initiated by the User toward the component.
+  - id: C-EVENT-0001-C
+    text:
+      zh-CN: Event callback 是组件响应 User 输入的 runtime 入口，而不是 setup-time 声明执行入口。
+      en: Event callbacks are runtime entry points for responding to User input, not setup-time declaration execution points.
+  - id: C-EVENT-0001-D
+    text:
+      zh-CN: Event 不得被解释为 Component → User 的 feedback 通路、App Maker → Component 的 props 通路、Component → App Maker 的 expose 通路或 Other Component ↔ Component 的 context 通路。
+      en: Event must not be interpreted as the Component → User feedback channel, the App Maker → Component props channel, the Component → App Maker expose channel, or the Other Component ↔ Component context channel.
+sources:
+  - path: internal/contracts/event/event.v0.md
+    sections:
+      - Scope & Non-goals
+      - Runtime-only Callback Semantics
+  - path: apps/www/src/content/docs/zh-cn/whitepaper/information-flow-model.md
+    sections:
+      - User ↔ Component
+  - path: apps/www/src/content/docs/en/whitepaper/information-flow-model.md
+    sections:
+      - User ↔ Component
+refines:
+  contracts:
+    - id: C-CORE-CHANNEL-0001
+      anchors:
+        - C-CORE-CHANNEL-0001-A
+        - C-CORE-CHANNEL-0001-C
+      note: Event is the User-to-Component interaction-input channel currently admitted into Proto UI's portable channel model.
+dependsOn:
+  knowledge:
+    - K-INFORMATION-CHANNEL-0001
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Captured the top-level channel identity for event.
+tags:
+  - event
+  - channel
+  - user
