@@ -4,7 +4,7 @@ import { definePrototype } from '@proto.ui/core';
 import { createMountedVueAdapter, flushVue } from './utils/vue';
 
 describe('adapter-vue: expose event bridge', () => {
-  it('maps run.event.emit to Vue emit/onX listener props', async () => {
+  it('maps run.expose.emit to Vue emit/onX listener props', async () => {
     const onCheckedChange = vi.fn();
 
     const proto = definePrototype({
@@ -12,7 +12,7 @@ describe('adapter-vue: expose event bridge', () => {
       setup(def) {
         def.expose.event('checkedChange', { payload: 'json' });
         def.lifecycle.onMounted((run) => {
-          run.event.emit('checkedChange', { checked: true });
+          run.expose.emit('checkedChange', { checked: true });
         });
         return (r) => [r.el('div', 'ok')];
       },

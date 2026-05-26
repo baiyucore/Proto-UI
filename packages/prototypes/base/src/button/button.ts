@@ -80,11 +80,11 @@ function setupButton(def: DefHandle<ButtonProps, ButtonExposes>): void {
       focusable.focus({ reason: 'pointer' });
     }
   });
-  def.event.on('native:focus', () => {
+  def.event.on('host:focus', () => {
     if (disabled.get()) return;
     focusable.focus({ reason: keyboardModality ? 'keyboard' : 'programmatic' });
   });
-  def.event.on('native:blur', () => {
+  def.event.on('host:blur', () => {
     focusable.blur();
   });
   def.expose.state('focused', focusable.focused);
@@ -115,7 +115,7 @@ function setupButton(def: DefHandle<ButtonProps, ButtonExposes>): void {
   def.expose.event('click', { payload: 'void' });
   def.event.on('press.commit', (run) => {
     if (disabled.get()) return;
-    run.event.emit('click');
+    run.expose.emit('click');
   });
 }
 

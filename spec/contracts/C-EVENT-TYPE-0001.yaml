@@ -30,16 +30,6 @@ criteria:
     text:
       zh-CN: Adapter 必须负责把宿主输入系统解释或映射到其支持的 event type 层级；原型作者不得要求某个具体宿主事件直接等同于 protocol core event。
       en: Adapters must be responsible for interpreting or mapping host input systems into the event-type layers they support; prototype authors must not require a concrete host event to be directly equivalent to a protocol core event.
-openQuestions:
-  - id: C-EVENT-TYPE-0001-Q-VALIDATION
-    question:
-      zh-CN: 当前 runtime 是否应将 event type 校验收窄到显式 core/optional event 与 host escape hatch？
-      en: Should the current runtime narrow event-type validation to explicit core/optional events and host escape hatches?
-    context:
-      zh-CN: 当前实现接受任意小写点分段 event name；这比 `EventTypeV0` 与本契约草案更宽。
-      en: The current implementation accepts arbitrary lowercase dot-separated event names, which is broader than `EventTypeV0` and this contract draft.
-    blocks:
-      - event type runtime validation
 sources:
   - path: internal/contracts/event/event-type.v0.md
     sections:
@@ -55,6 +45,9 @@ revisions:
   - version: 0.1.0
     change: introduced
     summary: Captured layered event-type governance for v0.
+  - version: 0.1.0
+    change: amended
+    summary: Resolved validation gap by narrowing runtime validation to core, optional, and host-bound event layers.
 tags:
   - event
   - event-type

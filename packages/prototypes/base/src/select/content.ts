@@ -167,7 +167,7 @@ function setupSelectContent(def: DefHandle<SelectContentProps, SelectContentExpo
     }));
   });
 
-  def.event.onGlobal('native:pointerdown', (run, ev) => {
+  def.event.onGlobal('host:pointerdown', (run, ev) => {
     const ctx = run.context.read(SELECT_CONTEXT);
     if (!ctx.open || ctx.disabled || ctx.controlledOpen) return;
     const classification = boundary.notify({

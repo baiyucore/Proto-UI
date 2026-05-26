@@ -173,7 +173,7 @@ Key 事件用于描述 **“某种输入通道被激活 / 释放”**：
 ### 4.1 定义
 
 ```ts
-type ExtensionEventType = `native:${string}` | `host.${string}`;
+type ExtensionEventType = `host:${string}`;
 ```
 
 ### 4.2 语义定位
@@ -192,13 +192,9 @@ Host 级事件表示：
 
 ### 4.3 命名规范（Normative）
 
-- `native:*`
-  - 表示直接映射 Host 的原生事件名
-  - 例如：`native:click`、`native:keydown`
-
-- `host.*`
-  - 表示 Host 自定义的高阶事件
-  - 例如：`host.dragStart`、`host.viewResize`
+- `host:*`
+  - 表示 Host-bound escape hatch 事件名
+  - 例如：`host:click`、`host:keydown`
 
 ---
 
@@ -219,8 +215,7 @@ Host 级事件表示：
 - 不符合以下任一条件的事件名：
   - 属于 CoreEventType
   - 属于 OptionalEventType
-  - 匹配 `native:*`
-  - 匹配 `host.*`
+  - 匹配 `host:*`
 
 ---
 

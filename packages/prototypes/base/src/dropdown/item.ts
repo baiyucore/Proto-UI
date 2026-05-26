@@ -76,7 +76,7 @@ function setupDropdownItem(def: DefHandle<DropdownItemProps, DropdownItemExposes
     }));
   });
 
-  def.event.on('native:focus', (run) => {
+  def.event.on('host:focus', (run) => {
     const ownDisabled = !!run.props.get().disabled;
     const ctx = run.context.read(DROPDOWN_CONTEXT);
     if (ownDisabled || ctx.disabled) return;

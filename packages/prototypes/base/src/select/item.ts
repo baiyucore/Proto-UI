@@ -121,7 +121,7 @@ function setupSelectItem(def: DefHandle<SelectItemProps, SelectItemExposes>): vo
     }));
   });
 
-  def.event.on('native:focus', (run) => {
+  def.event.on('host:focus', (run) => {
     const ownDisabled = !!run.props.get().disabled;
     const ctx = run.context.read(SELECT_CONTEXT);
     if (ownDisabled || ctx.disabled) return;

@@ -1,0 +1,158 @@
+id: T-EVENT-0001
+type: test
+title: Event registration and dispatch tests
+status: draft
+since: 0.1.0
+summary: Shared fixtures and module/runtime/adapter tests for setup event registration, runtime callback dispatch, target binding, tokens, cleanup, and rebinding.
+cases:
+  - id: T-EVENT-0001-CASE-SETUP-ROOT
+    title: Root listener registration is setup-only
+    covers:
+      - C-EVENT-0002-A
+      - C-EVENT-0002-C
+      - C-EVENT-0003-A
+    expectation: setup-registration-only
+  - id: T-EVENT-0001-CASE-RUNTIME-CALLBACK
+    title: Registered callbacks dispatch during runtime with run handle and payload
+    covers:
+      - C-EVENT-0001-C
+      - C-EVENT-0002-D
+      - C-EVENT-0002-E
+      - C-EVENT-0002-F
+    expectation: runtime-callback-dispatch
+  - id: T-EVENT-0001-CASE-GLOBAL-TARGET
+    title: Global listener registration binds to adapter-defined global target
+    covers:
+      - C-EVENT-0003-B
+      - C-EVENT-0003-C
+      - C-EVENT-0003-D
+    expectation: target-binding
+  - id: T-EVENT-0001-CASE-EMPTY-NOOP
+    title: Empty event registration set is a binding no-op
+    covers:
+      - C-EVENT-0004-A
+      - C-EVENT-0004-B
+      - C-EVENT-0004-C
+    expectation: empty-registration-noop
+  - id: T-EVENT-0001-CASE-NO-DEDUP
+    title: Identical listener registrations are not deduplicated
+    covers:
+      - C-EVENT-0005-A
+      - C-EVENT-0005-C
+      - C-EVENT-0005-D
+    expectation: no-registration-dedup
+  - id: T-EVENT-0001-CASE-TOKEN-REMOVAL
+    title: EventListenerToken removes exactly one registration
+    covers:
+      - C-EVENT-0006-A
+      - C-EVENT-0006-B
+      - C-EVENT-0006-C
+      - C-EVENT-0006-D
+      - C-EVENT-TOKEN-0001-A
+      - C-EVENT-TOKEN-0001-B
+    expectation: token-precise-removal
+  - id: T-EVENT-0001-CASE-CLEANUP-REBIND
+    title: Event bindings clean up on unmount and rebind after target replacement
+    covers:
+      - C-EVENT-0007-A
+      - C-EVENT-0007-B
+      - C-EVENT-0007-C
+      - C-EVENT-0007-D
+    expectation: cleanup-and-rebind
+implementations:
+  - id: event-registration-fixture
+    kind: fixture
+    status: active
+    path: packages/spec/fixtures/src/event/registration.ts
+    required: true
+    consumesCases:
+      - T-EVENT-0001-CASE-SETUP-ROOT
+      - T-EVENT-0001-CASE-RUNTIME-CALLBACK
+      - T-EVENT-0001-CASE-GLOBAL-TARGET
+      - T-EVENT-0001-CASE-EMPTY-NOOP
+      - T-EVENT-0001-CASE-NO-DEDUP
+      - T-EVENT-0001-CASE-TOKEN-REMOVAL
+      - T-EVENT-0001-CASE-CLEANUP-REBIND
+  - id: module-event-registration-contract
+    kind: module-test
+    status: passing
+    path: packages/modules/event/test/contract/event-module.v0.contract.test.ts
+    required: true
+    consumesCases:
+      - T-EVENT-0001-CASE-SETUP-ROOT
+      - T-EVENT-0001-CASE-RUNTIME-CALLBACK
+      - T-EVENT-0001-CASE-GLOBAL-TARGET
+      - T-EVENT-0001-CASE-EMPTY-NOOP
+      - T-EVENT-0001-CASE-NO-DEDUP
+      - T-EVENT-0001-CASE-TOKEN-REMOVAL
+      - T-EVENT-0001-CASE-CLEANUP-REBIND
+  - id: adapter-web-component-event-router-cleanup-contract
+    kind: adapter-test
+    status: passing
+    path: packages/adapters/web-component/test/contract/event.router.dispose.v0.contract.test.ts
+    required: true
+    consumesCases:
+      - T-EVENT-0001-CASE-CLEANUP-REBIND
+  - id: adapter-web-component-event-router-no-dedupe-contract
+    kind: adapter-test
+    status: passing
+    path: packages/adapters/web-component/test/contract/event.router.no-dedupe.v0.contract.test.ts
+    required: true
+    consumesCases:
+      - T-EVENT-0001-CASE-NO-DEDUP
+verifies:
+  contracts:
+    - id: C-EVENT-0002
+      anchors:
+        - C-EVENT-0002-A
+        - C-EVENT-0002-C
+        - C-EVENT-0002-D
+        - C-EVENT-0002-E
+        - C-EVENT-0002-F
+    - id: C-EVENT-0003
+      anchors:
+        - C-EVENT-0003-A
+        - C-EVENT-0003-B
+        - C-EVENT-0003-C
+        - C-EVENT-0003-D
+    - id: C-EVENT-0004
+      anchors:
+        - C-EVENT-0004-A
+        - C-EVENT-0004-B
+        - C-EVENT-0004-C
+    - id: C-EVENT-0005
+      anchors:
+        - C-EVENT-0005-A
+        - C-EVENT-0005-C
+        - C-EVENT-0005-D
+    - id: C-EVENT-0006
+      anchors:
+        - C-EVENT-0006-A
+        - C-EVENT-0006-B
+        - C-EVENT-0006-C
+        - C-EVENT-0006-D
+    - id: C-EVENT-0007
+      anchors:
+        - C-EVENT-0007-A
+        - C-EVENT-0007-B
+        - C-EVENT-0007-C
+        - C-EVENT-0007-D
+exercises:
+  contracts:
+    - id: C-EVENT-0001
+      role: test-surface
+      coverageImpact: exercises-test-surface
+      note: Exercises Event callbacks as runtime User-to-Component input responses.
+    - id: C-EVENT-TOKEN-0001
+      role: diagnostic-policy
+      coverageImpact: exercises-test-surface
+      note: Exercises token metadata on registration and removal cases.
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Added event registration and dispatch test entity with shared fixture mapping.
+tags:
+  - event
+  - registration
+  - dispatch
+  - contract-test

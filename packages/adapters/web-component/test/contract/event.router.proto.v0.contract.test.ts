@@ -18,7 +18,8 @@ describe('contract: adapter-web-component / event router proto semantic mapping 
 
     expect(calls.length).toBe(1);
     expect(calls[0]).toBeInstanceOf(CustomEvent);
-    expect((calls[0] as CustomEvent).detail).toBeInstanceOf(MouseEvent);
+    expect((calls[0] as CustomEvent).detail).toMatchObject({ type: 'press.commit' });
+    expect((calls[0] as CustomEvent).detail.nativeEvent).toBeInstanceOf(MouseEvent);
 
     router.dispose();
   });
@@ -38,7 +39,8 @@ describe('contract: adapter-web-component / event router proto semantic mapping 
 
     expect(calls.length).toBe(1);
     expect(calls[0]).toBeInstanceOf(CustomEvent);
-    expect((calls[0] as CustomEvent).detail).toBeInstanceOf(KeyboardEvent);
+    expect((calls[0] as CustomEvent).detail).toMatchObject({ type: 'key.down', key: 'A' });
+    expect((calls[0] as CustomEvent).detail.nativeEvent).toBeInstanceOf(KeyboardEvent);
 
     router.dispose();
   });
@@ -57,7 +59,8 @@ describe('contract: adapter-web-component / event router proto semantic mapping 
     el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true }));
 
     expect(calls.length).toBe(1);
-    expect((calls[0] as CustomEvent).detail).toBeInstanceOf(MouseEvent);
+    expect((calls[0] as CustomEvent).detail).toMatchObject({ type: 'context.menu' });
+    expect((calls[0] as CustomEvent).detail.nativeEvent).toBeInstanceOf(MouseEvent);
 
     router.dispose();
   });

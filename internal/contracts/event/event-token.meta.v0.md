@@ -61,7 +61,7 @@ Semantic meaning:
   - `"global"`: bound to an adapter-defined global interaction target
 
 - `type`
-  - the event type string (e.g. `"press.commit"`, `"pointer.down"`, `"native:click"`)
+  - the event type string (e.g. `"press.commit"`, `"pointer.down"`, `"host:click"`)
   - validity is defined by the Event Type contract
   - represented as `string` rather than a concrete union to avoid version coupling
 

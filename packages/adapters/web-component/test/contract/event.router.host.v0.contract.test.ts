@@ -2,8 +2,8 @@
 import { describe, it, expect } from 'vitest';
 import { createWebProtoEventRouter } from '@proto.ui/adapter-base';
 
-describe('contract: adapter-web-component / event router host.* (v0)', () => {
-  it('host.* should forward to adapter-defined host target (v0: same as native)', () => {
+describe('contract: adapter-web-component / event router host target (v0)', () => {
+  it('host:* should forward to adapter-defined host target (v0: same as native)', () => {
     const el = document.createElement('div');
 
     const router = createWebProtoEventRouter({
@@ -15,7 +15,7 @@ describe('contract: adapter-web-component / event router host.* (v0)', () => {
     const calls: any[] = [];
     const cb = (ev: any) => calls.push(ev);
 
-    router.rootTarget.addEventListener('host.click' as any, cb);
+    router.rootTarget.addEventListener('host:click' as any, cb);
 
     el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 

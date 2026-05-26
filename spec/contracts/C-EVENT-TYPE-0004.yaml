@@ -34,16 +34,6 @@ criteria:
     text:
       zh-CN: 原型作者依赖 `host:*` 会降低原型可移植性；工具链与文档应能将其标识为 escape hatch。
       en: Depending on `host:*` reduces prototype portability; tooling and documentation should be able to identify it as an escape hatch.
-openQuestions:
-  - id: C-EVENT-TYPE-0004-Q-NATIVE-MIGRATION
-    question:
-      zh-CN: 现有 `native:*` 与 `host.*` 应如何迁移到统一的 `host:*` 前缀？
-      en: How should existing `native:*` and `host.*` usages migrate to the unified `host:*` prefix?
-    context:
-      zh-CN: 当前实现与测试仍支持 `native:*` 与 `host.*`。契约草案先将规范方向收敛为 `host:*`，兼容策略和弃用节奏需要单独落实。
-      en: The current implementation and tests still support `native:*` and `host.*`. This contract draft first converges the normative direction on `host:*`; compatibility strategy and deprecation timing need a separate follow-up.
-    blocks:
-      - event host escape hatch prefix migration
 sources:
   - path: internal/contracts/event/event-type.v0.md
     sections:
@@ -63,6 +53,9 @@ revisions:
   - version: 0.1.0
     change: introduced
     summary: Drafted the host-bound event escape hatch and recorded the native/host prefix migration gap.
+  - version: 0.1.0
+    change: amended
+    summary: Migrated implementation and tests to the unified `host:*` prefix.
 tags:
   - event
   - event-type

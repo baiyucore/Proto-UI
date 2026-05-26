@@ -32,7 +32,7 @@ export const createRunHandle = <P extends PropsBaseType>(
       update: (key, next) => context.update(key, next),
       tryUpdate: (key, next) => context.tryUpdate(key, next),
     },
-    event: {
+    expose: {
       emit: (key, payload, options) => event.emit(key, payload, options),
     },
     feedback: {

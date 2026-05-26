@@ -4,13 +4,13 @@ import type { Prototype } from '@proto.ui/core';
 import { createMountedVueAdapter, flushVue } from './utils/vue';
 
 describe('adapter-vue: event routing', () => {
-  it('delivers native:click via the adapter root target', async () => {
+  it('delivers host:click via the adapter root target', async () => {
     const calls: string[] = [];
 
     const proto: Prototype = {
       name: 'vue-event-native-click',
       setup(def: any) {
-        def.event.on('native:click', () => calls.push('native:click'));
+        def.event.on('host:click', () => calls.push('host:click'));
         return (r: any) => r.el('div', {}, ['ok']);
       },
     };
@@ -19,7 +19,7 @@ describe('adapter-vue: event routing', () => {
     await flushVue();
 
     mounted.root?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    expect(calls).toEqual(['native:click']);
+    expect(calls).toEqual(['host:click']);
 
     mounted.unmount();
   });

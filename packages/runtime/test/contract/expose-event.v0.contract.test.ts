@@ -45,7 +45,7 @@ describe('runtime contract: expose-event (v0)', () => {
       setup(def) {
         def.expose.event('ready', { payload: 'json' });
         def.lifecycle.onMounted((run) => {
-          run.event.emit('ready', { ok: true }, { note: 'x' });
+          run.expose.emit('ready', { ok: true }, { note: 'x' });
         });
         return (r: any) => [r.el('div', 'ok')];
       },
@@ -65,7 +65,7 @@ describe('runtime contract: expose-event (v0)', () => {
       name: 'x-expose-event-throw',
       setup(def) {
         def.lifecycle.onMounted((run) => {
-          run.event.emit('missing', 1);
+          run.expose.emit('missing', 1);
         });
         return (r) => [r.el('div', 'ok')];
       },

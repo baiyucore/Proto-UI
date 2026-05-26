@@ -1,32 +1,47 @@
 // packages/types/src/event.ts
-export type CoreEventType =
-  | 'press.start'
-  | 'press.end'
-  | 'press.cancel'
-  | 'press.commit'
-  | 'key.down'
-  | 'key.up';
+export const CORE_EVENT_TYPES = [
+  'press.start',
+  'press.end',
+  'press.cancel',
+  'press.commit',
+  'key.down',
+  'key.up',
+] as const;
 
-export type OptionalEventType =
-  | 'pointer.down'
-  | 'pointer.move'
-  | 'pointer.up'
-  | 'pointer.cancel'
-  | 'pointer.enter'
-  | 'pointer.leave'
-  | 'nav.focus'
-  | 'nav.blur'
-  | 'text.focus'
-  | 'text.blur'
-  | 'input'
-  | 'change'
-  | 'context.menu';
+export type CoreEventType = (typeof CORE_EVENT_TYPES)[number];
 
-export type ExtensionEventType = `native:${string}` | `host.${string}`;
+export const OPTIONAL_EVENT_TYPES = [
+  'pointer.down',
+  'pointer.move',
+  'pointer.up',
+  'pointer.cancel',
+  'pointer.enter',
+  'pointer.leave',
+  'nav.focus',
+  'nav.blur',
+  'text.focus',
+  'text.blur',
+  'input',
+  'change',
+  'context.menu',
+] as const;
+
+export type OptionalEventType = (typeof OPTIONAL_EVENT_TYPES)[number];
+
+export type ExtensionEventType = `host:${string}`;
 
 export type EventTypeV0 = CoreEventType | OptionalEventType | ExtensionEventType;
 
 export type EventListenerOptions = any;
+
+export type ProtoEventPayload = {
+  type: CoreEventType | OptionalEventType;
+  key?: string;
+  target?: unknown;
+  nativeEvent?: unknown;
+  preventDefault?: () => void;
+  stopPropagation?: () => void;
+};
 
 export type ExposeEventSpec = {
   payload?: 'void' | 'any' | 'json';

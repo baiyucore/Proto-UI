@@ -44,18 +44,21 @@ criteria:
       en: The Event channel currently must not stabilize any prototype-author runtime API; if active event triggering, runtime dynamic subscription, or runtime unsubscription is provided in the future, it must be designed separately as an escape hatch.
   - id: C-EVENT-0002-H
     text:
-      zh-CN: '`run.event.emit` 不得被本契约解释为 Event 通路 runtime API；它的归属应由 expose-event 相关契约或断口处理。'
-      en: '`run.event.emit` must not be interpreted by this contract as an Event-channel runtime API; its ownership should be handled by expose-event contracts or debt records.'
+      zh-CN: '`run.expose.emit` 不得被本契约解释为 Event 通路 runtime API；它属于 expose-event emission surface。'
+      en: '`run.expose.emit` must not be interpreted by this contract as an Event-channel runtime API; it belongs to the expose-event emission surface.'
+  - id: C-EVENT-0002-I
+    text:
+      zh-CN: portable Event payload 必须至少暴露产生该 callback dispatch 的 portable event type。
+      en: Portable Event payloads must expose at least the portable event type that produced the callback dispatch.
+  - id: C-EVENT-0002-J
+    text:
+      zh-CN: '`key.*` event payload 必须暴露 portable `key` string。'
+      en: '`key.*` event payloads must expose a portable `key` string.'
+  - id: C-EVENT-0002-K
+    text:
+      zh-CN: 宿主原生事件对象、具体 target 与宿主控制方法可以作为 host-local escape hatch 暴露，但不得被解释为 portable payload 保证。
+      en: Native host event objects, concrete targets, and host control methods may be exposed as host-local escape hatches, but must not be interpreted as portable payload guarantees.
 openQuestions:
-  - id: C-EVENT-0002-Q-PAYLOAD-SHAPE
-    question:
-      zh-CN: 各类 EventType 的 portable payload 最小形状应如何定义？
-      en: What should the minimal portable payload shape be for each EventType family?
-    context:
-      zh-CN: 当前 Web adapter 多数情况下把 native event 放在 payload/detail 中，但这不应直接固化为跨宿主语义。后续至少需要为 `key.*` 等事件定义最低限度信息。
-      en: The current Web adapter often places the native event in the payload/detail, but that should not be directly frozen as cross-host semantics. A future contract should at least define minimal information for events such as `key.*`.
-    blocks:
-      - event payload shape contract
   - id: C-EVENT-0002-Q-RUNTIME-ESCAPE-HATCH
     question:
       zh-CN: Event 是否需要 future runtime escape hatch，例如主动触发某个 event、runtime 动态添加订阅或 runtime 取消订阅？
@@ -88,6 +91,9 @@ revisions:
   - version: 0.1.0
     change: introduced
     summary: Split setup-time event listener registration from runtime callback dispatch.
+  - version: 0.1.0
+    change: amended
+    summary: Added minimal portable payload criteria and clarified expose-event emission ownership.
 tags:
   - event
   - api

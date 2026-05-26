@@ -93,7 +93,7 @@ describe('runtime contract: asTrigger (v0)', () => {
       name: 'x-as-trigger-0100',
       setup(def) {
         asTrigger();
-        def.event.on('click' as any, () => {});
+        def.event.on('host:click' as any, () => {});
         return (r) => r.el('div', 'ok');
       },
     });
@@ -141,7 +141,7 @@ describe('runtime contract: asTrigger (v0)', () => {
       name: 'x-as-trigger-0150',
       setup(def) {
         asTrigger();
-        def.event.on('click' as any, () => {});
+        def.event.on('host:click' as any, () => {});
         return (r) => r.el('div', 'ok');
       },
     });
@@ -194,7 +194,7 @@ describe('runtime contract: asTrigger (v0)', () => {
       name: 'x-as-trigger-0200',
       setup(def) {
         asTrigger();
-        def.event.on('click' as any, () => {});
+        def.event.on('host:click' as any, () => {});
         return (r) => r.el('div', 'ok');
       },
     });

@@ -82,7 +82,7 @@ describe('prototypes/base: asButton', () => {
     expect(exposes.hovered.get()).toBe(true);
 
     ctx.globalTarget?.dispatchEvent?.(new CustomEvent('key.down'));
-    ctx.rootTarget.dispatchEvent(new CustomEvent('native:focus'));
+    ctx.rootTarget.dispatchEvent(new CustomEvent('host:focus'));
     expect(exposes.focused.get()).toBe(true);
     expect(exposes.focusVisible.get()).toBe(true);
 
@@ -107,7 +107,7 @@ describe('prototypes/base: asButton', () => {
     });
 
     ctx.rootTarget.dispatchEvent(new CustomEvent('pointer.enter'));
-    ctx.rootTarget.dispatchEvent(new CustomEvent('native:focus'));
+    ctx.rootTarget.dispatchEvent(new CustomEvent('host:focus'));
     ctx.rootTarget.dispatchEvent(new CustomEvent('pointer.down'));
     ctx.rootTarget.dispatchEvent(new CustomEvent('press.commit'));
 

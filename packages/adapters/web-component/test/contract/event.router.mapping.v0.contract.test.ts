@@ -13,7 +13,7 @@ function once<T = any>(t: EventTarget, type: string) {
 }
 
 describe('contract: adapter-web-component / event router mapping (v0)', () => {
-  it('pointerdown -> pointer.down with native payload in detail', async () => {
+  it('pointerdown -> pointer.down with portable payload in detail', async () => {
     const el = document.createElement('div');
     const global = new EventTarget();
     let enabled = true;
@@ -31,7 +31,9 @@ describe('contract: adapter-web-component / event router mapping (v0)', () => {
 
     const ev = await p;
     expect(ev).toBeInstanceOf(CustomEvent);
-    expect((ev as any).detail).toBe(native);
+    expect((ev as any).detail).toMatchObject({ type: 'pointer.down' });
+    expect((ev as any).detail.nativeEvent).toBe(native);
+    expect((ev as any).detail.target).toBe(el);
 
     r.dispose();
   });
@@ -52,7 +54,8 @@ describe('contract: adapter-web-component / event router mapping (v0)', () => {
     el.dispatchEvent(native);
 
     const ev = await p;
-    expect((ev as any).detail).toBe(native);
+    expect((ev as any).detail).toMatchObject({ type: 'press.commit' });
+    expect((ev as any).detail.nativeEvent).toBe(native);
 
     r.dispose();
   });
@@ -72,10 +75,12 @@ describe('contract: adapter-web-component / event router mapping (v0)', () => {
     el.dispatchEvent(native);
 
     const evKey = await pKey;
-    expect((evKey as any).detail).toBe(native);
+    expect((evKey as any).detail).toMatchObject({ type: 'key.down', key: 'Enter' });
+    expect((evKey as any).detail.nativeEvent).toBe(native);
 
     const evPress = await pPress;
-    expect((evPress as any).detail).toBe(native);
+    expect((evPress as any).detail).toMatchObject({ type: 'press.commit', key: 'Enter' });
+    expect((evPress as any).detail.nativeEvent).toBe(native);
 
     r.dispose();
   });
@@ -102,7 +107,8 @@ describe('contract: adapter-web-component / event router mapping (v0)', () => {
       button.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 }));
 
       expect(calls).toHaveLength(1);
-      expect((calls[0] as CustomEvent).detail).toBeInstanceOf(KeyboardEvent);
+      expect((calls[0] as CustomEvent).detail.nativeEvent).toBeInstanceOf(KeyboardEvent);
+      expect((calls[0] as CustomEvent).detail.key).toBe(key);
 
       r.dispose();
       el.remove();
@@ -130,7 +136,8 @@ describe('contract: adapter-web-component / event router mapping (v0)', () => {
     window.dispatchEvent(native);
 
     const evPress = await pPress;
-    expect((evPress as any).detail).toBe(native);
+    expect((evPress as any).detail).toMatchObject({ type: 'press.commit', key: 'Enter' });
+    expect((evPress as any).detail.nativeEvent).toBe(native);
 
     r.dispose();
     el.remove();

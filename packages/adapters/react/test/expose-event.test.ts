@@ -4,7 +4,7 @@ import { definePrototype } from '@proto.ui/core';
 import { createMountedReactAdapter } from './utils/fake-react';
 
 describe('adapter-react: expose event bridge', () => {
-  it('maps run.event.emit to onX handler props', () => {
+  it('maps run.expose.emit to onX handler props', () => {
     const onCheckedChange = vi.fn();
 
     const proto = definePrototype({
@@ -12,7 +12,7 @@ describe('adapter-react: expose event bridge', () => {
       setup(def) {
         def.expose.event('checkedChange', { payload: 'json' });
         def.lifecycle.onMounted((run) => {
-          run.event.emit('checkedChange', { checked: true });
+          run.expose.emit('checkedChange', { checked: true });
         });
         return (r) => [r.el('div', 'ok')];
       },
