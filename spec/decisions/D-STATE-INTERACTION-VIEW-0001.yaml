@@ -1,0 +1,24 @@
+id: D-STATE-INTERACTION-VIEW-0001
+type: decision
+title: Interaction semantic state remains borrowed in v0
+status: draft
+since: 0.1.0
+summary: '`fromInteraction` and `fromAccessibility` return borrowed views in v0, while observed projection remains the long-term governance direction.'
+notes: ./D-STATE-INTERACTION-VIEW-0001.md
+explains:
+  contracts:
+    - C-STATE-INTERACTION-0001
+    - C-STATE-0008
+relates:
+  contracts:
+    - C-STATE-0009
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Recorded the v0 decision to keep official interaction/accessibility semantic state writable through borrowed views.
+tags:
+  - state
+  - interaction
+  - accessibility
+  - borrowed
+  - debt

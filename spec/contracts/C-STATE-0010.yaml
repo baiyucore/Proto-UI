@@ -1,0 +1,61 @@
+id: C-STATE-0010
+type: contract
+title: State watch is setup-only auxiliary observation
+status: draft
+since: 0.1.0
+summary: '`watch` observes non-owned or not-fully-owned state changes, but it is not a reactive rendering system.'
+statement:
+  zh-CN: >-
+    State `watch(...)` 是 setup-only 的辅助 observation 能力，用于观察 borrowed 或 observed state 的变化。它不属于 owned view，不建立 render dependency，不隐式触发 update，也不得被解释为 Proto UI 的响应式渲染系统。
+
+
+  en: >-
+    State `watch(...)` is a setup-only auxiliary observation capability for observing borrowed or observed state changes. It is not part of the owned view, does not establish render dependencies, does not implicitly trigger update, and must not be interpreted as Proto UI's reactive rendering system.
+
+
+criteria:
+  - id: C-STATE-0010-A
+    text:
+      zh-CN: '`watch(...)` 必须只存在于 borrowed 与 observed view，不得存在于 owned view。'
+      en: '`watch(...)` must only exist on borrowed and observed views, not on owned views.'
+  - id: C-STATE-0010-B
+    text:
+      zh-CN: '`watch(...)` registration 必须是 setup-only。'
+      en: '`watch(...)` registration must be setup-only.'
+  - id: C-STATE-0010-C
+    text:
+      zh-CN: watch callback 必须随 state value 实际变化而可被调用；相同值写入是否派发由 StateEvent 契约定义。
+      en: Watch callbacks must be callable when the state value actually changes; whether same-value writes dispatch is defined by the StateEvent contract.
+  - id: C-STATE-0010-D
+    text:
+      zh-CN: watch callback 不得隐式触发 render、commit 或 update。
+      en: Watch callbacks must not implicitly trigger render, commit, or update.
+  - id: C-STATE-0010-E
+    text:
+      zh-CN: watch registration 必须绑定到组件实例生命周期，并在实例 dispose 时清理。
+      en: Watch registrations must be bound to the component instance lifecycle and cleaned up when the instance is disposed.
+sources:
+  - path: internal/contracts/state/state-watch.v0.md
+    sections:
+      - Positioning Statement
+      - Watch Registration Rules
+      - Relationship to Rendering and Updates
+  - path: packages/modules/state/src/impl.ts
+    sections:
+      - watcher plumbing
+      - lifecycle
+dependsOn:
+  contracts:
+    - C-STATE-0007
+    - C-STATE-0008
+    - C-STATE-0009
+    - C-STATE-0004
+    - C-STATE-0005
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Captured setup-only watch as auxiliary observation, not reactive rendering.
+tags:
+  - state
+  - watch
+  - observation
