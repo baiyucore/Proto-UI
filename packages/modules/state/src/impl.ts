@@ -185,8 +185,6 @@ export class StateModuleImpl {
   readonly port: StatePort = {
     watch: (handle, cb) => {
       this.ensureAlive(`state.port.watch`);
-      // optional hard enforcement (still policy-level):
-      // this.sys.ensureSetup(`state.port.watch`);
       return this.addWatcher(handle, cb);
     },
 
@@ -204,6 +202,7 @@ export class StateModuleImpl {
         },
         watch: (cb) => {
           this.ensureAlive(`state.port.createObservedHandle.watch`);
+          this.sys.ensureSetup(`state.port.createObservedHandle.watch`);
           return this.addWatcher(handle, cb);
         },
       };
@@ -227,6 +226,7 @@ export class StateModuleImpl {
         },
         watch: (cb) => {
           this.ensureAlive(`state.port.createBorrowedHandle.watch`);
+          this.sys.ensureSetup(`state.port.createBorrowedHandle.watch`);
           return this.addWatcher(handle, cb);
         },
       };
