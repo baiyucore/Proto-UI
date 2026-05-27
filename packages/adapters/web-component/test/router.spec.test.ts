@@ -47,7 +47,8 @@ describe('WC router: createWebProtoEventRouter', () => {
 
     const ev = await fired;
     expect(ev).toBeInstanceOf(CustomEvent);
-    expect((ev as CustomEvent).detail).toBe(native);
+    expect((ev as CustomEvent).detail).toMatchObject({ type: 'press.commit' });
+    expect((ev as CustomEvent).detail.nativeEvent).toBe(native);
 
     router.dispose();
   });
@@ -74,8 +75,13 @@ describe('WC router: createWebProtoEventRouter', () => {
     const keyDownEv = await keyDownP;
     const pressCommitEv = await pressCommitP;
 
-    expect((keyDownEv as CustomEvent).detail).toBe(native);
-    expect((pressCommitEv as CustomEvent).detail).toBe(native);
+    expect((keyDownEv as CustomEvent).detail).toMatchObject({ type: 'key.down', key: 'Enter' });
+    expect((keyDownEv as CustomEvent).detail.nativeEvent).toBe(native);
+    expect((pressCommitEv as CustomEvent).detail).toMatchObject({
+      type: 'press.commit',
+      key: 'Enter',
+    });
+    expect((pressCommitEv as CustomEvent).detail.nativeEvent).toBe(native);
 
     router.dispose();
     rootEl.remove();
@@ -102,7 +108,8 @@ describe('WC router: createWebProtoEventRouter', () => {
     window.dispatchEvent(native);
 
     const keyUpEv = await keyUpP;
-    expect((keyUpEv as CustomEvent).detail).toBe(native);
+    expect((keyUpEv as CustomEvent).detail).toMatchObject({ type: 'key.up', key: 'Enter' });
+    expect((keyUpEv as CustomEvent).detail.nativeEvent).toBe(native);
 
     const pressRes = await pressRace;
     expect(pressRes).toBe('timeout');
@@ -138,7 +145,8 @@ describe('WC router: createWebProtoEventRouter', () => {
     trigger.dispatchEvent(native);
 
     const ev = await fired;
-    expect((ev as CustomEvent).detail).toBe(native);
+    expect((ev as CustomEvent).detail).toMatchObject({ type: 'press.commit' });
+    expect((ev as CustomEvent).detail.nativeEvent).toBe(native);
 
     router.dispose();
     portalHost.remove();

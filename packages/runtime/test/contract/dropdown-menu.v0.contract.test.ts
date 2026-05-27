@@ -221,7 +221,7 @@ describe('runtime contract: dropdown-menu (v0)', () => {
     const itemAExposes = tree.itemA.getExposes() as any;
     const itemBExposes = tree.itemB.getExposes() as any;
 
-    tree.itemB.target.dispatch('native:focus');
+    tree.itemB.target.dispatch('host:focus');
     expect(itemBExposes.active.get()).toBe(true);
     expect(itemAExposes.active.get()).toBe(false);
 

@@ -1,6 +1,7 @@
 // packages/core/src/handles.ts
 import {
   EventListenerToken,
+  EventListenerOptions,
   EventTypeV0,
   ExposeEventSpec,
   JsonObject,
@@ -89,7 +90,7 @@ export interface RunHandle<Props extends PropsBaseType> {
     tryUpdate<T extends JsonObject>(key: ContextKey<T>, next: T | ((prev: T) => T)): boolean;
   };
 
-  event: {
+  expose: {
     emit(key: string, payload?: any, options?: Record<string, unknown>): void;
   };
 

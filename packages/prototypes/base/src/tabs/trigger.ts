@@ -75,7 +75,7 @@ function setupTabsTrigger(def: DefHandle<TabsTriggerProps, TabsTriggerExposes>):
     run.context.update(TABS_CONTEXT, (prev) => ({ ...prev, value: nextValue }));
   });
 
-  def.event.on('native:focus', (run) => {
+  def.event.on('host:focus', (run) => {
     if (disabled.get()) return;
     const nextValue = run.props.get().value ?? '';
     const ctx = run.context.read(TABS_CONTEXT);

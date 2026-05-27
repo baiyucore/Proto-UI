@@ -47,6 +47,25 @@ function createMockTarget(label: string) {
 }
 
 describe('event-module: contract v0 (module semantics)', () => {
+  it('EV-MOD-V0-0100: event type validation accepts semantic and host:* types only', () => {
+    const sys = createSysCaps();
+    const caps = makeCaps({ sys });
+    const impl = new EventModuleImpl(caps as any, 'test-proto');
+
+    sys.__setExecPhase('setup');
+
+    expect(() => impl.on('press.commit')).not.toThrow();
+    expect(() => impl.on('pointer.down')).not.toThrow();
+    expect(() => impl.on('host:click')).not.toThrow();
+    expect(() => impl.on('host:keydown')).not.toThrow();
+
+    expect(() => impl.on('press.foo' as any)).toThrow(/invalid event type/i);
+    expect(() => impl.on('foo.bar' as any)).toThrow(/invalid event type/i);
+    expect(() => impl.on('native:click' as any)).toThrow(/invalid event type/i);
+    expect(() => impl.on('host.click' as any)).toThrow(/invalid event type/i);
+    expect(() => impl.on('host:' as any)).toThrow(/invalid event type/i);
+  });
+
   it('EV-MOD-V0-1000: bind() with no registrations MUST be no-op and MUST NOT read targets', () => {
     const sys = createSysCaps();
     sys.__setExecPhase('render'); // runtime
@@ -79,7 +98,7 @@ describe('event-module: contract v0 (module semantics)', () => {
 
     // setup: register root listener
     sys.__setExecPhase('setup');
-    impl.on('native:click' as any);
+    impl.on('host:click' as any);
 
     // runtime: bind => should throw missing root target
     sys.__setExecPhase('render');
@@ -100,7 +119,7 @@ describe('event-module: contract v0 (module semantics)', () => {
 
     // setup: only global reg
     sys.__setExecPhase('setup');
-    impl.onGlobal('native:keydown' as any);
+    impl.onGlobal('host:keydown' as any);
 
     // runtime: bind => should throw missing global target, but not complain about root
     sys.__setExecPhase('render');
@@ -120,7 +139,7 @@ describe('event-module: contract v0 (module semantics)', () => {
     const impl = new EventModuleImpl(caps as any, 'test-proto');
 
     sys.__setExecPhase('setup');
-    const token = impl.on('native:click' as any);
+    const token = impl.on('host:click' as any);
 
     const calls: any[] = [];
     const dispatch = (id: string, ev: any) => calls.push([id, ev]);
@@ -128,13 +147,13 @@ describe('event-module: contract v0 (module semantics)', () => {
     sys.__setExecPhase('render');
     impl.bind(dispatch);
 
-    expect(root.__count('native:click')).toBe(1);
+    expect(root.__count('host:click')).toBe(1);
 
-    root.__fire('native:click', { type: 'native:click', x: 1 });
+    root.__fire('host:click', { type: 'host:click', x: 1 });
 
     expect(calls.length).toBe(1);
     expect(calls[0]![0]).toBe((token as any).id);
-    expect(calls[0]![1]).toMatchObject({ type: 'native:click', x: 1 });
+    expect(calls[0]![1]).toMatchObject({ type: 'host:click', x: 1 });
   });
 
   it('EV-MOD-V0-1400: off() MUST detach immediately if currently bound', () => {
@@ -150,22 +169,22 @@ describe('event-module: contract v0 (module semantics)', () => {
     const impl = new EventModuleImpl(caps as any, 'test-proto');
 
     sys.__setExecPhase('setup');
-    const token = impl.on('native:click' as any);
+    const token = impl.on('host:click' as any);
 
     const calls: any[] = [];
     sys.__setExecPhase('render');
     impl.bind((id, ev) => calls.push([id, ev]));
 
-    expect(root.__count('native:click')).toBe(1);
+    expect(root.__count('host:click')).toBe(1);
 
     // setup-only removal
     sys.__setExecPhase('setup');
     impl.off(token);
 
-    expect(root.__count('native:click')).toBe(0);
+    expect(root.__count('host:click')).toBe(0);
 
     // even if fired, nothing happens
-    root.__fire('native:click', { type: 'native:click' });
+    root.__fire('host:click', { type: 'host:click' });
     expect(calls.length).toBe(0);
   });
 
@@ -182,23 +201,23 @@ describe('event-module: contract v0 (module semantics)', () => {
     const impl = new EventModuleImpl(caps as any, 'test-proto');
 
     sys.__setExecPhase('setup');
-    const token = impl.on('native:click' as any);
+    const token = impl.on('host:click' as any);
 
     const calls: any[] = [];
     const dispatch = (id: string, ev: any) => calls.push([id, ev]);
 
     sys.__setExecPhase('render');
     impl.bind(dispatch);
-    expect(root.__count('native:click')).toBe(1);
+    expect(root.__count('host:click')).toBe(1);
 
     impl.unbind();
-    expect(root.__count('native:click')).toBe(0);
+    expect(root.__count('host:click')).toBe(0);
 
     // bind again should reattach
     impl.bind(dispatch);
-    expect(root.__count('native:click')).toBe(1);
+    expect(root.__count('host:click')).toBe(1);
 
-    root.__fire('native:click', { type: 'native:click' });
+    root.__fire('host:click', { type: 'host:click' });
     expect(calls.length).toBe(1);
     expect(calls[0]![0]).toBe((token as any).id);
   });
@@ -217,7 +236,7 @@ describe('event-module: contract v0 (module semantics)', () => {
     const impl = new EventModuleImpl(caps as any, 'test-proto');
 
     sys.__setExecPhase('setup');
-    const token = impl.on('native:click' as any);
+    const token = impl.on('host:click' as any);
 
     const calls: any[] = [];
     const dispatch = (id: string, ev: any) => calls.push([id, ev]);
@@ -225,16 +244,16 @@ describe('event-module: contract v0 (module semantics)', () => {
     sys.__setExecPhase('render');
     impl.bind(dispatch);
 
-    expect(rootA.__count('native:click')).toBe(1);
-    expect(rootB.__count('native:click')).toBe(0);
+    expect(rootA.__count('host:click')).toBe(1);
+    expect(rootB.__count('host:click')).toBe(0);
 
     (caps as any).__set('getRootTarget', () => rootB);
     (caps as any).__bumpEpoch();
 
-    expect(rootA.__count('native:click')).toBe(0);
-    expect(rootB.__count('native:click')).toBe(1);
+    expect(rootA.__count('host:click')).toBe(0);
+    expect(rootB.__count('host:click')).toBe(1);
 
-    rootB.__fire('native:click', { type: 'native:click', y: 2 });
+    rootB.__fire('host:click', { type: 'host:click', y: 2 });
     expect(calls.length).toBe(1);
     expect(calls[0]![0]).toBe((token as any).id);
   });
@@ -254,16 +273,16 @@ describe('event-module: contract v0 (module semantics)', () => {
 
     sys.__setExecPhase('setup');
     impl.redirectRoot(redirected);
-    const token = impl.on('native:click' as any);
+    const token = impl.on('host:click' as any);
 
     const calls: any[] = [];
     sys.__setExecPhase('render');
     impl.bind((id, ev) => calls.push([id, ev]));
 
-    expect(capRoot.__count('native:click')).toBe(0);
-    expect(redirected.__count('native:click')).toBe(1);
+    expect(capRoot.__count('host:click')).toBe(0);
+    expect(redirected.__count('host:click')).toBe(1);
 
-    redirected.__fire('native:click', { type: 'native:click' });
+    redirected.__fire('host:click', { type: 'host:click' });
     expect(calls.length).toBe(1);
     expect(calls[0]![0]).toBe((token as any).id);
 
@@ -285,16 +304,16 @@ describe('event-module: contract v0 (module semantics)', () => {
     const impl = new EventModuleImpl(caps as any, 'test-proto');
 
     sys.__setExecPhase('setup');
-    impl.on('native:click' as any);
+    impl.on('host:click' as any);
 
     const calls: any[] = [];
     sys.__setExecPhase('render');
     impl.bind((id, ev) => calls.push([id, ev]));
-    expect(root.__count('native:click')).toBe(1);
+    expect(root.__count('host:click')).toBe(1);
 
     // lifecycle unmount
     (impl as any).onProtoPhase('unmounted');
-    expect(root.__count('native:click')).toBe(0);
+    expect(root.__count('host:click')).toBe(0);
 
     // After cleanup, bind should be no-op even if caps would throw
     (caps as any).__set('getRootTarget', () => {
@@ -302,7 +321,7 @@ describe('event-module: contract v0 (module semantics)', () => {
     });
 
     expect(() => impl.bind(() => {})).not.toThrow();
-    root.__fire('native:click', { type: 'native:click' });
+    root.__fire('host:click', { type: 'host:click' });
     expect(calls.length).toBe(0);
   });
 
@@ -319,8 +338,8 @@ describe('event-module: contract v0 (module semantics)', () => {
     const impl = new EventModuleImpl(caps as any, 'test-proto');
 
     sys.__setExecPhase('render');
-    expect(() => impl.on('native:click' as any)).toThrow();
-    expect(() => impl.onGlobal('native:keydown' as any)).toThrow();
+    expect(() => impl.on('host:click' as any)).toThrow();
+    expect(() => impl.onGlobal('host:keydown' as any)).toThrow();
   });
 
   it('EV-MOD-V0-1950: runtime-only APIs MUST throw in setup execPhase', () => {

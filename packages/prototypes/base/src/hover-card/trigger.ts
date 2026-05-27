@@ -48,10 +48,10 @@ function setupHoverCardTrigger(
   def.event.on('pointer.leave', (run) => {
     updateFlags(run, { triggerHovered: false });
   });
-  def.event.on('native:focus', (run) => {
+  def.event.on('host:focus', (run) => {
     updateFlags(run, { triggerFocused: true });
   });
-  def.event.on('native:blur', (run) => {
+  def.event.on('host:blur', (run) => {
     updateFlags(run, { triggerFocused: false });
   });
 }

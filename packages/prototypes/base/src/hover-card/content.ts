@@ -76,10 +76,10 @@ function setupHoverCardContent(
   def.event.on('pointer.leave', (run) => {
     updateFlags(run, { contentHovered: false });
   });
-  def.event.on('native:focus', (run) => {
+  def.event.on('host:focus', (run) => {
     updateFlags(run, { contentFocused: true });
   });
-  def.event.on('native:blur', (run) => {
+  def.event.on('host:blur', (run) => {
     updateFlags(run, { contentFocused: false });
   });
 

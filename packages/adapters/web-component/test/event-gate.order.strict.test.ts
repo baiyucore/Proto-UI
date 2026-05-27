@@ -58,7 +58,7 @@ describe('WC adapter: event binding order (strict)', () => {
       {
         name: 'test-event-order',
         setup(def: any) {
-          def.event.on('native:click', () => {});
+          def.event.on('host:click', () => {});
           return (r: any) => r.el('div', {}, ['hi']);
         },
       },

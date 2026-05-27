@@ -6,8 +6,33 @@ import { ModuleBase } from '@proto.ui/module-base';
 
 import type { EventDispatch } from './types';
 import { EventKernel } from './kernel';
-import { EventListenerToken, EventTypeV0, ExposeEventSpec } from '@proto.ui/types';
+import type { EventListenerToken, EventTypeV0, ExposeEventSpec } from '@proto.ui/types';
 import { EVENT_GLOBAL_TARGET_CAP, EVENT_ROOT_TARGET_CAP, EVENT_EMIT_CAP } from './caps';
+
+const CORE_EVENT_TYPES = [
+  'press.start',
+  'press.end',
+  'press.cancel',
+  'press.commit',
+  'key.down',
+  'key.up',
+] as const;
+
+const OPTIONAL_EVENT_TYPES = [
+  'pointer.down',
+  'pointer.move',
+  'pointer.up',
+  'pointer.cancel',
+  'pointer.enter',
+  'pointer.leave',
+  'nav.focus',
+  'nav.blur',
+  'text.focus',
+  'text.blur',
+  'input',
+  'change',
+  'context.menu',
+] as const;
 
 function illegalEventTarget(message: string, detail?: any) {
   const err = new Error(message) as any;
@@ -27,9 +52,10 @@ function illegalEventArg(message: string, detail?: any) {
 
 function isValidEventType(type: any): type is EventTypeV0 {
   if (typeof type !== 'string' || !type) return false;
-  if (type.startsWith('native:')) return type.length > 'native:'.length;
-  if (type.startsWith('host.')) return type.length > 'host.'.length;
-  return /^[a-z]+(\.[a-z]+)*$/.test(type);
+  if ((CORE_EVENT_TYPES as readonly string[]).includes(type)) return true;
+  if ((OPTIONAL_EVENT_TYPES as readonly string[]).includes(type)) return true;
+  if (type.startsWith('host:')) return type.length > 'host:'.length;
+  return false;
 }
 
 function isEventTargetLike(x: any): x is EventTarget {
@@ -166,7 +192,7 @@ export class EventModuleImpl extends ModuleBase {
   }
 
   emit(key: string, payload?: any, options?: Record<string, unknown>) {
-    this.ensureRuntime('rt.event.emit');
+    this.ensureRuntime('rt.expose.emit');
     if (typeof key !== 'string' || !key) {
       throw illegalEventArg(`[Event] emit requires a non-empty string key.`, {
         prototypeName: this.prototypeName,

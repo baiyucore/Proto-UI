@@ -111,10 +111,10 @@ export function asTransition(options?: TransitionOptions): TransitionHandles {
   };
 
   const refreshEmitters = (run: RunHandle<TransitionProps>) => {
-    store.emitBeforeEnter = () => run.event.emit('beforeEnter');
-    store.emitAfterEnter = () => run.event.emit('afterEnter');
-    store.emitBeforeLeave = () => run.event.emit('beforeLeave');
-    store.emitAfterLeave = () => run.event.emit('afterLeave');
+    store.emitBeforeEnter = () => run.expose.emit('beforeEnter');
+    store.emitAfterEnter = () => run.expose.emit('afterEnter');
+    store.emitBeforeLeave = () => run.expose.emit('beforeLeave');
+    store.emitAfterLeave = () => run.expose.emit('afterLeave');
   };
 
   const processPendingQueue = () => {

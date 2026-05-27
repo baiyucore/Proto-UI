@@ -1,0 +1,234 @@
+---
+title: 'Lifecycle'
+desp: 'Lifecycle 规范'
+description: 'Lifecycle 规范'
+---
+
+import SpecContractPreview from '@/components/SpecContractPreview.astro';
+import SpecPhaseBadge from '@/components/SpecPhaseBadge.astro';
+
+export const contractPreviews = [
+  {
+    id: 'C-LIFECYCLE-0001',
+    title: '原型执行区分 setup 计划期与 runtime 执行期',
+    summary: '`setup` 与 `runtime` 是 Proto UI 生命周期模型共享的粗粒度执行时期。',
+    quote:
+      'Proto UI first separates lifecycle execution into the coarse `setup` and `runtime` periods.',
+    criteria: [
+      '`setup` 表示具体组件实例尚未存在，只能声明、注册或计划能力。',
+      '`runtime` 表示具体组件实例已经存在，直到 unmount/dispose 完成。',
+      'execution guard 至少要能区分 `setup` 与 `runtime`。',
+    ],
+    tests:
+      '作为生命周期上游模型，被 callback order、API surface、update flow 与 checkpoint 测试共同引用。',
+    source: 'spec/contracts/C-LIFECYCLE-0001.yaml',
+  },
+  {
+    id: 'C-LIFECYCLE-0002',
+    title: '原型可见 lifecycle callback 遵守 canonical runtime order',
+    summary:
+      '原型可见生命周期顺序是 `created -> first render -> commit -> mounted -> update cycles -> unmounted/dispose`。',
+    quote:
+      'Proto UI exposes lifecycle callbacks over the canonical runtime order `created -> first render -> commit -> mounted -> update cycles -> unmounted/dispose`.',
+    criteria: [
+      '`created` 在 setup 完成后、首次 render 与 commit 前执行。',
+      '`mounted` 在首次 commit completion 后执行。',
+      '`updated` 不得早于对应 update commit completion。',
+      '`unmounted` 在 dispose 前执行，dispose 后受 lifecycle 管理的 handle 失效。',
+    ],
+    tests:
+      'T-LIFECYCLE-0001 覆盖 initial order、mounted cancel、update order 与 disposal boundary。',
+    source: 'spec/contracts/C-LIFECYCLE-0002.yaml',
+  },
+  {
+    id: 'C-LIFECYCLE-0003',
+    title: 'Runtime update flow 只能通过显式 render 入口进入',
+    summary:
+      'render/commit 是 runtime-owned flow，不能成为 props、state、event、feedback 等模块 API 的隐式副作用。',
+    quote:
+      'Proto UI must treat render/commit as runtime-owned flow rather than an implicit side effect of arbitrary module APIs.',
+    criteria: [
+      '`run.update()` 表达 update intent，而不是同步 view update 保证。',
+      '模块 API 调用不得自动触发 render 或 commit。',
+      'runtime/host 可以调度、批处理或合并多个 update intent。',
+    ],
+    tests:
+      'T-LIFECYCLE-0002 覆盖 explicit update intent、no implicit render、render read 与 host scheduling。',
+    source: 'spec/contracts/C-LIFECYCLE-0003.yaml',
+  },
+  {
+    id: 'C-LIFECYCLE-0004',
+    title: 'Runtime 与 adapter 保持 canonical lifecycle checkpoints',
+    summary:
+      'CP0-CP10 checkpoint 模型把 lifecycle ordering 细化成 runtime 与 adapter 可实现、可测试的边界。',
+    quote:
+      'The CP0-CP10 checkpoint model refines runtime lifecycle ordering for runtime and adapter design without becoming prototype API.',
+    criteria: [
+      'CP0 表示 setup exit。',
+      'CP1 到 CP5 按 created、logical tree、commit start、commit done、mounted 排序。',
+      'CP6 到 CP8 按 update render、update commit done、updated 排序。',
+      'CP checkpoint 名称与编号不得暴露为原型作者 API。',
+    ],
+    tests:
+      'T-LIFECYCLE-0003 覆盖 runtime trace 与 React、Vue、Web Component adapter conformance traces。',
+    source: 'spec/contracts/C-LIFECYCLE-0004.yaml',
+  },
+  {
+    id: 'C-LIFECYCLE-0005',
+    title: 'Prototype lifecycle API 使用 setup-time callback registration',
+    summary: 'v0 lifecycle API 固定为 `def.lifecycle.onCreated/onMounted/onUpdated/onUnmounted`。',
+    quote:
+      'Prototype-visible lifecycle syntax is the setup-time `def.lifecycle` callback registration surface for `created`, `mounted`, `updated`, and `unmounted`.',
+    criteria: [
+      'lifecycle setup API 由 `def.lifecycle` 承载。',
+      'registration API 是 setup-only。',
+      'callback 执行时接收当前 callback invocation 绑定的 `run handle`。',
+      'CP checkpoint 与 host-specific hook 不得作为 prototype-visible API 暴露。',
+    ],
+    tests:
+      'T-LIFECYCLE-0004 覆盖 API surface、setup-only、registration 不立即执行、run handle binding 与 no portable revoke。',
+    source: 'spec/contracts/C-LIFECYCLE-0005.yaml',
+  },
+];
+
+## Lifecycle 是什么？
+
+`Lifecycle` 描述一个原型实例在时间中的执行秩序。它不是附加在原型旁边的一组便利回调，而是 Proto UI 用来约束能力何时可用、何时发生提交、何时进入更新、何时释放责任的核心规范。
+
+`setup` / `runtime` 先区分定义期与运行期，但这还不够。进入 `runtime` 后，组件仍然会经历 created、render、commit、mounted、update、unmounted 与 dispose 等阶段。Lifecycle 负责给这些阶段建立稳定顺序，让同一个原型在不同 host 中保有一致的执行语义。
+
+这篇规范关注的是 lifecycle 的 portable 语义。React、Vue、Web Component 等宿主可以拥有不同的底层生命周期，但 adapter 必须把这些差异映射回 Proto UI 的 canonical order。
+
+## 执行时期
+
+Proto UI 先把执行分成两个粗粒度时期：
+
+```txt
+setup
+  -> runtime
+```
+
+<SpecPhaseBadge label="setup-only" />
+
+`setup` 期没有具体组件实例。原型作者在这里声明、注册或计划能力，例如注册 lifecycle callback、声明 props、声明 state、计划 feedback style。此时不能读取某次真实调用的 runtime input。
+
+<SpecPhaseBadge label="runtime-only" />
+
+`runtime` 期有具体组件实例。render、callback、host-driven update、unmount 与 dispose 都发生在这个时期。运行期 API 可以读取或作用于当前实例，但不能重新打开 setup 期的结构性声明面。
+
+这两个时期是所有 lifecycle 细化模型的基础。callback 模型和 CP checkpoint 模型都不重新定义 `setup`；它们只是在 `runtime` 内部继续划分更细的时间边界。
+
+## 注册 Lifecycle Callback
+
+<SpecPhaseBadge label="setup-only" />
+
+原型作者通过 `def.lifecycle` 注册 lifecycle callback：
+
+```ts
+def.lifecycle.onCreated((run) => {
+  // setup 已完成，首次 render 尚未开始。
+});
+
+def.lifecycle.onMounted((run) => {
+  // 首次 commit 已经完成。
+});
+
+def.lifecycle.onUpdated((run) => {
+  // 某次 update commit 已经完成。
+});
+
+def.lifecycle.onUnmounted((run) => {
+  // dispose 尚未完成，runtime handle 仍处于可用窗口。
+});
+```
+
+这些 API 只负责注册 callback。它们不会在注册时立即执行 callback，也不定义 portable unsubscribe 或 revoke handle。setup 结束后继续调用 `def.lifecycle.*` 必须失败。
+
+callback 执行时会收到绑定到当前 callback invocation 的 `run handle`。这让 callback 可以读取 runtime input、触发显式 update intent，或调用其他 runtime 能力，但这些能力仍然受各自契约约束。
+
+## Canonical Runtime Order
+
+原型可见生命周期顺序是：
+
+```txt
+setup
+  -> created
+  -> first render
+  -> commit completion
+  -> mounted
+  -> (update intent -> render -> commit completion -> updated)*
+  -> unmounted
+  -> dispose complete
+```
+
+`commit completion` 是语义边界，不等同于某个 host commit 函数同步返回。React、Vue 或其他异步 host 可以延后确认 commit completion；`mounted` 和 `updated` 都必须等待对应 commit completion。
+
+`unmounted` 必须在 dispose 前执行。此时受 lifecycle 管理的 runtime handle 仍处于可用窗口；dispose 完成后，这些 handle 必须被视为失效，后续操作应失败而不是继续产生 runtime 行为。
+
+## Update Flow
+
+render 与 commit 归 runtime 所有，不能作为任意模块 API 的隐式副作用出现。
+
+原型作者侧的显式入口是：
+
+```ts
+run.update();
+```
+
+`run.update()` 表达的是 update intent。runtime 或 host 可以同步执行、调度执行、批处理或合并它；原型作者不能依赖调用返回后立即观察到 host view 已经变化。
+
+Props、state、context、event、feedback 等模块 API 的调用不应自行触发 render 或 commit。它们可以更新各自通路的 runtime 数据、分发 watcher 或触发 style flush，但进入 update cycle 必须通过显式 update 路径。
+
+一旦某个 update intent 被接受为 update cycle，就必须遵守：
+
+```txt
+update intent
+  -> render
+  -> commit completion
+  -> updated callback
+```
+
+## Runtime Checkpoints
+
+CP checkpoint 是 runtime 与 adapter 使用的生命周期 trace 模型。它不是原型作者 API，而是让实现和测试可以用同一套边界描述 lifecycle 顺序。
+
+| Checkpoint | 语义边界           |
+| ---------- | ------------------ |
+| `CP0`      | setup exit         |
+| `CP1`      | created callbacks  |
+| `CP2`      | logical tree ready |
+| `CP3`      | commit start       |
+| `CP4`      | commit done        |
+| `CP5`      | mounted callbacks  |
+| `CP6`      | update render      |
+| `CP7`      | update commit done |
+| `CP8`      | updated callbacks  |
+| `CP9`      | unmount begin      |
+| `CP10`     | dispose complete   |
+
+adapter 必须把 host-specific lifecycle 映射到这组 checkpoint，不得引入与 canonical checkpoint 顺序竞争的平行生命周期模型。测试 trace 可以记录 checkpoint，但这些名称和编号不得暴露为 prototype-visible API。
+
+## 契约实体预览
+
+<SpecContractPreview items={contractPreviews} locale="zh-cn" />
+
+## 与测试的关系
+
+Lifecycle 的测试映射主要落在 `spec/tests/T-LIFECYCLE-0001..0004.yaml`，并由 runtime 与 adapter conformance 测试共同覆盖。
+
+| 测试实体           | 主要覆盖                                               |
+| ------------------ | ------------------------------------------------------ |
+| `T-LIFECYCLE-0001` | callback order、mounted invalidation、dispose boundary |
+| `T-LIFECYCLE-0002` | explicit update intent、no implicit render、scheduling |
+| `T-LIFECYCLE-0003` | CP0-CP10 checkpoint trace 与 adapter conformance       |
+| `T-LIFECYCLE-0004` | `def.lifecycle` API surface 与 setup-only registration |
+
+这些测试把 lifecycle 从“回调大概按某个 host 习惯执行”收敛为可验证的跨 host 时间秩序。
+
+## 与其他规范的关系
+
+- `Core` 定义 `setup`、`run handle`、render function 与 template 返回值等核心语法；Lifecycle 在这些基础上规定运行时顺序。
+- `Props`、`State`、`Context`、`Event`、`Feedback` 的 runtime API 都必须遵守 lifecycle 的 no implicit render 边界。
+- `Feedback` 可以触发 style flush，但这不是 render commit；是否进入 update flow 仍归 Lifecycle / runtime update 语义管理。
+- `Template` 的 render 结果只在 runtime render flow 中产生；template 结构变化必须通过显式 update flow 进入 render/commit。
+- adapter 可以拥有 host-specific lifecycle hook，但这些 hook 必须映射回 Proto UI canonical lifecycle，而不是成为另一套 portable 语义。

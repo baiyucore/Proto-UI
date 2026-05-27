@@ -44,13 +44,13 @@ function setupToggle(def: DefHandle<ToggleProps, ToggleExposes>): void {
 
     if (controlled) {
       const nextChecked = !checked.get();
-      run.event.emit('checkedChange', { checked: nextChecked });
+      run.expose.emit('checkedChange', { checked: nextChecked });
       return;
     }
 
     const nextChecked = !checked.get();
     checked.set(nextChecked, 'reason: event.on(press.commit) => toggle checked');
-    run.event.emit('checkedChange', { checked: nextChecked });
+    run.expose.emit('checkedChange', { checked: nextChecked });
   });
 }
 

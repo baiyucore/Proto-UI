@@ -36,6 +36,14 @@
     "./feedback/style-runtime-patch": {
       "types": "./src/feedback/style-runtime-patch.ts",
       "default": "./src/feedback/style-runtime-patch.ts"
+    },
+    "./event/registration": {
+      "types": "./src/event/registration.ts",
+      "default": "./src/event/registration.ts"
+    },
+    "./event/type-payload": {
+      "types": "./src/event/type-payload.ts",
+      "default": "./src/event/type-payload.ts"
     }
   },
   "description": "Shared semantic test fixtures for Proto UI spec contracts."

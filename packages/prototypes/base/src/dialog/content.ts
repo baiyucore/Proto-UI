@@ -98,7 +98,7 @@ function setupDialogContent(def: DefHandle<DialogContentProps, DialogContentExpo
     }
   });
 
-  def.event.onGlobal('native:pointerdown', (run, ev) => {
+  def.event.onGlobal('host:pointerdown', (run, ev) => {
     const ctx = run.context.read(DIALOG_CONTEXT);
     if (!ctx.open) return;
     if (alertProp.get()) return;

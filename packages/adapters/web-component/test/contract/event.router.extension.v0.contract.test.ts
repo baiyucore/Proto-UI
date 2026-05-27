@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { createWebProtoEventRouter } from '@proto.ui/adapter-base';
 
 describe('contract: adapter-web-component / event router extension events (v0)', () => {
-  it('native:* MUST be supported: click -> native:click', () => {
+  it('host:* MUST be supported: click -> host:click', () => {
     const el = document.createElement('div');
     const global = new EventTarget();
 
@@ -14,13 +14,13 @@ describe('contract: adapter-web-component / event router extension events (v0)',
     });
 
     let got: any = null;
-    r.rootTarget.addEventListener('native:click', (e: any) => (got = e));
+    r.rootTarget.addEventListener('host:click', (e: any) => (got = e));
 
-    const native = new MouseEvent('click', { bubbles: true });
-    el.dispatchEvent(native);
+    const click = new MouseEvent('click', { bubbles: true });
+    el.dispatchEvent(click);
 
-    // 你现在实现下 got 仍然为 null，这就是缺失
     expect(got).not.toBeNull();
+    expect(got).toBe(click);
 
     r.dispose();
   });

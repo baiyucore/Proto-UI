@@ -19,6 +19,8 @@ type Listener = {
   wrapped?: any;
 };
 
+const payloadStateByNativeEvent = new WeakMap<object, Record<PropertyKey, unknown>>();
+
 export function createWebProtoEventRouter(opt: {
   rootEl: HTMLElement;
   globalEl?: EventTarget; // window by default
@@ -34,7 +36,7 @@ export function createWebProtoEventRouter(opt: {
 
   // --- helper: emit proto event to proto bus ---
   function emit(target: EventTarget, type: string, native: any) {
-    const ev = new CustomEvent(type, { detail: native });
+    const ev = new CustomEvent(type, { detail: createProtoEventPayload(type, native) });
     target.dispatchEvent(ev);
   }
 
@@ -132,10 +134,6 @@ export function createWebProtoEventRouter(opt: {
     if (targetOwner) return targetOwner;
     const active = typeof document !== 'undefined' ? document.activeElement : null;
     return getNearestProtoInstance(active);
-  }
-
-  function isOwnedByCurrentRoot(native: Event) {
-    return resolveOwningProtoInstance(native) === rootEl;
   }
 
   function shouldRouteToCurrentRoot(native: Event) {
@@ -343,12 +341,11 @@ export function createWebProtoEventRouter(opt: {
   );
 
   // -------------------------
-  // (B) 懒绑定：native:* / host.*
+  // (B) 懒绑定：host:* host-bound events
   // -------------------------
   const rootProxy = createProxyTarget({
     protoBus: protoRootBus,
-    nativeTarget: rootEl,
-    // hostTarget：先工作假设= nativeTarget；未来你可以换成更准确的 host 专用 target
+    // hostTarget：先工作假设= rootEl；未来可以换成更准确的 host 专用 target
     hostTarget: rootEl,
     isEnabled: opt.isEnabled,
     // 注：rootProxy 不做“解释”，只做“路由 + gating”
@@ -356,7 +353,6 @@ export function createWebProtoEventRouter(opt: {
 
   const globalProxy = createProxyTarget({
     protoBus: protoGlobalBus,
-    nativeTarget: globalEl,
     hostTarget: globalEl,
     isEnabled: opt.isEnabled,
   });
@@ -379,17 +375,52 @@ function listen(t: any, type: string, cb: (ev: any) => void): Unsub {
   return () => t.removeEventListener(type, cb as any);
 }
 
+function createProtoEventPayload(type: string, native: any) {
+  const target: Record<PropertyKey, unknown> = {
+    type,
+    nativeEvent: native,
+    target: native?.target,
+    key: typeof native?.key === 'string' ? native.key : undefined,
+    preventDefault:
+      typeof native?.preventDefault === 'function' ? () => native.preventDefault() : undefined,
+    stopPropagation:
+      typeof native?.stopPropagation === 'function' ? () => native.stopPropagation() : undefined,
+  };
+
+  if (!native || (typeof native !== 'object' && typeof native !== 'function')) return target;
+
+  let sharedState = payloadStateByNativeEvent.get(native);
+  if (!sharedState) {
+    sharedState = {};
+    payloadStateByNativeEvent.set(native, sharedState);
+  }
+  const state = sharedState;
+
+  return new Proxy(target, {
+    get(obj, prop) {
+      if (prop in obj) return obj[prop];
+      return state[prop];
+    },
+    set(obj, prop, value) {
+      if (prop in obj) obj[prop] = value;
+      else state[prop] = value;
+      return true;
+    },
+    has(obj, prop) {
+      return prop in obj || prop in state;
+    },
+  });
+}
+
 function createProxyTarget(args: {
   protoBus: EventTarget;
-  nativeTarget: EventTarget;
   hostTarget: EventTarget;
   isEnabled: () => boolean;
 }) {
-  // 记录已转发到 native/host 的监听器，便于 remove 时精确解绑
-  const nativeListeners: Listener[] = [];
+  // 记录已转发到 host 的监听器，便于 remove 时精确解绑
   const hostListeners: Listener[] = [];
 
-  // 为 native/host 分支加 gating：eventGate disable 后，这些也不应该再进 proto 回调
+  // 为 host-bound 分支加 gating：eventGate disable 后，这些也不应该再进 proto 回调
   // 这点非常关键，否则“unmount 后还能触发回调”的竞态会回来。
   function wrapWithGate(cb: any) {
     return (ev: any) => {
@@ -399,11 +430,8 @@ function createProxyTarget(args: {
   }
 
   function parseType(type: string) {
-    if (type.startsWith('native:')) {
-      return { kind: 'native' as const, inner: type.slice('native:'.length) };
-    }
-    if (type.startsWith('host.')) {
-      return { kind: 'host' as const, inner: type.slice('host.'.length) };
+    if (type.startsWith('host:')) {
+      return { kind: 'host' as const, inner: type.slice('host:'.length) };
     }
     return { kind: 'proto' as const, inner: type };
   }
@@ -418,14 +446,7 @@ function createProxyTarget(args: {
         return;
       }
 
-      if (p.kind === 'native') {
-        const wrapped = wrapWithGate(cb);
-        nativeListeners.push({ type: p.inner, cb, options, wrapped } as any);
-        args.nativeTarget.addEventListener(p.inner, wrapped as any, options);
-        return;
-      }
-
-      // host.*
+      // host:*
       const wrapped = wrapWithGate(cb);
       hostListeners.push({ type: p.inner, cb, options, wrapped } as any);
       args.hostTarget.addEventListener(p.inner, wrapped as any, options);
@@ -439,41 +460,30 @@ function createProxyTarget(args: {
         return;
       }
 
-      const list = p.kind === 'native' ? nativeListeners : hostListeners;
-      const target = p.kind === 'native' ? args.nativeTarget : args.hostTarget;
-
       // latest-first removal aligns with your v0 matching习惯
-      for (let i = list.length - 1; i >= 0; i--) {
-        const r: any = list[i];
+      for (let i = hostListeners.length - 1; i >= 0; i--) {
+        const r: any = hostListeners[i];
         if (r.type !== p.inner) continue;
         if (r.cb !== cb) continue;
         // options 匹配这里先用 Object.is（和 DOM 一样复杂就复杂了）
         // 你若坚持“plain object shallow compare”，可以把 sameOptions 搬进来
         if (!Object.is(r.options, options)) continue;
 
-        target.removeEventListener(p.inner, r.wrapped as any, options);
-        list.splice(i, 1);
+        args.hostTarget.removeEventListener(p.inner, r.wrapped as any, options);
+        hostListeners.splice(i, 1);
         return;
       }
     },
 
     dispatchEvent(ev: Event) {
       // 对外暴露的 dispatch：默认只派发到 protoBus
-      // （nativeTarget/hostTarget 的 dispatch 由真实 DOM 自己完成）
+      // （hostTarget 的 dispatch 由真实 DOM 自己完成）
       return args.protoBus.dispatchEvent(ev);
     },
 
     // best-effort cleanup (not required by EventTarget)
     __dispose() {
-      // 主动解绑所有已懒绑定的 native/host listener，避免残留
-      for (const r of nativeListeners.splice(0)) {
-        args.nativeTarget.removeEventListener(
-          r.type,
-          // @ts-ignore
-          r.wrapped as any,
-          r.options
-        );
-      }
+      // 主动解绑所有已懒绑定的 host listener，避免残留
       for (const r of hostListeners.splice(0)) {
         args.hostTarget.removeEventListener(
           r.type,

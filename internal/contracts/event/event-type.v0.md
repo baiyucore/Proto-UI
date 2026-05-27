@@ -174,7 +174,7 @@ These events:
 ### 4.1 Definition
 
 ```ts
-type ExtensionEventType = `native:${string}` | `host.${string}`;
+type ExtensionEventType = `host:${string}`;
 ```
 
 ### 4.2 Semantic Positioning
@@ -193,13 +193,9 @@ Characteristics:
 
 ### 4.3 Naming Rules (Normative)
 
-- `native:*`
-  - Direct mapping to host-native event names
-  - e.g. `native:click`, `native:keydown`
-
-- `host.*`
-  - Host-defined higher-level events
-  - e.g. `host.dragStart`, `host.viewResize`
+- `host:*`
+  - Direct host-bound escape hatch event names
+  - e.g. `host:click`, `host:keydown`
 
 ---
 
@@ -220,8 +216,7 @@ Implementations **MUST reject**:
 - Event names that do not satisfy at least one of:
   - Belongs to `CoreEventType`
   - Belongs to `OptionalEventType`
-  - Matches `native:*`
-  - Matches `host.*`
+  - Matches `host:*`
 
 ---
 

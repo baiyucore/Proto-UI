@@ -105,7 +105,7 @@ describe('prototypes/shadcn: button', () => {
     expect(tokens).toContain('bg-primary/80');
 
     globalTarget.dispatchEvent(new CustomEvent('key.down'));
-    rootTarget.dispatchEvent(new CustomEvent('native:focus'));
+    rootTarget.dispatchEvent(new CustomEvent('host:focus'));
     tokens = controller.getRuleStyleTokens();
     expect(tokens).toContain('ring-3');
     expect(tokens).toContain('border-ring');

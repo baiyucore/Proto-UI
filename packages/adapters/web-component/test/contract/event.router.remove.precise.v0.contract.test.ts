@@ -15,10 +15,10 @@ describe('contract: adapter-web-component / event router remove precise (v0)', (
     const a = () => calls.push('a');
     const b = () => calls.push('b');
 
-    router.rootTarget.addEventListener('native:click' as any, a);
-    router.rootTarget.addEventListener('native:click' as any, b);
+    router.rootTarget.addEventListener('host:click' as any, a);
+    router.rootTarget.addEventListener('host:click' as any, b);
 
-    router.rootTarget.removeEventListener('native:click' as any, a);
+    router.rootTarget.removeEventListener('host:click' as any, a);
 
     el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(calls).toEqual(['b']);

@@ -206,7 +206,7 @@ function setupDropdownContent(
     focusById?.(String(match.snapshot?.value ?? ''), { reason: 'keyboard' });
   });
 
-  def.event.onGlobal('native:pointerdown', (run, ev) => {
+  def.event.onGlobal('host:pointerdown', (run, ev) => {
     const ctx = run.context.read(DROPDOWN_CONTEXT);
     if (!ctx.open || ctx.disabled || ctx.controlled) return;
     const classification = boundary.notify({

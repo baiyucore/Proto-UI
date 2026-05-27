@@ -61,7 +61,7 @@
   - `"global"`：绑定到 adapter 定义的全局交互目标
 
 - `type`
-  - 事件类型字符串（如 `"press.commit"`、`"pointer.down"`、`"native:click"`）
+  - 事件类型字符串（如 `"press.commit"`、`"pointer.down"`、`"host:click"`）
   - 其合法性由事件类型契约定义
   - 使用 `string` 而非具体联合类型以避免版本耦合
 

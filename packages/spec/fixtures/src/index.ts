@@ -4,3 +4,5 @@ export * from './core/prototype-render-syntax';
 export * from './template/authoring';
 export * from './feedback/style-authoring';
 export * from './feedback/style-runtime-patch';
+export * from './event/registration';
+export * from './event/type-payload';

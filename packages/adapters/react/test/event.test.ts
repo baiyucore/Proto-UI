@@ -10,7 +10,7 @@ describe('adapter-react: events', () => {
     const proto: Prototype = {
       name: 'react-event-native-click',
       setup(def: any) {
-        def.event.on('native:click', () => calls.push('native:click'));
+        def.event.on('host:click', () => calls.push('host:click'));
         return (r: any) => r.el('div', {}, ['ok']);
       },
     };
@@ -18,7 +18,7 @@ describe('adapter-react: events', () => {
     const mounted = createMountedReactAdapter(proto);
 
     mounted.root?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    expect(calls).toEqual(['native:click']);
+    expect(calls).toEqual(['host:click']);
 
     mounted.unmount();
   });
