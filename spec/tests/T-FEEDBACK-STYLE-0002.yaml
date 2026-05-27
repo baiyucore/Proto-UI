@@ -32,6 +32,7 @@ cases:
   - id: T-FEEDBACK-STYLE-0002-CASE-NO-RENDER
     title: Runtime patch triggers style flush without render or template mutation
     covers:
+      - C-FEEDBACK-STYLE-0001-E
       - C-FEEDBACK-STYLE-0005-G
       - C-FEEDBACK-STYLE-0005-H
       - C-FEEDBACK-0002-E
@@ -80,6 +81,9 @@ verifies:
         - C-FEEDBACK-STYLE-0005-F
         - C-FEEDBACK-STYLE-0005-G
         - C-FEEDBACK-STYLE-0005-H
+    - id: C-FEEDBACK-STYLE-0001
+      anchors:
+        - C-FEEDBACK-STYLE-0001-E
 exercises:
   contracts:
     - id: C-FEEDBACK-0002

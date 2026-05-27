@@ -55,6 +55,9 @@ openQuestions:
       zh-CN: render function 当前通过 renderer handle 表达 template 产出，原则上应保持无 side-effect；但 exec-phase 术语和 runtime side-effect 子阶段仍需更细的统一契约。
       en: The render function currently produces templates through the renderer handle and should generally remain side-effect-free; however, exec-phase terminology and runtime side-effect subphases still need a more detailed shared contract.
 sources:
+  - path: spec/contracts/C-FEEDBACK-STYLE-0001.yaml
+    sections:
+      - C-FEEDBACK-STYLE-0001-E
   - path: spec/contracts/C-FEEDBACK-0002.yaml
     sections:
       - C-FEEDBACK-0002-C

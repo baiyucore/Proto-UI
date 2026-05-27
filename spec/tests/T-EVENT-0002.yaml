@@ -41,7 +41,6 @@ cases:
   - id: T-EVENT-0002-CASE-EXPOSE-EMIT
     title: Expose event emission is surfaced as run.expose.emit rather than Event runtime API
     covers:
-      - C-EVENT-0001-D
       - C-EVENT-0002-G
       - C-EVENT-0002-H
     expectation: expose-emit-is-expose
