@@ -156,6 +156,40 @@ describe('event-module: contract v0 (module semantics)', () => {
     expect(calls[0]![1]).toMatchObject({ type: 'host:click', x: 1 });
   });
 
+  it('EV-MOD-V0-1350: module-facing listeners dispatch before prototype-author dispatch', () => {
+    const sys = createSysCaps();
+    const root = createMockTarget('root');
+
+    const caps = makeCaps({
+      sys,
+      getRootTarget: () => root,
+      getGlobalTarget: () => null,
+    });
+
+    const impl = new EventModuleImpl(caps as any, 'test-proto');
+
+    const calls: string[] = [];
+
+    sys.__setExecPhase('setup');
+    const moduleToken = impl.onInternal('host:click' as any, () => {
+      calls.push('module');
+    });
+    const authorToken = impl.on('host:click' as any);
+
+    sys.__setExecPhase('render');
+    impl.bind((id, ev) => {
+      impl.dispatchInternal(id, ev);
+      if (id === (authorToken as any).id) {
+        calls.push(`author:${id}`);
+      }
+    });
+
+    root.__fire('host:click', { type: 'host:click' });
+
+    expect((moduleToken as any).id).not.toBe((authorToken as any).id);
+    expect(calls).toEqual(['module', `author:${(authorToken as any).id}`]);
+  });
+
   it('EV-MOD-V0-1400: off() MUST detach immediately if currently bound', () => {
     const sys = createSysCaps();
     const root = createMockTarget('root');

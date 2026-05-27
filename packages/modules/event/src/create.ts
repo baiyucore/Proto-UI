@@ -29,10 +29,13 @@ export function createEventModule(ctx: ModuleFactoryArgs): EventModule {
           onProtoPhase: (p) => impl.onProtoPhase(p),
         },
         port: {
+          on: (type, cb, options) => impl.onInternal(type, cb, options),
+          onGlobal: (type, cb, options) => impl.onGlobalInternal(type, cb, options),
           bind: (dispatch) => impl.bind(dispatch),
           unbind: () => impl.unbind(),
           getDiagnostics: () => impl.getDiagnostics(),
           redirectRoot: (target) => impl.redirectRoot(target),
+          dispatchInternal: (id, ev) => impl.dispatchInternal(id, ev),
         },
       };
     },

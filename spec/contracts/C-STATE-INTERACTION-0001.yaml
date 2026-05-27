@@ -24,12 +24,12 @@ criteria:
       en: '`def.state.fromAccessibility(name)` must be a setup-only API and return a borrowed view.'
   - id: C-STATE-INTERACTION-0001-C
     text:
-      zh-CN: 同一组件实例内，同名 interaction semantic state 必须返回同一个 shared state slot view。
-      en: Within the same component instance, the same interaction semantic state name must return the same shared state slot view.
+      zh-CN: 同一交互主体内，同名 interaction semantic state 必须返回同一个 shared state slot view。
+      en: Within the same interaction subject, the same interaction semantic state name must return the same shared state slot view.
   - id: C-STATE-INTERACTION-0001-D
     text:
-      zh-CN: 同一组件实例内，同名 accessibility semantic state 必须返回同一个 shared state slot view。
-      en: Within the same component instance, the same accessibility semantic state name must return the same shared state slot view.
+      zh-CN: 同一交互主体内，同名 accessibility semantic state 必须返回同一个 shared state slot view。
+      en: Within the same interaction subject, the same accessibility semantic state name must return the same shared state slot view.
   - id: C-STATE-INTERACTION-0001-E
     text:
       zh-CN: 官方 interaction/accessibility semantic state 必须能够被 rule、expose 与 adapter optimization 作为 state-shaped semantic input 消费。
@@ -64,6 +64,9 @@ revisions:
   - version: 0.1.0
     change: introduced
     summary: Captured v0 interaction/accessibility semantic state as shared borrowed state.
+  - version: 0.1.0
+    change: revised
+    summary: Clarified sharing by interaction subject rather than only by component instance.
 tags:
   - state
   - interaction

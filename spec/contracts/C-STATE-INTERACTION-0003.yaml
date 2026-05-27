@@ -1,0 +1,62 @@
+id: C-STATE-INTERACTION-0003
+type: contract
+title: Interaction state identity is shared per interaction subject and semantic type
+status: draft
+since: 0.1.0
+summary: Repeated declarations of the same interaction state type for the same interaction subject must return the same state reference.
+statement:
+  zh-CN: >-
+    对同一个交互主体来说，同一种 interaction state 永远对应同一份 state slot 引用。重复调用 `def.state.fromInteraction(name)` 不得创建新的同名状态；即使该调用发生在 asHook 内部，调用 asHook 的原型作者也应能直接通过 `fromInteraction(name)` 取得同一份状态，而不必要求 asHook 将该状态通过返回值导出。
+
+
+  en: >-
+    For the same interaction subject, the same interaction state type always corresponds to the same state slot reference. Repeated calls to `def.state.fromInteraction(name)` must not create a new state with the same name; even when the call happens inside an asHook, the prototype author using that asHook should be able to obtain the same state directly through `fromInteraction(name)` instead of requiring the asHook to export it through its return value.
+
+
+criteria:
+  - id: C-STATE-INTERACTION-0003-A
+    text:
+      zh-CN: 对同一交互主体，同名 `fromInteraction(name)` 调用必须返回同一份 state slot view 引用。
+      en: For the same interaction subject, calls to `fromInteraction(name)` with the same name must return the same state slot view reference.
+  - id: C-STATE-INTERACTION-0003-B
+    text:
+      zh-CN: 重复声明同名 interaction state 不得创建第二份独立 state slot、第二套 memory identity 或第二套互相不同步的 watcher/source。
+      en: Re-declaring the same interaction state name must not create a second independent state slot, a second memory identity, or a second unsynchronized watcher/source set.
+  - id: C-STATE-INTERACTION-0003-C
+    text:
+      zh-CN: asHook 内部声明的 interaction state 必须归属于调用方所在的同一交互主体，而不是成为 asHook 私有、只能通过 asHook 返回值取得的状态。
+      en: Interaction state declared inside an asHook must belong to the same interaction subject as the caller, not become an asHook-private state that can only be obtained through the asHook return value.
+  - id: C-STATE-INTERACTION-0003-D
+    text:
+      zh-CN: 调用 asHook 的原型作者必须能够通过直接调用 `def.state.fromInteraction(name)` 获得 asHook 内部同名声明对应的同一份状态视图。
+      en: A prototype author using an asHook must be able to obtain the same state view corresponding to that asHook's same-name internal declaration by directly calling `def.state.fromInteraction(name)`.
+  - id: C-STATE-INTERACTION-0003-E
+    text:
+      zh-CN: 该同一引用规则适用于 interaction state 类型；accessibility semantic state 是否完全共享同一 subject 模型由其自身契约继续细化。
+      en: This same-reference rule applies to interaction state types; whether accessibility semantic state fully shares the same subject model remains refined by its own contracts.
+sources:
+  - path: packages/modules/state-interaction/src/create.ts
+    sections:
+      - StateInteractionModuleImpl
+  - path: packages/runtime/test/contract/state.semantic.v0.contract.test.ts
+    sections:
+      - fromInteraction returns a shared borrowed handle
+  - path: apps/www/src/content/docs/zh-cn/whitepaper/component-as-protocol.md
+    sections:
+      - 交互主体
+  - path: apps/www/src/content/docs/zh-cn/wiki/as-hook.md
+    sections:
+      - asHook 是什么
+dependsOn:
+  contracts:
+    - C-STATE-INTERACTION-0001
+    - C-CORE-SYNTAX-0006
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Captured shared interaction state identity per interaction subject and semantic type.
+tags:
+  - state
+  - interaction
+  - identity
+  - as-hook
