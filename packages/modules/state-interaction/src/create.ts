@@ -91,6 +91,7 @@ class StateInteractionModuleImpl {
         });
         this.eventPort.on('pointer.down', () => {
           this.keyboardModality = false;
+          state.set(false, 'reason: state-interaction.pointer.down => focusVisible');
         });
         this.eventPort.on('host:focus', () => {
           if (this.isDisabled()) return;

@@ -38,6 +38,10 @@ criteria:
     text:
       zh-CN: 同一交互主体的 `disabled` interaction state 为 true 时，runtime-managed wiring 不得把 hovered、pressed、focused 或 focusVisible 激活为 true，并必须清理已经激活的这些瞬时 interaction state。
       en: When the same interaction subject's `disabled` interaction state is true, runtime-managed wiring must not activate hovered, pressed, focused, or focusVisible to true and must clear any already-active transient interaction states among them.
+  - id: C-STATE-INTERACTION-0002-G
+    text:
+      zh-CN: '`focusVisible` 必须反映 keyboard modality；进入 pointer modality 时，已激活的 focusVisible 必须被清理。'
+      en: '`focusVisible` must reflect keyboard modality; when pointer modality is entered, an active focusVisible state must be cleared.'
 openQuestions:
   - id: C-STATE-INTERACTION-0002-Q-MODULE-HOST-CAP-CATALOG
     question:

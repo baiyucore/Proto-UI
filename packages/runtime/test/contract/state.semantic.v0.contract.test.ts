@@ -236,6 +236,29 @@ describe('runtime contract: state semantic accessors (v0)', () => {
     expect(pressed.get()).toBe(false);
   });
 
+  it('runtime-managed focusVisible is cleared by pointer modality', () => {
+    let focusVisible: any;
+    const root = createMockTarget();
+    const global = createMockTarget();
+
+    const P: Prototype = {
+      name: 'state-interaction-focus-visible-pointer-modality',
+      setup(def) {
+        focusVisible = def.state.fromInteraction('focusVisible');
+        return (r) => [r.el('div', 'ok')];
+      },
+    };
+
+    executeWithHost(P as any, createHost(P.name, { root, global }) as any);
+
+    global.fire('key.down', { type: 'key.down' });
+    root.fire('host:focus', { type: 'host:focus' });
+    expect(focusVisible.get()).toBe(true);
+
+    root.fire('pointer.down', { type: 'pointer.down' });
+    expect(focusVisible.get()).toBe(false);
+  });
+
   it('fromInteraction inside asHook shares the caller interaction subject state', () => {
     let inner: any;
     let outer: any;

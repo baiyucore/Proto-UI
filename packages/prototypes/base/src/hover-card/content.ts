@@ -37,6 +37,8 @@ function setupHoverCardContent(
     },
   });
   const open = def.state.bool('open', false);
+  const hovered = def.state.fromInteraction('hovered');
+  const focused = def.state.fromInteraction('focused');
 
   def.expose.state('open', open);
   def.context.subscribe(HOVER_CARD_CONTEXT, (_run, next) => {
@@ -70,17 +72,13 @@ function setupHoverCardContent(
     run.context.update(HOVER_CARD_CONTEXT, (prev: any) => ({ ...prev, ...patch }));
   };
 
-  def.event.on('pointer.enter', (run) => {
-    updateFlags(run, { contentHovered: true });
+  hovered.watch((run, event) => {
+    if (event.type !== 'next') return;
+    updateFlags(run, { contentHovered: event.next });
   });
-  def.event.on('pointer.leave', (run) => {
-    updateFlags(run, { contentHovered: false });
-  });
-  def.event.on('host:focus', (run) => {
-    updateFlags(run, { contentFocused: true });
-  });
-  def.event.on('host:blur', (run) => {
-    updateFlags(run, { contentFocused: false });
+  focused.watch((run, event) => {
+    if (event.type !== 'next') return;
+    updateFlags(run, { contentFocused: event.next });
   });
 
   def.rule({

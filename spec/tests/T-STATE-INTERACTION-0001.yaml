@@ -26,6 +26,12 @@ cases:
       - C-STATE-INTERACTION-0002-B
       - C-STATE-INTERACTION-0002-F
     expectation: disabled-gates-transient-interaction-state
+  - id: T-STATE-INTERACTION-0001-CASE-FOCUS-VISIBLE-MODALITY
+    title: Focus-visible interaction state follows keyboard and pointer modality
+    covers:
+      - C-STATE-INTERACTION-0002-A
+      - C-STATE-INTERACTION-0002-G
+    expectation: pointer-modality-clears-focus-visible
   - id: T-STATE-INTERACTION-0001-CASE-SHARED-SUBJECT
     title: Interaction state identity is shared for the same interaction subject
     covers:
@@ -45,6 +51,7 @@ implementations:
       - T-STATE-INTERACTION-0001-CASE-EVENT-WIRING
       - T-STATE-INTERACTION-0001-CASE-CALLBACK-ORDER
       - T-STATE-INTERACTION-0001-CASE-DISABLED-GATE
+      - T-STATE-INTERACTION-0001-CASE-FOCUS-VISIBLE-MODALITY
       - T-STATE-INTERACTION-0001-CASE-SHARED-SUBJECT
   - id: module-event-internal-listener-order-contract
     kind: module-test
@@ -65,6 +72,7 @@ verifies:
         - C-STATE-INTERACTION-0002-D
         - C-STATE-INTERACTION-0002-E
         - C-STATE-INTERACTION-0002-F
+        - C-STATE-INTERACTION-0002-G
     - id: C-STATE-INTERACTION-0003
       anchors:
         - C-STATE-INTERACTION-0003-A
