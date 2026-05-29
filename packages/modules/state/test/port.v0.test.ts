@@ -58,6 +58,62 @@ function createMockSys() {
 }
 
 describe('module-state port (v0)', () => {
+  it('facade definitions preserve finite host-neutral state specs', () => {
+    const mock = createMockSys();
+    const impl = new StateModuleImpl(mock.sys as any);
+
+    mock.setPhase('setup');
+
+    const enabled = impl.facade.bool('enabled', false);
+    const tone = impl.facade.enum('tone', 'primary', {
+      options: ['primary', 'danger'] as const,
+    });
+    const label = impl.facade.string('label', 'OK', {
+      options: ['OK', 'Cancel'],
+    });
+    const progress = impl.facade.numberRange('progress', 50, {
+      min: 0,
+      max: 100,
+      clamp: true,
+    });
+    const step = impl.facade.numberDiscrete('step', 2, {
+      min: 0,
+      max: 10,
+      step: 2,
+    });
+
+    expect((enabled as any).__stateKind).toBe('bool');
+    expect((enabled as any).__stateSpec).toEqual({ kind: 'bool' });
+
+    expect((tone as any).__stateKind).toBe('enum');
+    expect((tone as any).__stateSpec).toEqual({
+      kind: 'enum',
+      options: ['primary', 'danger'],
+    });
+
+    expect((label as any).__stateKind).toBe('string');
+    expect((label as any).__stateSpec).toEqual({
+      kind: 'string',
+      options: ['OK', 'Cancel'],
+    });
+
+    expect((progress as any).__stateKind).toBe('number.range');
+    expect((progress as any).__stateSpec).toEqual({
+      kind: 'number.range',
+      min: 0,
+      max: 100,
+      clamp: true,
+    });
+
+    expect((step as any).__stateKind).toBe('number.discrete');
+    expect((step as any).__stateSpec).toEqual({
+      kind: 'number.discrete',
+      min: 0,
+      max: 10,
+      step: 2,
+    });
+  });
+
   it('watch(handle) receives ctx from sys.getCallbackCtx and dispatches synchronously on owned.set', () => {
     const mock = createMockSys();
     const impl = new StateModuleImpl(mock.sys as any);
@@ -134,18 +190,21 @@ describe('module-state port (v0)', () => {
     const calls: Array<{ ctx: unknown; e: any }> = [];
     const off = borrowed.watch((ctx, e) => calls.push({ ctx, e }));
 
+    borrowed.setDefault(1);
+    expect(owned.get()).toBe(1);
+
     mock.setPhase('callback');
     const ctxObj = { tag: 'run-like-ctx' };
     mock.setCallbackCtx(ctxObj);
 
-    borrowed.set(1, 'reason-x');
+    borrowed.set(2, 'reason-x');
 
-    expect(owned.get()).toBe(1);
+    expect(owned.get()).toBe(2);
     expect(calls.length).toBe(1);
     expect(calls[0].ctx).toBe(ctxObj);
     expect(calls[0].e?.type).toBe('next');
-    expect(calls[0].e?.prev).toBe(0);
-    expect(calls[0].e?.next).toBe(1);
+    expect(calls[0].e?.prev).toBe(1);
+    expect(calls[0].e?.next).toBe(2);
 
     off();
   });
@@ -159,10 +218,6 @@ describe('module-state port (v0)', () => {
     const owned = impl.facade.numberDiscrete('n', 0, {});
     const observed = port.createObservedHandle(owned);
 
-    mock.setPhase('callback');
-    const ctxObj = { tag: 'run-like-ctx' };
-    mock.setCallbackCtx(ctxObj);
-
     const seq: number[] = [];
     const ctxSeq: unknown[] = [];
 
@@ -175,6 +230,10 @@ describe('module-state port (v0)', () => {
       if (e.next === 2) owned.set(3);
     });
 
+    mock.setPhase('callback');
+    const ctxObj = { tag: 'run-like-ctx' };
+    mock.setCallbackCtx(ctxObj);
+
     owned.set(1);
 
     expect(seq).toEqual([1, 2, 3]);
@@ -182,6 +241,26 @@ describe('module-state port (v0)', () => {
     expect(owned.get()).toBe(3);
 
     off();
+  });
+
+  it('author-facing watch view registration is setup-only', () => {
+    const mock = createMockSys();
+    const impl = new StateModuleImpl(mock.sys as any);
+    const port = impl.port;
+
+    mock.setPhase('setup');
+    const owned = impl.facade.bool('hovered', false);
+    const observed = port.createObservedHandle(owned);
+    const borrowed = port.createBorrowedHandle(owned);
+
+    expect(() => observed.watch(() => {})).not.toThrow();
+    expect(() => borrowed.watch(() => {})).not.toThrow();
+
+    mock.setPhase('callback');
+
+    expect(() => port.watch(owned, () => {})).not.toThrow();
+    expect(() => observed.watch(() => {})).toThrow();
+    expect(() => borrowed.watch(() => {})).toThrow();
   });
 
   it('disconnect(handle) emits disconnect event to watchers of that slot', () => {

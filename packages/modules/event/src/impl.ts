@@ -4,7 +4,7 @@ import { illegalPhase } from '@proto.ui/core';
 
 import { ModuleBase } from '@proto.ui/module-base';
 
-import type { EventDispatch } from './types';
+import type { EventDispatch, EventInternalCallback } from './types';
 import { EventKernel } from './kernel';
 import type { EventListenerToken, EventTypeV0, ExposeEventSpec } from '@proto.ui/types';
 import { EVENT_GLOBAL_TARGET_CAP, EVENT_ROOT_TARGET_CAP, EVENT_EMIT_CAP } from './caps';
@@ -77,6 +77,7 @@ export class EventModuleImpl extends ModuleBase {
   private isBound = false;
 
   private exposedEvents = new Map<string, ExposeEventSpec | undefined>();
+  private internalCallbacks = new Map<string, EventInternalCallback>();
 
   constructor(caps: CapsVaultView, prototypeName: string) {
     super(caps);
@@ -162,6 +163,38 @@ export class EventModuleImpl extends ModuleBase {
     return this.makeToken(id, 'global', type, options);
   }
 
+  onInternal(type: EventTypeV0, cb: EventInternalCallback, options?: any): EventListenerToken {
+    this.ensureSetup('event.port.on');
+    this.guardArgs(type);
+    if (typeof cb !== 'function') {
+      throw illegalEventArg(`[Event] internal listener requires a callback.`, {
+        prototypeName: this.prototypeName,
+        type,
+      });
+    }
+    const id = this.kernel.on('root', type, options);
+    this.internalCallbacks.set(id, cb);
+    return this.makeToken(id, 'root', type, options);
+  }
+
+  onGlobalInternal(
+    type: EventTypeV0,
+    cb: EventInternalCallback,
+    options?: any
+  ): EventListenerToken {
+    this.ensureSetup('event.port.onGlobal');
+    this.guardArgs(type);
+    if (typeof cb !== 'function') {
+      throw illegalEventArg(`[Event] internal global listener requires a callback.`, {
+        prototypeName: this.prototypeName,
+        type,
+      });
+    }
+    const id = this.kernel.on('global', type, options);
+    this.internalCallbacks.set(id, cb);
+    return this.makeToken(id, 'global', type, options);
+  }
+
   off(token: EventListenerToken) {
     this.ensureSetup('def.event.off');
     const id = (token as any)?.id;
@@ -171,6 +204,7 @@ export class EventModuleImpl extends ModuleBase {
         token,
       });
     }
+    this.internalCallbacks.delete(id);
     this.kernel.offById(id);
   }
 
@@ -269,6 +303,12 @@ export class EventModuleImpl extends ModuleBase {
     return this.kernel.snapshot();
   }
 
+  dispatchInternal(id: string, ev: any) {
+    const cb = this.internalCallbacks.get(id);
+    if (!cb) return;
+    cb(ev);
+  }
+
   // -------------------------
   // lifecycle + caps wiring
   // -------------------------
@@ -282,6 +322,7 @@ export class EventModuleImpl extends ModuleBase {
       this.isBound = false;
       this.overriddenRootTarget = null;
       this.exposedEvents.clear();
+      this.internalCallbacks.clear();
     }
   }
 

@@ -57,7 +57,12 @@ export const FEEDBACK_STYLE_RUNTIME_PATCH_CASES = [
     id: 'patch-flushes-style-without-render',
     title: 'runtime style patch triggers style flush without render',
     specCase: 'T-FEEDBACK-STYLE-0002-CASE-NO-RENDER',
-    covers: ['C-FEEDBACK-STYLE-0005-G', 'C-FEEDBACK-STYLE-0005-H', 'C-FEEDBACK-0002-E'],
+    covers: [
+      'C-FEEDBACK-STYLE-0001-E',
+      'C-FEEDBACK-STYLE-0005-G',
+      'C-FEEDBACK-STYLE-0005-H',
+      'C-FEEDBACK-0002-E',
+    ],
     baseTokens: ['opacity-50'],
     patchTokens: ['opacity-100'],
     expectation: 'style-flush-without-render',

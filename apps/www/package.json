@@ -14,7 +14,7 @@
     "start": "corepack pnpm@10.32.1 run dev",
     "build": "corepack pnpm@10.32.1 run generate:proto-ui-style && astro build && node ./scripts/clean-sitemap.mjs",
     "preview": "astro preview",
-    "check": "astro check",
+    "check": "corepack pnpm@10.32.1 run generate:proto-ui-style && astro check",
     "astro": "astro"
   },
   "dependencies": {

@@ -26,12 +26,6 @@ function setupButton(def: DefHandle<ButtonProps, ButtonExposes>): void {
   const syncDisabled = (nextDisabled: boolean) => {
     disabled.set(nextDisabled, 'reason: sync disabled');
     focusable.setDisabled(nextDisabled);
-    if (nextDisabled) {
-      hovered.set(false, 'reason: disabled=true => reset hovered');
-      focused.set(false, 'reason: disabled=true => reset focused');
-      focusVisible.set(false, 'reason: disabled=true => reset focusVisible');
-      pressed.set(false, 'reason: disabled=true => reset pressed');
-    }
   };
 
   def.lifecycle.onCreated((run) => {
@@ -42,74 +36,34 @@ function setupButton(def: DefHandle<ButtonProps, ButtonExposes>): void {
     syncDisabled(!!next.disabled);
   });
 
-  def.event
-    .on('pointer.enter', () => {
-      if (disabled.get()) return;
-      hovered.set(true, 'reason: event.on(pointer.enter)');
-    })
-    .desc('asButton: pointer enter');
-  def.event
-    .on('pointer.leave', () => {
-      if (disabled.get()) return;
-      hovered.set(false, 'reason: event.on(pointer.leave)');
-    })
-    .desc('asButton: pointer leave');
   def.expose.state('hovered', hovered);
 
-  focusable.focused.watch((_run, event) => {
+  focused.watch((_run, event) => {
     if (event.type === 'disconnect') {
-      focused.set(false, 'reason: focusable.focused.disconnect');
+      focusable.blur();
       return;
     }
-    focused.set(event.next, 'reason: focusable.focused.watch');
-  });
-  focusable.focusVisible.watch((_run, event) => {
-    if (event.type === 'disconnect') {
-      focusVisible.set(false, 'reason: focusable.focusVisible.disconnect');
+    if (event.next) {
+      focusable.focus({ reason: focusVisible.get() ? 'keyboard' : 'programmatic' });
       return;
     }
-    focusVisible.set(event.next, 'reason: focusable.focusVisible.watch');
-  });
-  let keyboardModality = false;
-  def.event.onGlobal('key.down', () => {
-    keyboardModality = true;
-  });
-  def.event.on('pointer.down', () => {
-    keyboardModality = false;
-    if (focusable.isFocused()) {
-      focusable.focus({ reason: 'pointer' });
-    }
-  });
-  def.event.on('host:focus', () => {
-    if (disabled.get()) return;
-    focusable.focus({ reason: keyboardModality ? 'keyboard' : 'programmatic' });
-  });
-  def.event.on('host:blur', () => {
     focusable.blur();
   });
-  def.expose.state('focused', focusable.focused);
-  def.expose.state('focusVisible', focusable.focusVisible);
+  focusVisible.watch((_run, event) => {
+    if (event.type === 'disconnect') {
+      focusable.blur();
+      return;
+    }
+    if (!focused.get()) return;
+    focusable.focus({ reason: event.next ? 'keyboard' : 'programmatic' });
+  });
+  def.expose.state('focused', focused);
+  def.expose.state('focusVisible', focusVisible);
   def.expose.method('focusSelf', (options) => {
     if (disabled.get()) return;
     focusable.focusSelf(options);
   });
 
-  def.event.on('pointer.down', () => {
-    if (disabled.get()) return;
-    pressed.set(true, 'reason: event.on(pointer.down)');
-  });
-  def.event.on('pointer.up', () => {
-    pressed.set(false, 'reason: event.on(pointer.up)');
-  });
-  def.event.on('pointer.cancel', () => {
-    pressed.set(false, 'reason: event.on(pointer.cancel)');
-  });
-  def.event.on('pointer.leave', () => {
-    pressed.set(false, 'reason: event.on(pointer.leave)');
-  });
-  def.event.on('press.commit', () => {
-    pressed.set(false, 'reason: event.on(press.commit)');
-  });
   def.expose.state('pressed', pressed);
 
   def.expose.event('click', { payload: 'void' });

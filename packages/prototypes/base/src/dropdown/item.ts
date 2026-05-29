@@ -9,6 +9,8 @@ const DROPDOWN_ROVING_HANDLED = '__dropdownRovingHandled';
 function setupDropdownItem(def: DefHandle<DropdownItemProps, DropdownItemExposes>): void {
   asButton();
   const focusable = asFocusable({ groupKey: DROPDOWN_FOCUS_GROUP });
+  const hovered = def.state.fromInteraction('hovered');
+  const focused = def.state.fromInteraction('focused');
   const active = def.state.bool('active', false);
   asCollectionItem({
     family: DROPDOWN_FAMILY,
@@ -76,13 +78,15 @@ function setupDropdownItem(def: DefHandle<DropdownItemProps, DropdownItemExposes
     }));
   });
 
-  def.event.on('host:focus', (run) => {
+  focused.watch((run, event) => {
+    if (event.type !== 'next' || !event.next) return;
     const ownDisabled = !!run.props.get().disabled;
     const ctx = run.context.read(DROPDOWN_CONTEXT);
     if (ownDisabled || ctx.disabled) return;
     updateActiveValue(run);
   });
-  def.event.on('pointer.enter', (run) => {
+  hovered.watch((run, event) => {
+    if (event.type !== 'next' || !event.next) return;
     const ownDisabled = !!run.props.get().disabled;
     const ctx = run.context.read(DROPDOWN_CONTEXT);
     if (ownDisabled || ctx.disabled || !ctx.open) return;

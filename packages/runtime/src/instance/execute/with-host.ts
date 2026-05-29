@@ -69,10 +69,11 @@ export function executeWithHost<P extends PropsBaseType>(
         | { dispatch: (run: RunHandle<P>, id: string, ev: any) => void }
         | undefined;
 
-      if (eventPort?.bind && eventRegistry) {
+      if (eventPort?.bind) {
         const dispatch = (id: string, ev: any) => {
           callbackScope.run(run, () => {
-            eventRegistry.dispatch(run, id, ev);
+            eventPort.dispatchInternal?.(id, ev);
+            eventRegistry?.dispatch(run, id, ev);
           });
         };
         eventPort.bind(dispatch);

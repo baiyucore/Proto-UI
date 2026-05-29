@@ -67,7 +67,7 @@ export const EVENT_TYPE_PAYLOAD_CASES = [
     id: 'event-expose-emit-is-expose',
     title: 'expose event emission is surfaced as run.expose.emit rather than Event runtime API',
     specCase: 'T-EVENT-0002-CASE-EXPOSE-EMIT',
-    covers: ['C-EVENT-0001-D', 'C-EVENT-0002-G', 'C-EVENT-0002-H'],
+    covers: ['C-EVENT-0002-G', 'C-EVENT-0002-H'],
     acceptedTypes: [],
     expectation: 'expose-emit-is-expose',
   },

@@ -1,0 +1,81 @@
+id: C-EXPOSE-EVENT-0001
+type: contract
+title: Expose event represents outward signals
+status: draft
+since: 0.1.0
+summary: Expose event declares and emits Component-to-App-Maker outward signals; it is not the User-to-Component Event channel.
+statement:
+  zh-CN: >-
+    Expose event 是 Expose 通路中的 outward signal surface。`def.expose.event(key, spec?)` 在 setup 期间声明组件可能向 App Maker 广播某个 signal，`run.expose.emit(key, payload?, options?)` 在 runtime 期间触发已声明 signal。它不属于 Event 通路的 runtime API；Event 通路是 User → Component，而 expose event 是 Component → App Maker。
+
+
+  en: >-
+    Expose event is the outward signal surface within the Expose channel. `def.expose.event(key, spec?)` declares during setup that the component may broadcast a signal to the App Maker, and `run.expose.emit(key, payload?, options?)` emits an already-declared signal during runtime. It is not a runtime API of the Event channel; Event is User → Component, while expose event is Component → App Maker.
+
+
+criteria:
+  - id: C-EXPOSE-EVENT-0001-A
+    text:
+      zh-CN: '`def.expose.event(key, spec?)` 必须是 setup-only outward signal declaration API。'
+      en: '`def.expose.event(key, spec?)` must be a setup-only outward signal declaration API.'
+  - id: C-EXPOSE-EVENT-0001-B
+    text:
+      zh-CN: '`run.expose.emit(key, payload?, options?)` 必须是 runtime-only outward signal emission API。'
+      en: '`run.expose.emit(key, payload?, options?)` must be a runtime-only outward signal emission API.'
+  - id: C-EXPOSE-EVENT-0001-C
+    text:
+      zh-CN: emit 的 key 必须引用当前实例已注册的 expose event key；未注册 key 必须失败。
+      en: The emitted key must refer to an expose event key registered on the current instance; unregistered keys must fail.
+  - id: C-EXPOSE-EVENT-0001-D
+    text:
+      zh-CN: expose event 不得被解释为 Event 通路 runtime API，也不得被解释为 User → Component input。
+      en: Expose event must not be interpreted as an Event-channel runtime API or as User → Component input.
+  - id: C-EXPOSE-EVENT-0001-E
+    text:
+      zh-CN: adapter 可以将 expose event 映射为宿主 callback、emit、CustomEvent、message 或其他 outward signal 承载方式，但不得改变 Component → App Maker 方向。
+      en: Adapters may map expose events to host callbacks, emits, CustomEvents, messages, or other outward signal carriers, but must not change the Component → App Maker direction.
+  - id: C-EXPOSE-EVENT-0001-F
+    text:
+      zh-CN: emit 只在实例存活期间有效；dispose 后 emit 必须失败或以可区分方式不可用。
+      en: Emission is valid only while the instance is alive; after dispose, emission must fail or be distinguishably unavailable.
+openQuestions:
+  - id: C-EXPOSE-EVENT-0001-Q-NAMING
+    question:
+      zh-CN: 是否需要将 `expose.event` 命名迁移为 `expose.signal`，以降低与 Event 通路的混淆？
+      en: Should `expose.event` be renamed to `expose.signal` to reduce confusion with the Event channel?
+    context:
+      zh-CN: 本契约先保留现有 API 名称，并用 outward signal 解释其语义。
+      en: This contract keeps the current API name for now and explains its semantics as outward signals.
+    blocks:
+      - expose outward signal API naming
+sources:
+  - path: internal/contracts/expose/expose-event.v0.md
+    sections:
+      - Definition API
+      - Emit API
+      - Runtime Semantics
+  - path: packages/modules/event/src/impl.ts
+    sections:
+      - registerExposeEvent
+      - emit
+  - path: packages/runtime/src/kernel/handles/run.ts
+    sections:
+      - expose
+  - path: packages/runtime/test/contract/expose-event.v0.contract.test.ts
+dependsOn:
+  contracts:
+    - C-EXPOSE-0005
+    - C-EXPOSE-0008
+    - C-EVENT-0002
+explains:
+  decisions:
+    - D-EXPOSE-EVENT-NAMING-0001
+revisions:
+  - version: 0.1.0
+    change: introduced
+    summary: Captured expose event as the Expose-channel outward signal surface.
+tags:
+  - expose
+  - event
+  - signal
+  - runtime

@@ -4,6 +4,7 @@ import type { ModulePort } from '@proto.ui/core';
 import { EventListenerToken, EventTypeV0, ExposeEventSpec } from '@proto.ui/types';
 
 export type EventDispatch = (id: string, ev: any) => void;
+export type EventInternalCallback = (ev: any) => void;
 
 export type EventFacade = {
   // --- setup-only registration (opaque to module) ---
@@ -27,6 +28,23 @@ export type EventModule = ModuleInstance<EventFacade> & {
 
 export type EventPort = ModulePort & {
   /**
+   * Setup-only module-facing listener registration.
+   *
+   * These callbacks are dispatched by runtime before prototype-author callbacks
+   * for the same event dispatch pass.
+   */
+  on(
+    type: EventTypeV0,
+    cb: EventInternalCallback,
+    options?: EventListenerOptions
+  ): EventListenerToken;
+  onGlobal(
+    type: EventTypeV0,
+    cb: EventInternalCallback,
+    options?: EventListenerOptions
+  ): EventListenerToken;
+
+  /**
    * Bind all registered listeners using current targets.
    * Runtime supplies a dispatcher to handle invocation semantics.
    */
@@ -43,6 +61,12 @@ export type EventPort = ModulePort & {
    * Does NOT affect global registrations.
    */
   redirectRoot(target: EventTarget): void;
+
+  /**
+   * Runtime-owned dispatch entry for module-facing callbacks.
+   * Runtime calls this inside callback scope before prototype-author dispatch.
+   */
+  dispatchInternal(id: string, ev: any): void;
 };
 
 export type EventDiag = {

@@ -6,3 +6,6 @@ export * from './feedback/style-authoring';
 export * from './feedback/style-runtime-patch';
 export * from './event/registration';
 export * from './event/type-payload';
+export * from './expose/surfaces';
+export * from './expose/event';
+export * from './expose/state';

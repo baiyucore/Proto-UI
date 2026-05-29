@@ -98,6 +98,8 @@ describe('ExposeStateModuleImpl (contract-ish)', () => {
     expect(typeof ext.unsubscribe).toBe('function');
     expect(ext.spec).toBeTruthy();
     expect(ext.spec.kind).toBe('bool');
+    expect(ext.set).toBeUndefined();
+    expect(ext.setDefault).toBeUndefined();
   });
 
   it('external subscribe receives StateEvent without run', () => {
@@ -125,6 +127,30 @@ describe('ExposeStateModuleImpl (contract-ish)', () => {
     expect(got.next).toBe(true);
 
     off();
+  });
+
+  it('dispose invalidates external handles and clears external subscriptions', () => {
+    const sys = createSysCaps();
+    const caps = makeCaps({ sys });
+
+    const { createHandle, statePort } = createStateHarness();
+    const h = createHandle(false, { kind: 'bool' });
+    const exposePort = makeExposePort({ ready: h });
+
+    const deps = makeDeps(exposePort, statePort);
+    const impl = new ExposeStateModuleImpl(caps as any, deps);
+
+    const ext: any = impl.port.get('ready');
+    const events: any[] = [];
+    ext.subscribe((e: any) => events.push(e));
+
+    impl.dispose();
+
+    expect(() => ext.get()).toThrow();
+    expect(() => ext.subscribe(() => {})).toThrow();
+
+    h.set(true);
+    expect(events).toEqual([]);
   });
 
   it('publishes external exposes to host sink', () => {

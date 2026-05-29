@@ -26,10 +26,6 @@ criteria:
     text:
       zh-CN: Event callback 是组件响应 User 输入的 runtime 入口，而不是 setup-time 声明执行入口。
       en: Event callbacks are runtime entry points for responding to User input, not setup-time declaration execution points.
-  - id: C-EVENT-0001-D
-    text:
-      zh-CN: Event 不得被解释为 Component → User 的 feedback 通路、App Maker → Component 的 props 通路、Component → App Maker 的 expose 通路或 Other Component ↔ Component 的 context 通路。
-      en: Event must not be interpreted as the Component → User feedback channel, the App Maker → Component props channel, the Component → App Maker expose channel, or the Other Component ↔ Component context channel.
 sources:
   - path: internal/contracts/event/event.v0.md
     sections:
@@ -55,6 +51,9 @@ revisions:
   - version: 0.1.0
     change: introduced
     summary: Captured the top-level channel identity for event.
+  - version: 0.1.0
+    change: revised
+    summary: Removed a redundant negative channel-boundary criterion already covered by the statement and neighboring channel contracts.
 tags:
   - event
   - channel

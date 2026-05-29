@@ -13,7 +13,7 @@ export type StatePort = {
   /**
    * Internal watch API (ctx is opaque to state-module; runtime injects it).
    *
-   * - register is expected to be setup-only by runtime policy
+   * - internal bridge API; author-facing watch views enforce setup-only separately
    * - invoke happens during runtime set(), and ctx should reflect the current callback context
    */
   watch<V>(handle: OwnedStateHandle<V>, cb: InternalStateWatchCallback<V>): Unsubscribe;

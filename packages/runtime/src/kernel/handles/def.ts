@@ -166,8 +166,8 @@ export const createDefHandle = <P extends PropsBaseType, E = Record<string, unkn
 
       fn.event = (key: string, spec?: ExposeEventSpec) => {
         ensureSetup('def.expose.event');
-        eventFacade.registerExposeEvent(key, spec);
         expose.expose(key, { __pui_expose: 'event', spec } as any);
+        eventFacade.registerExposeEvent(key, spec);
         recordCaptured(def, 'event', { op: 'expose.event', key, spec });
       };
 

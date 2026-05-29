@@ -18,6 +18,8 @@ function syncBoolState(
 function setupSelectItem(def: DefHandle<SelectItemProps, SelectItemExposes>): void {
   asButton();
   const focusable = asFocusable({ groupKey: SELECT_FOCUS_GROUP });
+  const hovered = def.state.fromInteraction('hovered');
+  const focused = def.state.fromInteraction('focused');
   const active = def.state.bool('active', false);
   const selected = def.state.fromAccessibility('selected');
 
@@ -121,14 +123,16 @@ function setupSelectItem(def: DefHandle<SelectItemProps, SelectItemExposes>): vo
     }));
   });
 
-  def.event.on('host:focus', (run) => {
+  focused.watch((run, event) => {
+    if (event.type !== 'next' || !event.next) return;
     const ownDisabled = !!run.props.get().disabled;
     const ctx = run.context.read(SELECT_CONTEXT);
     if (ownDisabled || ctx.disabled) return;
     updateActiveValue(run);
   });
 
-  def.event.on('pointer.enter', (run) => {
+  hovered.watch((run, event) => {
+    if (event.type !== 'next' || !event.next) return;
     const ownDisabled = !!run.props.get().disabled;
     const ctx = run.context.read(SELECT_CONTEXT);
     if (ownDisabled || ctx.disabled || !ctx.open) return;

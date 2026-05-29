@@ -36,6 +36,7 @@ export class ExposeStateModuleImpl extends ModuleBase {
   private disposed = false;
 
   private cache = new Map<string, unknown>();
+  private readonly externalSubscriptions = new Set<() => void>();
 
   constructor(caps: CapsVaultView, deps: ModuleDeps) {
     super(caps);
@@ -94,6 +95,12 @@ export class ExposeStateModuleImpl extends ModuleBase {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    for (const off of this.externalSubscriptions) {
+      try {
+        off();
+      } catch {}
+    }
+    this.externalSubscriptions.clear();
     this.cache.clear();
     this.publishToHost(true);
   }
@@ -133,12 +140,22 @@ export class ExposeStateModuleImpl extends ModuleBase {
     spec: StateSpec
   ): ExposeStateExternalHandle<V> {
     const external: ExposeStateExternalHandle<V> = {
-      get: () => handle.get(),
+      get: () => {
+        this.ensureAlive('rt.exposeState.external.get');
+        return handle.get();
+      },
       subscribe: (cb) => {
+        this.ensureAlive('rt.exposeState.external.subscribe');
         const off = this.statePort.watch(handle, (_ctx, e: StateEvent<V>) => {
+          if (this.disposed) return;
           cb(e);
         });
-        return off;
+        const trackedOff = () => {
+          this.externalSubscriptions.delete(trackedOff);
+          off();
+        };
+        this.externalSubscriptions.add(trackedOff);
+        return trackedOff;
       },
       unsubscribe: (off) => {
         if (typeof off === 'function') off();

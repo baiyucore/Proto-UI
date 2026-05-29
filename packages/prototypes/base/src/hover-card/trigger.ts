@@ -21,6 +21,8 @@ function setupHoverCardTrigger(
   });
 
   def.context.subscribe(HOVER_CARD_CONTEXT);
+  const hovered = def.state.fromInteraction('hovered');
+  const focused = def.state.fromInteraction('focused');
 
   const updateFlags = (
     run: any,
@@ -42,17 +44,13 @@ function setupHoverCardTrigger(
     run.context.update(HOVER_CARD_CONTEXT, (prev: any) => ({ ...prev, ...patch }));
   };
 
-  def.event.on('pointer.enter', (run) => {
-    updateFlags(run, { triggerHovered: true });
+  hovered.watch((run, event) => {
+    if (event.type !== 'next') return;
+    updateFlags(run, { triggerHovered: event.next });
   });
-  def.event.on('pointer.leave', (run) => {
-    updateFlags(run, { triggerHovered: false });
-  });
-  def.event.on('host:focus', (run) => {
-    updateFlags(run, { triggerFocused: true });
-  });
-  def.event.on('host:blur', (run) => {
-    updateFlags(run, { triggerFocused: false });
+  focused.watch((run, event) => {
+    if (event.type !== 'next') return;
+    updateFlags(run, { triggerFocused: event.next });
   });
 }
 

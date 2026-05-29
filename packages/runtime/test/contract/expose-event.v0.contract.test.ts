@@ -74,4 +74,22 @@ describe('runtime contract: expose-event (v0)', () => {
     const { host } = createMockHost();
     expect(() => executeWithHost(P as any, host as any)).toThrow();
   });
+
+  it('duplicate expose event keys do not leave stale event registrations', () => {
+    const P: Prototype<any> = {
+      name: 'x-expose-event-duplicate-key',
+      setup(def) {
+        def.expose.value('ready', 1);
+        expect(() => def.expose.event('ready', { payload: 'json' })).toThrow();
+        def.lifecycle.onMounted((run) => {
+          expect(() => run.expose.emit('ready', { ok: true })).toThrow();
+        });
+        return (r) => [r.el('div', 'ok')];
+      },
+    };
+
+    const { host, emitted } = createMockHost();
+    expect(() => executeWithHost(P as any, host as any)).not.toThrow();
+    expect(emitted).toEqual([]);
+  });
 });

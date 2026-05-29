@@ -44,6 +44,18 @@
     "./event/type-payload": {
       "types": "./src/event/type-payload.ts",
       "default": "./src/event/type-payload.ts"
+    },
+    "./expose/surfaces": {
+      "types": "./src/expose/surfaces.ts",
+      "default": "./src/expose/surfaces.ts"
+    },
+    "./expose/event": {
+      "types": "./src/expose/event.ts",
+      "default": "./src/expose/event.ts"
+    },
+    "./expose/state": {
+      "types": "./src/expose/state.ts",
+      "default": "./src/expose/state.ts"
     }
   },
   "description": "Shared semantic test fixtures for Proto UI spec contracts."

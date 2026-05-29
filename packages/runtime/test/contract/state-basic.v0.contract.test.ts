@@ -44,6 +44,7 @@ describe('runtime contract: state basic (v0)', () => {
       name: 'x-runtime-state-basic',
       setup(def) {
         s = def.state.bool('open', false);
+        expect((s as any).watch).toBeUndefined();
 
         // setup: setDefault ok
         s.setDefault(true);

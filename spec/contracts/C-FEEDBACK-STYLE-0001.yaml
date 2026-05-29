@@ -3,14 +3,14 @@ type: contract
 title: feedback.style is the visual feedback surface
 status: draft
 since: 0.1.0
-summary: '`feedback.style` describes visual feedback that can change component appearance without changing template structure.'
+summary: '`feedback.style` describes visual feedback that can change component appearance without triggering render or changing template structure.'
 statement:
   zh-CN: >-
-    `feedback.style` 是 Feedback 通路中仅负责视觉反馈的 surface。它描述组件应如何改变自身样貌，使 User 感知组件的存在、状态或变化；它不负责改变 template 的逻辑结构或内容。
+    `feedback.style` 是 Feedback 通路中仅负责视觉反馈的 surface。它描述组件应如何改变自身样貌，使 User 感知组件的存在、状态或变化；样式更新不触发 render，也不负责改变 template 的逻辑结构或内容。
 
 
   en: >-
-    `feedback.style` is the visual-feedback-only surface within the Feedback channel. It describes how a component should change its appearance so the User can perceive the component's existence, state, or changes; it does not change template logic structure or content.
+    `feedback.style` is the visual-feedback-only surface within the Feedback channel. It describes how a component should change its appearance so the User can perceive the component's existence, state, or changes; style updates do not trigger render and do not change template logic structure or content.
 
 
 criteria:
@@ -30,6 +30,10 @@ criteria:
     text:
       zh-CN: '`feedback.style` 的宿主实现方式不由本契约指定；它可能由 adapter 或翻译层映射到宿主支持的样式机制。'
       en: The host realization strategy for `feedback.style` is not specified by this contract; adapters or translation layers can map it to style mechanisms supported by the host.
+  - id: C-FEEDBACK-STYLE-0001-E
+    text:
+      zh-CN: '`feedback.style` 的更新必须是样式更新路径，不得触发 render；宿主可以用不同成本实现该路径，但不得把 render 作为语义上可观察的结果。'
+      en: '`feedback.style` updates must use the style-update path and must not trigger render; hosts can implement that path with different costs, but render must not become a semantically observable result.'
 openQuestions:
   - id: C-FEEDBACK-STYLE-0001-Q-NON-VISUAL
     question:
@@ -60,6 +64,9 @@ revisions:
   - version: 0.1.0
     change: revised
     summary: Clarified `feedback.style` as visual-only and strengthened the logical-tree boundary.
+  - version: 0.1.0
+    change: revised
+    summary: Clarified no-render style updates as a defining feature of the `feedback.style` surface.
 tags:
   - feedback
   - style
