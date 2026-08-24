@@ -24,6 +24,10 @@ const adapterSelect = (id: string) => `
 `;
 
 describe('documentation adapter selector', () => {
+  it('does not present the internal-only Vue 2 runtime', () => {
+    expect(source).not.toContain("{ value: 'vue2', label: 'Vue 2' }");
+  });
+
   beforeEach(() => {
     localStorage.clear();
     document.body.innerHTML = `${adapterSelect('adapter-desktop')}${adapterSelect('adapter-mobile')}`;

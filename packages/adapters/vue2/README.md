@@ -4,14 +4,14 @@ Draft package boundary for a Vue 2.6-first Proto UI adapter.
 
 ## Status
 
-This package is intentionally private while the Vue 2.6 feasibility path is being validated. It must not replace `@proto.ui/adapter-vue`, which remains the Vue 3 adapter.
+This package remains private while the Vue 2.6 npm distribution path is being validated. It is available only in the internal documentation matrix and must not be represented as a published package guarantee, a public website runtime, or a replacement for `@proto.ui/adapter-vue`.
 
 ## Scope
 
 - Target Vue 2.6 first.
 - Keep Vue runtime injection through an adapter factory.
 - Do not rely on Vue 2.7 Composition API in the first implementation pass.
-- Validate the minimum path with Base Button before expanding to more complex prototypes.
+- Validate focused adapter contracts before promoting it into shared Web conformance journeys.
 
 ## References
 
